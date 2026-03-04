@@ -65,8 +65,24 @@ export default function Home() {
         </motion.div>
 
         {/* Interactive Info Cards Section — DataVault Style */}
-        <div className="-mx-6 sm:-mx-12 md:-mx-24 px-6 sm:px-12 md:px-24 py-16 md:py-24 bg-gradz-charcoal mb-24 md:mb-40">
+        <div className="bg-gradz-charcoal mb-24 md:mb-40 rounded-[2rem] border border-gradz-charcoal/10 shadow-2xl p-8 sm:p-12 md:p-16 relative overflow-hidden">
           <div className="max-w-5xl mx-auto">
+
+            {/* DataVault Style Heading */}
+            <div className="mb-16">
+              <div className="flex items-center gap-2 mb-6">
+                <span className="text-[#CC5833] font-mono text-sm tracking-wider font-semibold uppercase">
+                  &gt; THE DATA REVOLUTION // YOUR DATA. YOUR PROFIT.
+                </span>
+              </div>
+              <h2 className="text-5xl md:text-7xl lg:text-8xl font-serif text-gradz-cream tracking-tight leading-[0.9]">
+                THEY TAKE IT FREE.<br />
+                <span className="text-[#CC5833] italic">
+                  *We Pay You.*
+                </span>
+              </h2>
+            </div>
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <DataGravityWell />
               <LiveAuctionBoard />
