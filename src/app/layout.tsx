@@ -1,43 +1,16 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Fraunces, Epilogue, Fira_Code } from "next/font/google";
+import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
-import "@/lib/env";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
 
-const cormorant = Cormorant_Garamond({
-  variable: "--font-cormorant",
-  weight: ["300", "400", "500", "600", "700"],
-  subsets: ["latin"],
-  style: ["normal", "italic"],
-  display: "swap",
-});
-
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
-  subsets: ["latin"],
-  axes: ["opsz"],
-  display: "swap",
-});
-
-const epilogue = Epilogue({
-  variable: "--font-epilogue",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  display: "swap",
-});
-
-const firaCode = Fira_Code({
-  variable: "--font-fira-code",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  display: "swap",
-});
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair" });
 
 export const metadata: Metadata = {
-  title: "Trove AI | Monetize Reality",
-  description: "Upload everyday photos, videos, and recordings. AI companies need real-world data—and they'll pay you for it.",
+  title: "Kled | The Leading Data Marketplace",
+  description: "Upload your photos, videos, and everyday data to get paid.",
 };
-
-import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 export default function RootLayout({
   children,
@@ -47,12 +20,22 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${cormorant.variable} ${fraunces.variable} ${epilogue.variable} ${firaCode.variable} antialiased bg-moss text-cream font-epilogue`}
+        className={cn(
+          inter.variable,
+          playfair.variable,
+          "antialiased min-h-screen font-sans selection:bg-gradz-green/30"
+        )}
       >
-        <div className="noise-overlay" aria-hidden="true" />
-        <ErrorBoundary>
-          {children}
-        </ErrorBoundary>
+        <header className="fixed top-0 left-0 w-full z-50 px-6 py-4 flex items-center justify-between pointer-events-none">
+          <div className="text-xl font-bold tracking-tighter opacity-80 pointer-events-auto">
+            <Link href="/">KLED</Link>
+          </div>
+          <nav className="flex items-center gap-6 text-sm font-medium tracking-wide uppercase opacity-60 pointer-events-auto">
+            <Link href="/" className="hover:opacity-100 transition-opacity">Home</Link>
+            <Link href="/dashboard" className="hover:opacity-100 transition-opacity">Dashboard</Link>
+          </nav>
+        </header>
+        {children}
       </body>
     </html>
   );
