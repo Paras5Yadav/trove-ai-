@@ -91,8 +91,28 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Categories Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
+        {/* Categories Grid -> In-Demand Assets */}
+        <div className="max-w-5xl mx-auto mt-24 md:mt-40 mb-16 px-6 sm:px-0">
+          <div className="mb-16">
+            <div className="flex items-center gap-2 mb-6">
+              <span className="text-[#85d7ff] font-mono text-sm tracking-wider font-semibold uppercase">
+                &gt; THE CONTRIBUTOR ARCHIVE
+              </span>
+            </div>
+            <h2 className="text-5xl md:text-7xl lg:text-8xl font-serif text-gradz-charcoal tracking-tight leading-[0.9]">
+              IN-DEMAND
+              <br />
+              <span className="text-[#85d7ff] italic">
+                *Assets.*
+              </span>
+            </h2>
+            <p className="mt-8 text-xl md:text-2xl text-gradz-charcoal/60 font-serif leading-relaxed max-w-xl">
+              From breakup texts to pothole geometry. If you generate it, we want it. See what the network is actively acquiring.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 relative z-20">
 
           {/* Card 1 */}
           <motion.div variants={itemVariants} className="group relative bg-white rounded-3xl p-6 shadow-xl shadow-gradz-charcoal/5 transform hover:-translate-y-2 transition-all duration-500">
@@ -100,51 +120,51 @@ export default function Home() {
             <div className="aspect-[4/3] bg-gradz-cream border border-gradz-charcoal/5 rounded-2xl mb-8 flex items-center justify-center overflow-hidden relative group-hover:bg-gradz-butter/10 transition-colors duration-500">
               <Camera className="w-16 h-16 text-gradz-charcoal/10 group-hover:text-gradz-charcoal/20 transition-colors" />
             </div>
-            <h3 className="text-3xl font-serif text-gradz-charcoal leading-tight mb-3">Everyday Photos</h3>
-            <p className="text-gradz-charcoal/60 mb-6">Selfies, food, pets, outfits—your camera roll is a goldmine.</p>
-            <div className="flex items-center gap-2 bg-gradz-green/10 w-fit px-3 py-1.5 rounded-full">
+            <h3 className="text-3xl font-serif text-gradz-charcoal leading-tight mb-3">The Physical World</h3>
+            <p className="text-gradz-charcoal/60 mb-6">High-definition environmental capture. Dashcam footage of potholes, 4K street walks, and 3D room scans.</p>
+            <div className="flex items-center gap-2 bg-gradz-green/10 w-fit px-3 py-1.5 rounded-full mt-auto">
               <div className="w-2 h-2 rounded-full bg-gradz-green animate-pulse" />
               <span className="text-xs font-mono font-medium text-gradz-charcoal/80">Avg. $0.05 – $2.00 / upload</span>
             </div>
           </motion.div>
 
           {/* Card 2 */}
-          <motion.div variants={itemVariants} className="group relative bg-white rounded-3xl p-6 shadow-xl shadow-gradz-charcoal/5 md:mt-24 transform hover:-translate-y-2 transition-all duration-500">
+          <motion.div variants={itemVariants} className="group relative bg-white rounded-3xl p-6 shadow-xl shadow-gradz-charcoal/5 md:mt-24 transform hover:-translate-y-2 transition-all duration-500 flex flex-col">
             <div className="absolute top-0 left-0 w-full h-3 bg-gradz-lilac/60 rounded-t-3xl" />
             <div className="aspect-[4/3] bg-gradz-cream border border-gradz-charcoal/5 rounded-2xl mb-8 flex items-center justify-center overflow-hidden relative group-hover:bg-gradz-lilac/10 transition-colors duration-500">
-              <Video className="w-16 h-16 text-gradz-charcoal/10 group-hover:text-gradz-charcoal/20 transition-colors" />
+              <FileText className="w-16 h-16 text-gradz-charcoal/10 group-hover:text-gradz-charcoal/20 transition-colors" />
             </div>
-            <h3 className="text-3xl font-serif text-gradz-charcoal leading-tight mb-3">Short Videos</h3>
-            <p className="text-gradz-charcoal/60 mb-6">Quick clips of cooking, commuting, unboxing—real life, real value.</p>
-            <div className="flex items-center gap-2 bg-gradz-green/10 w-fit px-3 py-1.5 rounded-full">
+            <h3 className="text-3xl font-serif text-gradz-charcoal leading-tight mb-3">Human Context</h3>
+            <p className="text-gradz-charcoal/60 mb-6">Authentic human interaction is the rarest asset on the internet. From search histories to breakup texts.</p>
+            <div className="flex items-center gap-2 bg-gradz-green/10 w-fit px-3 py-1.5 rounded-full mt-auto">
               <div className="w-2 h-2 rounded-full bg-gradz-green animate-pulse" />
               <span className="text-xs font-mono font-medium text-gradz-charcoal/80">Avg. $0.50 – $5.00 / log</span>
             </div>
           </motion.div>
 
           {/* Card 3 */}
-          <motion.div variants={itemVariants} className="group relative bg-white rounded-3xl p-6 shadow-xl shadow-gradz-charcoal/5 transform hover:-translate-y-2 transition-all duration-500">
+          <motion.div variants={itemVariants} className="group relative bg-white rounded-3xl p-6 shadow-xl shadow-gradz-charcoal/5 transform hover:-translate-y-2 transition-all duration-500 flex flex-col">
             <div className="absolute top-0 left-0 w-full h-3 bg-gradz-blue/60 rounded-t-3xl" />
             <div className="aspect-[4/3] bg-gradz-cream border border-gradz-charcoal/5 rounded-2xl mb-8 flex items-center justify-center overflow-hidden relative group-hover:bg-gradz-blue/10 transition-colors duration-500">
               <Mic className="w-16 h-16 text-gradz-charcoal/10 group-hover:text-gradz-charcoal/20 transition-colors" />
             </div>
-            <h3 className="text-3xl font-serif text-gradz-charcoal leading-tight mb-3">Voice & Audio</h3>
-            <p className="text-gradz-charcoal/60 mb-6">Conversations, ambient sound, voice notes—machines need to hear the world.</p>
-            <div className="flex items-center gap-2 bg-gradz-green/10 w-fit px-3 py-1.5 rounded-full">
+            <h3 className="text-3xl font-serif text-gradz-charcoal leading-tight mb-3">Acoustic Signatures</h3>
+            <p className="text-gradz-charcoal/60 mb-6">Uncompressed field recordings, crowded cafes, mechanical hums, and localized soundscapes.</p>
+            <div className="flex items-center gap-2 bg-gradz-green/10 w-fit px-3 py-1.5 rounded-full mt-auto">
               <div className="w-2 h-2 rounded-full bg-gradz-green animate-pulse" />
               <span className="text-xs font-mono font-medium text-gradz-charcoal/80">Avg. $0.20 – $3.00 / min</span>
             </div>
           </motion.div>
 
           {/* Card 4 */}
-          <motion.div variants={itemVariants} className="group relative bg-white rounded-3xl p-6 shadow-xl shadow-gradz-charcoal/5 md:mt-24 transform hover:-translate-y-2 transition-all duration-500">
+          <motion.div variants={itemVariants} className="group relative bg-white rounded-3xl p-6 shadow-xl shadow-gradz-charcoal/5 md:mt-24 transform hover:-translate-y-2 transition-all duration-500 flex flex-col">
             <div className="absolute top-0 left-0 w-full h-3 bg-gradz-peach/60 rounded-t-3xl" />
             <div className="aspect-[4/3] bg-gradz-cream border border-gradz-charcoal/5 rounded-2xl mb-8 flex items-center justify-center overflow-hidden relative group-hover:bg-gradz-peach/10 transition-colors duration-500">
               <FileText className="w-16 h-16 text-gradz-charcoal/10 group-hover:text-gradz-charcoal/20 transition-colors" />
             </div>
-            <h3 className="text-3xl font-serif text-gradz-charcoal leading-tight mb-3">Receipts & Docs</h3>
-            <p className="text-gradz-charcoal/60 mb-6">Bills, menus, labels, handwritten notes—structured data from the real world.</p>
-            <div className="flex items-center gap-2 bg-gradz-green/10 w-fit px-3 py-1.5 rounded-full">
+            <h3 className="text-3xl font-serif text-gradz-charcoal leading-tight mb-3">Transactional Data</h3>
+            <p className="text-gradz-charcoal/60 mb-6">Bills, menus, retail receipts, handwritten notes—structured commercial data from the real world.</p>
+            <div className="flex items-center gap-2 bg-gradz-green/10 w-fit px-3 py-1.5 rounded-full mt-auto">
               <div className="w-2 h-2 rounded-full bg-gradz-green animate-pulse" />
               <span className="text-xs font-mono font-medium text-gradz-charcoal/80">Avg. $0.10 – $1.00 / scan</span>
             </div>
