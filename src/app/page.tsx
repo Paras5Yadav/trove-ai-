@@ -1,7 +1,10 @@
 "use client";
 
 import { motion, Variants } from "framer-motion";
-import { ArrowRight, Camera, Video, Mic, FileText, Map, Sparkles } from "lucide-react";
+import { ArrowRight, Camera, Video, Mic, FileText } from "lucide-react";
+import { DataGravityWell } from "@/components/cards/DiagnosticShuffler";
+import { LiveAuctionBoard } from "@/components/cards/TelemetryTypewriter";
+import { RevenueWaterfall } from "@/components/cards/EarningsTracker";
 
 export default function Home() {
   const containerVariants: Variants = {
@@ -41,16 +44,15 @@ export default function Home() {
           </div>
 
           <h1 className="text-6xl md:text-8xl font-serif tracking-tight leading-[0.9] text-gradz-charcoal mb-8">
-            <span className="text-gradz-green block">Your</span>
+            <span className="text-gradz-green block">Your Data</span>
             <span className="italic block pl-8 md:pl-16 relative">
-              Data Has
-              <Sparkles className="absolute -left-4 md:left-4 top-1/2 -translate-y-1/2 w-8 h-8 md:w-12 md:h-12 text-gradz-orange opacity-80" />
+              Is The
             </span>
-            <span className="text-gradz-green block">Value.</span>
+            <span className="text-gradz-green block">Algorithm.</span>
           </h1>
 
           <p className="text-xl md:text-2xl text-gradz-charcoal/60 font-serif leading-relaxed max-w-xl mb-12">
-            Upload everyday photos, videos, and recordings. AI companies need real-world data—and they'll pay you for it.
+            Upload your photos and videos. We sell them to AI companies and research labs training the next wave of intelligent systems — and you earn passive income every time they&apos;re used.
           </p>
 
           <div className="flex items-center gap-4 text-sm font-bold uppercase tracking-widest text-gradz-charcoal">
@@ -61,6 +63,13 @@ export default function Home() {
             <ArrowRight className="w-5 h-5 opacity-40 animate-pulse hidden sm:block" />
           </div>
         </motion.div>
+
+        {/* Interactive Info Cards Section */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-24 md:mb-40">
+          <DataGravityWell />
+          <LiveAuctionBoard />
+          <RevenueWaterfall />
+        </div>
 
         {/* Categories Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
