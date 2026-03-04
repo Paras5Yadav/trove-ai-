@@ -65,7 +65,7 @@ export default function Home() {
         </motion.div>
 
         {/* Interactive Info Cards Section — DataVault Style */}
-        <div className="bg-gradz-charcoal mb-24 md:mb-40 rounded-[2rem] border border-gradz-charcoal/10 shadow-2xl p-8 sm:p-12 md:p-16 relative overflow-hidden">
+        <div className="w-screen relative left-[50%] right-[50%] -ml-[50vw] -mr-[50vw] px-6 sm:px-12 md:px-24 py-16 md:py-24 bg-gradz-charcoal mb-24 md:mb-40">
           <div className="max-w-5xl mx-auto">
 
             {/* DataVault Style Heading */}
