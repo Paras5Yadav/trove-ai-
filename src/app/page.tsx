@@ -96,7 +96,7 @@ export default function Home() {
         <div className="max-w-5xl mx-auto mt-24 md:mt-40 mb-16 px-6 sm:px-0">
           <div className="mb-16">
             <div className="flex items-center gap-2 mb-6">
-              <span className="text-[#CC5833] font-mono text-sm tracking-wider font-semibold uppercase">
+              <span className="text-[#85d7ff] font-mono text-sm tracking-wider font-semibold uppercase">
                 &gt; THE CONTRIBUTOR ARCHIVE
               </span>
             </div>
