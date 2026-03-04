@@ -1,7 +1,8 @@
 "use client";
 
 import { motion, Variants } from "framer-motion";
-import { ArrowRight, Camera, Video, Mic, FileText } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import Image from "next/image";
 import { DataGravityWell } from "@/components/cards/DiagnosticShuffler";
 import { LiveAuctionBoard } from "@/components/cards/TelemetryTypewriter";
 import { RevenueWaterfall } from "@/components/cards/EarningsTracker";
@@ -95,14 +96,14 @@ export default function Home() {
         <div className="max-w-5xl mx-auto mt-24 md:mt-40 mb-16 px-6 sm:px-0">
           <div className="mb-16">
             <div className="flex items-center gap-2 mb-6">
-              <span className="text-[#85d7ff] font-mono text-sm tracking-wider font-semibold uppercase">
+              <span className="text-[#CC5833] font-mono text-sm tracking-wider font-semibold uppercase">
                 &gt; THE CONTRIBUTOR ARCHIVE
               </span>
             </div>
             <h2 className="text-5xl md:text-7xl lg:text-8xl font-serif text-gradz-charcoal tracking-tight leading-[0.9]">
               IN-DEMAND
               <br />
-              <span className="text-[#85d7ff] italic">
+              <span className="text-gradz-charcoal italic">
                 *Assets.*
               </span>
             </h2>
@@ -118,7 +119,7 @@ export default function Home() {
           <motion.div variants={itemVariants} className="group relative bg-white rounded-3xl p-6 shadow-xl shadow-gradz-charcoal/5 transform hover:-translate-y-2 transition-all duration-500">
             <div className="absolute top-0 left-0 w-full h-3 bg-gradz-butter/60 rounded-t-3xl" />
             <div className="aspect-[4/3] bg-gradz-cream border border-gradz-charcoal/5 rounded-2xl mb-8 flex items-center justify-center overflow-hidden relative group-hover:bg-gradz-butter/10 transition-colors duration-500">
-              <Camera className="w-16 h-16 text-gradz-charcoal/10 group-hover:text-gradz-charcoal/20 transition-colors" />
+              <Image src="/images/physical-world.png" alt="The Physical World" width={280} height={280} className="object-contain group-hover:scale-105 transition-transform duration-500" />
             </div>
             <h3 className="text-3xl font-serif text-gradz-charcoal leading-tight mb-3">The Physical World</h3>
             <p className="text-gradz-charcoal/60 mb-6">High-definition environmental capture. Dashcam footage of potholes, 4K street walks, and 3D room scans.</p>
@@ -132,7 +133,7 @@ export default function Home() {
           <motion.div variants={itemVariants} className="group relative bg-white rounded-3xl p-6 shadow-xl shadow-gradz-charcoal/5 md:mt-24 transform hover:-translate-y-2 transition-all duration-500 flex flex-col">
             <div className="absolute top-0 left-0 w-full h-3 bg-gradz-lilac/60 rounded-t-3xl" />
             <div className="aspect-[4/3] bg-gradz-cream border border-gradz-charcoal/5 rounded-2xl mb-8 flex items-center justify-center overflow-hidden relative group-hover:bg-gradz-lilac/10 transition-colors duration-500">
-              <FileText className="w-16 h-16 text-gradz-charcoal/10 group-hover:text-gradz-charcoal/20 transition-colors" />
+              <Image src="/images/human-context.png" alt="Human Context" width={280} height={280} className="object-contain group-hover:scale-105 transition-transform duration-500" />
             </div>
             <h3 className="text-3xl font-serif text-gradz-charcoal leading-tight mb-3">Human Context</h3>
             <p className="text-gradz-charcoal/60 mb-6">Authentic human interaction is the rarest asset on the internet. From search histories to breakup texts.</p>
@@ -146,7 +147,7 @@ export default function Home() {
           <motion.div variants={itemVariants} className="group relative bg-white rounded-3xl p-6 shadow-xl shadow-gradz-charcoal/5 transform hover:-translate-y-2 transition-all duration-500 flex flex-col">
             <div className="absolute top-0 left-0 w-full h-3 bg-gradz-blue/60 rounded-t-3xl" />
             <div className="aspect-[4/3] bg-gradz-cream border border-gradz-charcoal/5 rounded-2xl mb-8 flex items-center justify-center overflow-hidden relative group-hover:bg-gradz-blue/10 transition-colors duration-500">
-              <Mic className="w-16 h-16 text-gradz-charcoal/10 group-hover:text-gradz-charcoal/20 transition-colors" />
+              <Image src="/images/acoustic-signatures.png" alt="Acoustic Signatures" width={280} height={280} className="object-contain group-hover:scale-105 transition-transform duration-500" />
             </div>
             <h3 className="text-3xl font-serif text-gradz-charcoal leading-tight mb-3">Acoustic Signatures</h3>
             <p className="text-gradz-charcoal/60 mb-6">Uncompressed field recordings, crowded cafes, mechanical hums, and localized soundscapes.</p>
@@ -160,7 +161,7 @@ export default function Home() {
           <motion.div variants={itemVariants} className="group relative bg-white rounded-3xl p-6 shadow-xl shadow-gradz-charcoal/5 md:mt-24 transform hover:-translate-y-2 transition-all duration-500 flex flex-col">
             <div className="absolute top-0 left-0 w-full h-3 bg-gradz-peach/60 rounded-t-3xl" />
             <div className="aspect-[4/3] bg-gradz-cream border border-gradz-charcoal/5 rounded-2xl mb-8 flex items-center justify-center overflow-hidden relative group-hover:bg-gradz-peach/10 transition-colors duration-500">
-              <FileText className="w-16 h-16 text-gradz-charcoal/10 group-hover:text-gradz-charcoal/20 transition-colors" />
+              <Image src="/images/transactional-data.png" alt="Transactional Data" width={280} height={280} className="object-contain group-hover:scale-105 transition-transform duration-500" />
             </div>
             <h3 className="text-3xl font-serif text-gradz-charcoal leading-tight mb-3">Transactional Data</h3>
             <p className="text-gradz-charcoal/60 mb-6">Bills, menus, retail receipts, handwritten notes—structured commercial data from the real world.</p>

@@ -131,7 +131,7 @@ export function RevenueWaterfall() {
             <div className="-mx-6 border-t border-gradz-cream/10 mt-6 pt-4 px-6 flex items-center justify-between min-h-[48px]">
                 {showTotal && (
                     <>
-                        <div className="animate-fade-in font-serif font-extrabold text-gradz-cream text-[0.9rem] tracking-wider uppercase">
+                        <div className="animate-fade-in font-serif font-extrabold text-gradz-cream text-[0.75rem] tracking-wider uppercase whitespace-nowrap">
                             Estimated Monthly: $432.90
                         </div>
                         <svg
