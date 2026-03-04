@@ -35,20 +35,20 @@ export default function Home() {
       >
         {/* Intro Block */}
         <motion.div variants={itemVariants} className="mb-24 md:mb-40 max-w-2xl">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gradz-orange/20 bg-gradz-orange/10 text-gradz-orange font-medium text-sm mb-8">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#85d7ff]/20 bg-[#85d7ff]/10 text-[#85d7ff] font-medium text-sm mb-8">
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gradz-orange opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-gradz-orange"></span>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#85d7ff] opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#85d7ff]"></span>
             </span>
             Monetize Reality
           </div>
 
-          <h1 className="text-6xl md:text-8xl font-serif tracking-tight leading-[0.9] text-gradz-charcoal mb-8">
-            <span className="text-gradz-green block">Your Data</span>
+          <h1 className="text-6xl md:text-8xl font-serif tracking-tight leading-[0.9] text-[#85d7ff] mb-8">
+            <span className="text-gradz-charcoal block">Your Data</span>
             <span className="italic block pl-8 md:pl-16 relative">
               Is The
             </span>
-            <span className="text-gradz-green block">Algorithm.</span>
+            <span className="text-gradz-charcoal block">Algorithm.</span>
           </h1>
 
           <p className="text-xl md:text-2xl text-gradz-charcoal/60 font-serif leading-relaxed max-w-xl mb-12">
