@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 // ==========================================
-// Card 03 — "What Kled Pays You"
+// Card 03 — "What Trove Pays You"
 // Before/After Morph: $0 flips to real earnings
 // Exact copy from DataVault AI
 // ==========================================
@@ -67,7 +67,7 @@ export function RevenueWaterfall() {
         >
             <div>
                 <div className="font-mono text-clay text-[0.65rem] tracking-widest mb-5 uppercase">
-                    THE SOLUTION // KLED PAYS YOU
+                    THE SOLUTION // TROVE PAYS YOU
                 </div>
 
                 <div className="mb-6">

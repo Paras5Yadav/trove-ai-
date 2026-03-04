@@ -8,7 +8,7 @@ const ibmPlexMono = IBM_Plex_Mono({ subsets: ["latin"], weight: ['300', '400', '
 const playfair = Playfair_Display({ subsets: ["latin"], weight: ['400', '500', '600', '700', '800', '900'], style: ['normal', 'italic'], variable: "--font-playfair" });
 
 export const metadata: Metadata = {
-  title: "Kled | The Leading Data Marketplace",
+  title: "Trove | The Sovereign Exchange",
   description: "Upload your photos, videos, and everyday data to get paid.",
 };
 
@@ -28,7 +28,7 @@ export default function RootLayout({
       >
         <header className="fixed top-0 left-0 w-full z-50 px-6 py-4 flex items-center justify-between pointer-events-none">
           <div className="text-xl font-bold tracking-tighter opacity-80 pointer-events-auto">
-            <Link href="/">KLED</Link>
+            <Link href="/">TROVE</Link>
           </div>
           <nav className="flex items-center gap-6 text-sm font-medium tracking-wide uppercase opacity-60 pointer-events-auto">
             <Link href="/" className="hover:opacity-100 transition-opacity">Home</Link>
