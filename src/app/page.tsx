@@ -64,11 +64,15 @@ export default function Home() {
           </div>
         </motion.div>
 
-        {/* Interactive Info Cards Section */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-24 md:mb-40">
-          <DataGravityWell />
-          <LiveAuctionBoard />
-          <RevenueWaterfall />
+        {/* Interactive Info Cards Section — DataVault Style */}
+        <div className="-mx-6 sm:-mx-12 md:-mx-24 px-6 sm:px-12 md:px-24 py-16 md:py-24 bg-gradz-charcoal mb-24 md:mb-40">
+          <div className="max-w-5xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <DataGravityWell />
+              <LiveAuctionBoard />
+              <RevenueWaterfall />
+            </div>
+          </div>
         </div>
 
         {/* Categories Grid */}

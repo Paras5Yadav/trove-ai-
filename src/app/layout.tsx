@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
+import { IBM_Plex_Mono, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair" });
+const ibmPlexMono = IBM_Plex_Mono({ subsets: ["latin"], weight: ['300', '400', '500', '600'], variable: "--font-ibm-plex" });
+const playfair = Playfair_Display({ subsets: ["latin"], weight: ['400', '500', '600', '700', '800', '900'], style: ['normal', 'italic'], variable: "--font-playfair" });
 
 export const metadata: Metadata = {
   title: "Kled | The Leading Data Marketplace",
@@ -21,9 +21,9 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={cn(
-          inter.variable,
+          ibmPlexMono.variable,
           playfair.variable,
-          "antialiased min-h-screen font-sans selection:bg-gradz-green/30"
+          "antialiased min-h-screen font-mono"
         )}
       >
         <header className="fixed top-0 left-0 w-full z-50 px-6 py-4 flex items-center justify-between pointer-events-none">

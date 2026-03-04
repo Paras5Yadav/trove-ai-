@@ -1,175 +1,156 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
+import { cn } from "@/lib/utils";
 
-interface CoinDrop {
-    id: number;
-    x: number;
-    y: number;
-    targetY: number;
-    landed: boolean;
-    value: number;
-    label: string;
-    color: string;
-}
-
-const platforms = [
-    { label: "Photos", value: 0.12, color: "#F7E5A9" },
-    { label: "Videos", value: 3.40, color: "#FFB385" },
-    { label: "Audio", value: 0.80, color: "#C6E0AC" },
-    { label: "4K", value: 8.60, color: "#D9D2E9" },
-    { label: "Drone", value: 2.50, color: "#C9DEF4" },
-    { label: "Docs", value: 1.20, color: "#FFD4C2" },
+// ==========================================
+// Card 03 — "What Kled Pays You"
+// Before/After Morph: $0 flips to real earnings
+// Exact copy from DataVault AI
+// ==========================================
+const earningsRows = [
+    { label: "PHOTOS ×50", zero: "$0.00", real: "+$4.00" },
+    { label: "VIDEOS 1080p ×10", zero: "$0.00", real: "+$3.40" },
+    { label: "4K VIDEOS ×5", zero: "$0.00", real: "+$8.50" },
+    { label: "DRONE ×3", zero: "$0.00", real: "+$8.40" },
+    { label: "EGOCENTRIC ×8", zero: "$0.00", real: "+$9.60" },
+    { label: "AUDIO ×20", zero: "$0.00", real: "+$2.00" },
 ];
 
-let coinId = 0;
-
 export function RevenueWaterfall() {
-    const [coins, setCoins] = useState<CoinDrop[]>([]);
-    const [totalEarnings, setTotalEarnings] = useState(0);
-    const [barHeights, setBarHeights] = useState(platforms.map(() => 0));
-    const [lastDrop, setLastDrop] = useState("");
+    const [flippedCount, setFlippedCount] = useState(0);
+    const [showTotal, setShowTotal] = useState(false);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [isVisible, setIsVisible] = useState(false);
 
-    // Drop coins periodically
     useEffect(() => {
-        const interval = setInterval(() => {
-            const platIdx = Math.floor(Math.random() * platforms.length);
-            const platform = platforms[platIdx];
-
-            const newCoin: CoinDrop = {
-                id: coinId++,
-                x: 24 + platIdx * 40,
-                y: 0,
-                targetY: 140 - barHeights[platIdx] * 3,
-                landed: false,
-                value: platform.value,
-                label: platform.label,
-                color: platform.color,
-            };
-
-            setCoins((prev) => [...prev.slice(-12), newCoin]);
-            setLastDrop(
-                `+$${platform.value.toFixed(2)} from ${platform.label}`
-            );
-
-            // Grow bar
-            setBarHeights((prev) => {
-                const next = [...prev];
-                next[platIdx] = Math.min(next[platIdx] + 1, 35);
-                return next;
-            });
-
-            // Accumulate earnings
-            setTotalEarnings((prev) => prev + platform.value);
-        }, 1200);
-
-        return () => clearInterval(interval);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [barHeights]);
-
-    // Animate coins falling
-    useEffect(() => {
-        const timeout = setTimeout(() => {
-            setCoins((prev) =>
-                prev.map((coin) =>
-                    coin.landed ? coin : { ...coin, y: coin.targetY, landed: true }
-                )
-            );
-        }, 100);
-        return () => clearTimeout(timeout);
-    }, [coins.length]);
-
-    // Reset bars periodically
-    useEffect(() => {
-        const resetInterval = setInterval(() => {
-            setBarHeights(platforms.map(() => 0));
-        }, 20000);
-        return () => clearInterval(resetInterval);
+        const observer = new IntersectionObserver(
+            ([entry]) => setIsVisible(entry.isIntersecting),
+            { threshold: 0.1 }
+        );
+        if (containerRef.current) observer.observe(containerRef.current);
+        return () => observer.disconnect();
     }, []);
 
+    useEffect(() => {
+        if (!isVisible) return;
+        let currentFlip = 0;
+
+        const flipNext = () => {
+            if (currentFlip < earningsRows.length) {
+                setFlippedCount(currentFlip + 1);
+                currentFlip++;
+                setTimeout(flipNext, 500);
+            } else {
+                setShowTotal(true);
+                setTimeout(() => {
+                    setFlippedCount(0);
+                    setShowTotal(false);
+                    currentFlip = 0;
+                    setTimeout(flipNext, 800);
+                }, 3000);
+            }
+        };
+
+        const timeout = setTimeout(flipNext, 600);
+        return () => clearTimeout(timeout);
+    }, [isVisible]);
+
     return (
-        <div className="bg-gradient-to-br from-[#2a2517] to-gradz-charcoal text-gradz-cream rounded-[2rem] p-6 border border-deep-gold/20 h-full flex flex-col overflow-hidden">
-            <div className="text-xs font-mono uppercase tracking-widest text-deep-gold mb-3">
-                The Solution // Kled Pays You
-            </div>
-            <h3 className="text-lg font-bold mb-1">Revenue Waterfall</h3>
-            <p className="text-xs text-gradz-cream/40 mb-4">
-                Every upload earns. Watch it accumulate.
-            </p>
+        <div
+            ref={containerRef}
+            className="w-full h-full min-h-[420px] bg-gradz-cream/5 border border-gradz-cream/10 p-6 flex flex-col justify-between"
+            style={{
+                clipPath:
+                    "polygon(0 0, 100% 0, 100% calc(100% - 24px), calc(100% - 24px) 100%, 0 100%)",
+            }}
+        >
+            <div>
+                <div className="font-mono text-clay text-[0.65rem] tracking-widest mb-5 uppercase">
+                    THE SOLUTION // KLED PAYS YOU
+                </div>
 
-            {/* Waterfall Visualization */}
-            <div className="flex-1 relative min-h-[180px] bg-white/[0.02] rounded-xl border border-white/5 p-3 overflow-hidden">
-                {/* Falling coins */}
-                {coins.map((coin) => (
-                    <div
-                        key={coin.id}
-                        className="absolute transition-all duration-700 ease-out"
-                        style={{
-                            left: `${coin.x}px`,
-                            top: `${coin.landed ? coin.targetY : coin.y}px`,
-                            transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)",
-                        }}
-                    >
-                        <div
-                            className="w-4 h-4 rounded-full flex items-center justify-center text-[6px] font-bold shadow-lg"
-                            style={{
-                                backgroundColor: coin.color,
-                                color: "#1A1A1A",
-                                boxShadow: `0 0 8px ${coin.color}66`,
-                            }}
-                        >
-                            $
-                        </div>
+                <div className="mb-6">
+                    <div className="font-mono text-[0.6rem] text-gradz-cream/40 mb-1 uppercase">
+                        Same Data, Different Outcome
                     </div>
-                ))}
+                    <div className="font-serif font-extrabold text-[1.4rem] md:text-[1.6rem] text-gradz-cream leading-none tracking-tight">
+                        You Deserve Every Cent
+                    </div>
+                </div>
 
-                {/* Bar chart at bottom */}
-                <div className="absolute bottom-2 left-2 right-2 flex items-end gap-3 h-[100px]">
-                    {platforms.map((platform, idx) => (
-                        <div key={platform.label} className="flex-1 flex flex-col items-center gap-1">
+                <div className="flex flex-col gap-3">
+                    {earningsRows.map((row, i) => {
+                        const isFlipped = i < flippedCount;
+                        return (
                             <div
-                                className="w-full rounded-t-md transition-all duration-500 relative overflow-hidden"
-                                style={{
-                                    height: `${barHeights[idx] * 3}px`,
-                                    backgroundColor: `${platform.color}33`,
-                                    minHeight: "2px",
-                                }}
+                                key={i}
+                                className="grid grid-cols-[1.5fr_1fr_auto] gap-2 items-center font-mono text-[0.65rem] md:text-[0.7rem] text-gradz-cream"
                             >
-                                <div
-                                    className="absolute inset-0 opacity-60"
-                                    style={{
-                                        background: `linear-gradient(to top, ${platform.color}66, ${platform.color}11)`,
-                                    }}
-                                />
-                                {/* Shimmer */}
-                                <div
-                                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent shimmer"
-                                />
+                                <span className="truncate text-gradz-cream/70">
+                                    {row.label}
+                                </span>
+                                {/* Progress bar */}
+                                <div className="w-full h-[5px] bg-gradz-cream/10 relative overflow-hidden flex">
+                                    <div
+                                        className={cn(
+                                            "absolute top-0 left-0 h-full w-full origin-left transition-transform duration-500 ease-out",
+                                            isFlipped ? "bg-[#2E4036]" : "bg-red-400/30"
+                                        )}
+                                        style={{
+                                            transform: isFlipped ? "scaleX(1)" : "scaleX(0.15)",
+                                        }}
+                                    />
+                                    {/* Segmented overlay lines */}
+                                    <div className="absolute inset-0 flex justify-between">
+                                        {Array.from({ length: 8 }).map((_, j) => (
+                                            <div
+                                                key={j}
+                                                className="h-full w-[1px] bg-gradz-charcoal mix-blend-overlay"
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                                {/* Price */}
+                                <span
+                                    className={cn(
+                                        "text-right font-bold tabular-nums min-w-[55px] transition-all duration-500",
+                                        isFlipped
+                                            ? "text-clay drop-shadow-[0_0_6px_rgba(204,88,51,0.5)]"
+                                            : "text-red-400/50"
+                                    )}
+                                >
+                                    {isFlipped ? row.real : row.zero}
+                                </span>
                             </div>
-                            <span className="text-[8px] font-mono text-gradz-cream/40 truncate w-full text-center">
-                                {platform.label}
-                            </span>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </div>
 
-            {/* Last drop notification */}
-            <div className="mt-3 flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-gradz-green animate-pulse" />
-                <span className="text-xs font-mono text-gradz-green/80 truncate">
-                    {lastDrop || "Waiting for uploads..."}
-                </span>
-            </div>
-
-            {/* Total */}
-            <div className="flex justify-between items-center mt-2 pt-3 border-t border-deep-gold/20">
-                <span className="text-xs font-mono uppercase tracking-wider text-gradz-cream/50">
-                    Total Earned:
-                </span>
-                <span className="font-mono font-bold text-deep-gold text-xl">
-                    ${totalEarnings.toFixed(2)}
-                </span>
+            <div className="-mx-6 border-t border-gradz-cream/10 mt-6 pt-4 px-6 flex items-center justify-between min-h-[48px]">
+                {showTotal && (
+                    <>
+                        <div className="animate-fade-in font-serif font-extrabold text-gradz-cream text-[0.9rem] tracking-wider uppercase">
+                            Estimated Monthly: $432.90
+                        </div>
+                        <svg
+                            className="w-5 h-5 text-clay animate-draw-check"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={3}
+                                d="M5 13l4 4L19 7"
+                                strokeDasharray="50"
+                                strokeDashoffset="50"
+                            />
+                        </svg>
+                    </>
+                )}
             </div>
         </div>
     );
