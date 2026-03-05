@@ -276,8 +276,8 @@ export function FileUploadArea() {
                                     <div className="w-full h-1.5 bg-gradz-charcoal/10 rounded-full overflow-hidden">
                                         <div
                                             className={`h-full rounded-full transition-all duration-300 ${u.status === "error" ? "bg-red-400" :
-                                                    u.status === "done" ? "bg-gradz-green" :
-                                                        "bg-gradz-green/70"
+                                                u.status === "done" ? "bg-gradz-green" :
+                                                    "bg-gradz-green/70"
                                                 }`}
                                             style={{ width: `${u.progress}%` }}
                                         />
