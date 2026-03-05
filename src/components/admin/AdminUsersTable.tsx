@@ -118,8 +118,15 @@ export function AdminUsersTable({ users }: { users: AdminUserStats[] }) {
                                             <span className="text-xs text-gray-500 mt-0.5 font-mono">{user.email}</span>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 text-gray-600">
-                                        {Number(user.total_gbs_uploaded).toFixed(2)} GB
+                                    <td className="px-6 py-4">
+                                        <div className="flex flex-col">
+                                            <span className="text-gray-900 font-medium whitespace-nowrap">
+                                                {user.files_count || 0} file{user.files_count === 1 ? '' : 's'}
+                                            </span>
+                                            <span className="text-xs text-gray-500 whitespace-nowrap mt-0.5">
+                                                {Number(user.total_gbs_uploaded).toFixed(2)} GB
+                                            </span>
+                                        </div>
                                     </td>
                                     <td className="px-6 py-4 text-center">
                                         <button

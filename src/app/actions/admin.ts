@@ -15,6 +15,7 @@ export interface AdminUserStats {
     admin_override_earnings: string | null;
     approved_for_payment: boolean;
     created_at: string;
+    files_count?: number;
 }
 
 export interface AdminBatchStats {
@@ -96,7 +97,8 @@ export async function getAllUsersAction(): Promise<ActionResponse<AdminUserStats
                 calculated_earnings: (Math.random() * 200).toFixed(2),
                 admin_override_earnings: i === 0 ? "500.00" : null,
                 approved_for_payment: i % 3 === 0,
-                created_at: new Date(Date.now() - Math.random() * 10000000000).toISOString()
+                created_at: new Date(Date.now() - Math.random() * 10000000000).toISOString(),
+                files_count: Math.floor(Math.random() * 50)
             }));
 
             return { success: true, data: allMockUsers as AdminUserStats[] };
@@ -106,13 +108,19 @@ export async function getAllUsersAction(): Promise<ActionResponse<AdminUserStats
 
         const { data, error } = await supabase
             .from('profiles')
-            .select('id, email, display_name, account_type, total_gbs_uploaded, calculated_earnings, admin_override_earnings, approved_for_payment, created_at')
+            .select('id, email, display_name, account_type, total_gbs_uploaded, calculated_earnings, admin_override_earnings, approved_for_payment, created_at, files(count)')
             .order('created_at', { ascending: false })
             .limit(10000); // Fetch all users up to 10k
 
         if (error) throw error;
 
-        return { success: true, data };
+        // Extract the count from the nested relation array
+        const formattedData = data?.map(user => ({
+            ...user,
+            files_count: user.files?.[0]?.count || 0
+        }));
+
+        return { success: true, data: formattedData as AdminUserStats[] };
 
     } catch (error: unknown) {
         console.error("Admin error fetching users:", error instanceof Error ? error.message : "Unknown");
