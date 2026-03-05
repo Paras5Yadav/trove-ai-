@@ -3,8 +3,31 @@
 import { motion } from "framer-motion";
 import { UploadCloud, Database, Wallet, Activity, CheckCircle2 } from "lucide-react";
 import { FileUploadArea } from "@/components/dashboard/FileUploadArea";
+import { getUserDashboardStatsAction } from "@/app/actions/vault";
+import { useEffect, useState } from "react";
 
 export default function Dashboard() {
+    const [earnings, setEarnings] = useState("0.00");
+    const [totalGbs, setTotalGbs] = useState("0.00");
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        async function fetchStats() {
+            try {
+                const result = await getUserDashboardStatsAction();
+                if (result.success && result.data) {
+                    setEarnings(result.data.pending_earnings);
+                    setTotalGbs(result.data.total_gbs);
+                }
+            } catch (err) {
+                console.error("Failed to fetch dashboard stats:", err);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+        fetchStats();
+    }, []);
+
     return (
         <main className="min-h-screen bg-gradz-cream pt-32 pb-24 px-6 sm:px-12 md:px-24">
             <div className="max-w-6xl mx-auto space-y-12">
@@ -73,7 +96,7 @@ export default function Dashboard() {
                         </h3>
 
                         <div className="space-y-4">
-                            {/* Stat 1 */}
+                            {/* Stat 1 — Total Earnings */}
                             <div className="bg-white rounded-3xl p-6 shadow-sm border border-gradz-charcoal/5">
                                 <div className="flex items-center gap-3 mb-4">
                                     <div className="p-3 bg-gradz-butter/30 rounded-xl">
@@ -81,13 +104,14 @@ export default function Dashboard() {
                                     </div>
                                     <div className="text-sm font-medium text-gradz-charcoal/60">Total Earnings</div>
                                 </div>
-                                <div className="text-4xl font-mono font-bold text-gradz-charcoal">$342.50</div>
-                                <div className="mt-4 text-xs font-medium text-gradz-green-dark bg-gradz-green/20 inline-flex px-2 py-1 rounded">
-                                    +$45.20 this week
-                                </div>
+                                {isLoading ? (
+                                    <div className="h-10 w-32 bg-gradz-cream animate-pulse rounded-lg" />
+                                ) : (
+                                    <div className="text-4xl font-mono font-bold text-gradz-charcoal">${earnings}</div>
+                                )}
                             </div>
 
-                            {/* Stat 2 */}
+                            {/* Stat 2 — Data Contributed */}
                             <div className="bg-white rounded-3xl p-6 shadow-sm border border-gradz-charcoal/5">
                                 <div className="flex items-center gap-3 mb-4">
                                     <div className="p-3 bg-gradz-blue/30 rounded-xl">
@@ -95,11 +119,25 @@ export default function Dashboard() {
                                     </div>
                                     <div className="text-sm font-medium text-gradz-charcoal/60">Data Contributed</div>
                                 </div>
-                                <div className="text-4xl font-mono font-bold text-gradz-charcoal">1.2 <span className="text-xl">GB</span></div>
-                                <div className="mt-4 flex items-center gap-1 text-xs font-medium text-gradz-charcoal/60">
-                                    <CheckCircle2 className="w-4 h-4 text-gradz-green" />
-                                    48 approved uploads
-                                </div>
+                                {isLoading ? (
+                                    <div className="h-10 w-32 bg-gradz-cream animate-pulse rounded-lg" />
+                                ) : (
+                                    <>
+                                        <div className="text-4xl font-mono font-bold text-gradz-charcoal">{totalGbs} <span className="text-xl">GB</span></div>
+                                        <div className="mt-4 w-full">
+                                            <div className="flex justify-between text-[10px] font-mono text-gradz-charcoal/50 uppercase tracking-widest mb-1">
+                                                <span>Your Limit</span>
+                                                <span>{totalGbs} / 15 GB</span>
+                                            </div>
+                                            <div className="w-full h-1.5 bg-gradz-cream rounded-full overflow-hidden">
+                                                <div
+                                                    className="h-full bg-gradz-green rounded-full transition-all duration-500"
+                                                    style={{ width: `${Math.min((parseFloat(totalGbs) / 15) * 100, 100)}%` }}
+                                                />
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         </div>
                     </div>

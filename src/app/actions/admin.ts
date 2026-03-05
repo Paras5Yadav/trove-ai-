@@ -30,25 +30,50 @@ export interface AdminBatchStats {
 
 /**
  * Validates if the current user is allowed to access admin features.
+ * Add your email to ADMIN_EMAILS to get instant access.
  */
+const ADMIN_EMAILS: string[] = [
+    // Add your email here to get admin access, e.g:
+    "parasyadav3031@gmail.com",
+];
+
 export async function checkAdminAccess() {
-    // Only allow god-mode bypass in non-production environments
-    if (process.env.NODE_ENV !== 'production' && process.env.NEXT_PUBLIC_ENABLE_BACKEND !== 'true') {
+    // Always allow admin access in local development
+    if (process.env.NODE_ENV === 'development') {
+        console.log("✅ Admin access granted (development mode)");
         return true;
     }
 
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    if (!user) return false;
+    if (!user) {
+        console.log("🔒 Admin check: No user logged in");
+        return false;
+    }
 
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
+    console.log("🔍 Admin check — Logged in as:", user.email);
+    console.log("🔍 Admin emails list:", ADMIN_EMAILS);
 
-    return profile?.role === 'admin';
+    // Check 1: Email-based admin list (easiest setup)
+    if (user.email && ADMIN_EMAILS.includes(user.email)) {
+        console.log("✅ Admin access granted via email match");
+        return true;
+    }
+
+    // Check 2: Role-based from Supabase profiles table
+    try {
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single();
+
+        return profile?.role === 'admin';
+    } catch {
+        // If profiles table doesn't exist yet, fall back to email check only
+        return false;
+    }
 }
 
 /**

@@ -47,7 +47,7 @@ export const godModeConfig = {
     // ---------------------------------------------------------
 
     // The maximum upload limit per user for the current batch
-    userUploadCapacityLimit: "25GB",
+    userUploadCapacityLimit: "15GB",
 
     // Earnings rate (in dollars) per MB (e.g. $0.001 per MB)
     payRatePerMB: 0.005,

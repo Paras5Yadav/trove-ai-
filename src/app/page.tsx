@@ -3,10 +3,10 @@
 import { motion, Variants } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
 import { DataGravityWell } from "@/components/cards/DiagnosticShuffler";
 import { LiveAuctionBoard } from "@/components/cards/TelemetryTypewriter";
 import { RevenueWaterfall } from "@/components/cards/EarningsTracker";
+import { SmartUploadButton } from "@/components/SmartUploadButton";
 
 export default function Home() {
   const containerVariants: Variants = {
@@ -58,11 +58,7 @@ export default function Home() {
           </p>
 
           <div className="flex items-center gap-4 text-sm font-bold uppercase tracking-widest text-gradz-charcoal">
-            <Link href="/signup">
-              <button className="bg-gradz-charcoal text-gradz-cream px-8 py-4 rounded-full hover:bg-black hover:scale-105 transition-all duration-300">
-                Start Uploading
-              </button>
-            </Link>
+            <SmartUploadButton />
             <span className="opacity-40 ml-4 hidden sm:inline-block">Scroll to explore</span>
             <ArrowRight className="w-5 h-5 opacity-40 animate-pulse hidden sm:block" />
           </div>

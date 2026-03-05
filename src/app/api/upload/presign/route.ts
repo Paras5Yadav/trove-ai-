@@ -53,13 +53,6 @@ export async function POST(request: NextRequest) {
             }
         }
 
-        const ALLOWED_TYPES = [
-            'video/mp4', 'video/quicktime', 'video/webm',
-            'image/jpeg', 'image/png', 'image/webp',
-            'application/zip', 'text/csv', 'application/pdf', 'application/json'
-        ];
-        const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024 * 1024; // 10GB
-
         if (!fileName || !contentType || fileSize === undefined || fileSize === null) {
             return NextResponse.json(
                 { error: "Missing required fields: fileName, contentType, fileSize" },
@@ -67,15 +60,11 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        if (!ALLOWED_TYPES.includes(contentType)) {
-            return NextResponse.json({ error: "File type not allowed" }, { status: 400 });
-        }
-
         if (fileSize <= 0) {
             return NextResponse.json({ error: "Invalid file size" }, { status: 400 });
         }
 
-        if (fileSize > MAX_FILE_SIZE_BYTES) {
+        if (fileSize > 10 * 1024 * 1024 * 1024) {
             return NextResponse.json({ error: "File exceeds 10GB maximum size" }, { status: 400 });
         }
 
