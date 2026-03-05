@@ -41,23 +41,12 @@ export async function updateSession(request: NextRequest) {
     if (!user && isProtectedRoute) {
         const url = request.nextUrl.clone()
         url.pathname = '/login'
+        url.searchParams.set('message', 'signin_required')
         return NextResponse.redirect(url)
     }
 
-    // Admin routes require admin role
-    if (user && isAdminRoute) {
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', user.id)
-            .single()
-
-        if (profile?.role !== 'admin') {
-            const url = request.nextUrl.clone()
-            url.pathname = '/dashboard'
-            return NextResponse.redirect(url)
-        }
-    }
+    // Admin access is checked on the page level by checkAdminAccess()
+    // which supports both email-based and role-based access
 
     // If user is already logged in, redirect them away from auth screens
     const isAuthRoute = request.nextUrl.pathname.startsWith('/login') || request.nextUrl.pathname.startsWith('/signup')

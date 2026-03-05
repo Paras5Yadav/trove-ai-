@@ -1,6 +1,10 @@
 import { AuthForm } from "@/components/auth/AuthForm";
+import { ShieldAlert } from "lucide-react";
 
-export default function LoginPage() {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ message?: string }> }) {
+    const params = await searchParams;
+    const showSigninMessage = params?.message === 'signin_required';
+
     return (
         <div className="min-h-screen bg-sand flex flex-col items-center justify-center relative overflow-hidden py-12 px-4 sm:px-6 lg:px-8">
             {/* Background Decorations */}
@@ -9,9 +13,20 @@ export default function LoginPage() {
 
             <div className="mb-10 text-center relative z-10">
                 <h1 className="text-4xl font-extrabold text-charcoal tracking-tighter">
-                    Data<span className="text-moss">Vault</span>
+                    Trove<span className="text-moss"> AI</span>
                 </h1>
             </div>
+
+            {showSigninMessage && (
+                <div className="w-full max-w-md mb-6 relative z-10">
+                    <div className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-xl px-5 py-4 shadow-sm">
+                        <ShieldAlert className="w-5 h-5 text-amber-600 shrink-0" />
+                        <p className="text-sm text-amber-800 font-medium">
+                            You need to sign in to access the dashboard.
+                        </p>
+                    </div>
+                </div>
+            )}
 
             <div className="w-full relative z-10">
                 <AuthForm mode="login" />

@@ -60,24 +60,20 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
                     </p>
                 </div>
 
-                <div className="flex p-1 bg-charcoal/5 rounded-xl mb-6 border border-charcoal/10 relative z-10 w-full max-w-[280px] min-w-0 mx-auto">
+                <div className="flex p-1 rounded-xl mb-6 border relative z-10 w-full max-w-[280px] min-w-0 mx-auto" style={{ backgroundColor: '#f0f0f0', borderColor: '#ddd' }}>
                     <button
                         type="button"
                         onClick={() => setAccountType("standard")}
-                        className={cn(
-                            "flex-1 py-2 px-4 rounded-lg text-sm font-semibold transition-all duration-300",
-                            accountType === "standard" ? "bg-white shadow-sm text-charcoal" : "text-charcoal/50 hover:text-charcoal/80"
-                        )}
+                        className="flex-1 py-2 px-4 rounded-lg text-sm font-semibold transition-all duration-300"
+                        style={accountType === "standard" ? { backgroundColor: '#fff', color: '#1C1C1A', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' } : { color: '#999' }}
                     >
                         Standard
                     </button>
                     <button
                         type="button"
                         onClick={() => setAccountType("ghost")}
-                        className={cn(
-                            "flex-1 py-2 px-4 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center justify-center gap-2",
-                            accountType === "ghost" ? "bg-charcoal text-white shadow-sm" : "text-charcoal/50 hover:text-charcoal/80"
-                        )}
+                        className="flex-1 py-2 px-4 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center justify-center gap-2"
+                        style={accountType === "ghost" ? { backgroundColor: '#1C1C1A', color: '#ffffff', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' } : { color: '#999' }}
                     >
                         Ghost
                     </button>
@@ -192,9 +188,9 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full bg-moss text-white font-semibold py-3.5 rounded-xl shadow-[0_8px_16px_rgba(46,64,54,0.2)] hover:shadow-[0_8px_24px_rgba(46,64,54,0.3)] hover:-translate-y-0.5 active:translate-y-0 active:shadow-[0_4px_10px_rgba(46,64,54,0.2)] transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:pointer-events-none relative overflow-hidden group"
+                            className="w-full font-semibold py-3.5 rounded-xl hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:pointer-events-none"
+                            style={{ backgroundColor: '#2E4036', color: '#ffffff', boxShadow: '0 8px 16px rgba(46,64,54,0.2)' }}
                         >
-                            <div className="absolute inset-0 w-full h-full bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
                             {isLoading ? (
                                 <Loader2 className="h-5 w-5 animate-spin" />
                             ) : (

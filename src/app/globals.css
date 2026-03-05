@@ -1,6 +1,13 @@
 @import "tailwindcss";
 
 @theme {
+  /* Core brand colors used throughout the app */
+  --color-moss: #2E4036;
+  --color-charcoal: #1C1C1A;
+  --color-sand: #F5F0E8;
+  --color-cream: #FDFBF7;
+
+  /* Gradz palette */
   --color-gradz-cream: #FDFBF7;
   --color-gradz-charcoal: #1C1C1A;
   --color-gradz-green: #C6E0AC;
