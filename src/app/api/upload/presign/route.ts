@@ -5,8 +5,9 @@ import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 
 const isBackendEnabled = process.env.NEXT_PUBLIC_ENABLE_BACKEND === 'true';
+const hasUpstashConfig = process.env.UPSTASH_REDIS_REST_URL && !process.env.UPSTASH_REDIS_REST_URL.includes("dummy");
 
-const ratelimit = isBackendEnabled ? new Ratelimit({
+const ratelimit = (isBackendEnabled && hasUpstashConfig) ? new Ratelimit({
     redis: Redis.fromEnv(),
     limiter: Ratelimit.slidingWindow(10, "1 m"),
 }) : null;
@@ -113,7 +114,8 @@ export async function POST(request: NextRequest) {
             isValidationMock: false
         });
 
-    } catch {
+    } catch (error: unknown) {
+        console.error("Presign API Error:", error instanceof Error ? error.message : "Unknown");
         return NextResponse.json(
             { error: "Internal server error" },
             { status: 500 }

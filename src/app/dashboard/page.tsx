@@ -2,11 +2,9 @@
 
 import { motion } from "framer-motion";
 import { UploadCloud, Database, Wallet, Activity, CheckCircle2 } from "lucide-react";
-import { useState } from "react";
+import { FileUploadArea } from "@/components/dashboard/FileUploadArea";
 
 export default function Dashboard() {
-    const [isDragging, setIsDragging] = useState(false);
-
     return (
         <main className="min-h-screen bg-gradz-cream pt-32 pb-24 px-6 sm:px-12 md:px-24">
             <div className="max-w-6xl mx-auto space-y-12">
@@ -64,25 +62,7 @@ export default function Dashboard() {
                             Upload Data
                         </h3>
 
-                        <motion.div
-                            className={`border-2 border-dashed rounded-3xl p-12 flex flex-col items-center justify-center text-center transition-colors duration-300 ${isDragging ? "border-gradz-green bg-gradz-green/5" : "border-gradz-charcoal/20 bg-white"} min-h-[400px]`}
-                            onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-                            onDragLeave={() => setIsDragging(false)}
-                            onDrop={(e) => { e.preventDefault(); setIsDragging(false); }}
-                            whileHover={{ scale: 0.99 }}
-                        >
-                            <div className="w-20 h-20 bg-gradz-cream rounded-full flex items-center justify-center mb-6 shadow-sm">
-                                <UploadCloud className="w-10 h-10 text-gradz-charcoal/40" />
-                            </div>
-                            <h4 className="text-2xl font-bold text-gradz-charcoal mb-2">Drag & drop files here</h4>
-                            <p className="text-gradz-charcoal/60 max-w-sm mb-8">
-                                Supported formats: PNG, JPG, MP4, WAV, PDF.
-                                <br />Max file size: 50MB.
-                            </p>
-                            <button className="bg-gradz-charcoal text-gradz-cream px-8 py-4 rounded-full font-medium hover:bg-black transition-colors hover:scale-105 transform duration-200">
-                                Browse Files
-                            </button>
-                        </motion.div>
+                        <FileUploadArea />
                     </div>
 
                     {/* User Analytics Sidebar */}

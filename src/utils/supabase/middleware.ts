@@ -35,7 +35,7 @@ export async function updateSession(request: NextRequest) {
     } = await supabase.auth.getUser()
 
     const isAdminRoute = request.nextUrl.pathname.startsWith('/admin')
-    const isVaultRoute = request.nextUrl.pathname.startsWith('/vault')
+    const isVaultRoute = request.nextUrl.pathname.startsWith('/dashboard')
     const isProtectedRoute = isAdminRoute || isVaultRoute
 
     if (!user && isProtectedRoute) {
@@ -54,7 +54,7 @@ export async function updateSession(request: NextRequest) {
 
         if (profile?.role !== 'admin') {
             const url = request.nextUrl.clone()
-            url.pathname = '/vault'
+            url.pathname = '/dashboard'
             return NextResponse.redirect(url)
         }
     }
@@ -64,7 +64,7 @@ export async function updateSession(request: NextRequest) {
 
     if (user && isAuthRoute) {
         const url = request.nextUrl.clone()
-        url.pathname = '/vault'
+        url.pathname = '/dashboard'
         return NextResponse.redirect(url)
     }
 

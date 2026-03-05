@@ -64,7 +64,7 @@ export async function getAllUsersAction(): Promise<ActionResponse<AdminUserStats
             // Return simulated god-mode users (all 75)
             const allMockUsers = Array.from({ length: 75 }).map((_, i) => ({
                 id: `mock-user-${i}`,
-                email: i % 4 === 0 ? `ghost${i}@datavault-ghost.local` : `contributor_${i + 1}@example.com`,
+                email: i % 4 === 0 ? `ghost${i}@trove-ghost.com` : `contributor_${i + 1}@example.com`,
                 display_name: i % 4 === 0 ? `GhostUser${i}` : `John Doe ${i + 1}`,
                 account_type: i % 4 === 0 ? "ghost" : "standard",
                 total_gbs_uploaded: (Math.random() * 50).toFixed(2),

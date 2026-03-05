@@ -3,6 +3,7 @@
 import { motion, Variants } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { DataGravityWell } from "@/components/cards/DiagnosticShuffler";
 import { LiveAuctionBoard } from "@/components/cards/TelemetryTypewriter";
 import { RevenueWaterfall } from "@/components/cards/EarningsTracker";
@@ -57,19 +58,21 @@ export default function Home() {
           </p>
 
           <div className="flex items-center gap-4 text-sm font-bold uppercase tracking-widest text-gradz-charcoal">
-            <button className="bg-gradz-charcoal text-gradz-cream px-8 py-4 rounded-full hover:bg-black hover:scale-105 transition-all duration-300">
-              Start Uploading
-            </button>
+            <Link href="/signup">
+              <button className="bg-gradz-charcoal text-gradz-cream px-8 py-4 rounded-full hover:bg-black hover:scale-105 transition-all duration-300">
+                Start Uploading
+              </button>
+            </Link>
             <span className="opacity-40 ml-4 hidden sm:inline-block">Scroll to explore</span>
             <ArrowRight className="w-5 h-5 opacity-40 animate-pulse hidden sm:block" />
           </div>
         </motion.div>
 
-        {/* Interactive Info Cards Section — DataVault Style */}
+        {/* Interactive Info Cards Section — Trove AI Style */}
         <div className="w-screen relative left-[50%] right-[50%] -ml-[50vw] -mr-[50vw] px-6 sm:px-12 md:px-24 py-16 md:py-24 bg-gradz-charcoal mb-24 md:mb-40">
           <div className="max-w-5xl mx-auto">
 
-            {/* DataVault Style Heading */}
+            {/* Trove AI Style Heading */}
             <div className="mb-16">
               <div className="flex items-center gap-2 mb-6">
                 <span className="text-[#CC5833] font-mono text-sm tracking-wider font-semibold uppercase">

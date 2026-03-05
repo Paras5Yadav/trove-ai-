@@ -5,12 +5,12 @@ import { NextRequest } from 'next/server';
 export async function GET(request: NextRequest) {
     const { searchParams, origin } = new URL(request.url);
     const code = searchParams.get('code');
-    const rawNext = searchParams.get('next') ?? '/vault';
+    const rawNext = searchParams.get('next') ?? '/dashboard';
 
     // Prevent open redirect: must start with / and not be protocol-relative (//)
     const safePath = rawNext.startsWith('/') && !rawNext.startsWith('//')
         ? rawNext
-        : '/vault';
+        : '/dashboard';
 
     if (code) {
         const supabase = await createClient();

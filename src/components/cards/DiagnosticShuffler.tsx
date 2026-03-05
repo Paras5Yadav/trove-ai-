@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 // ==========================================
 // Card 01 — "What They Take"
 // Drain Counter: data given away ticking up, $0 frozen
-// Exact copy from DataVault AI
+// Exact copy from Trove AI
 // ==========================================
 const platforms = [
     { name: "Instagram", icon: "◎", what: "Your Photos & Stories" },

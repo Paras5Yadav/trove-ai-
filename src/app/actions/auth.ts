@@ -11,17 +11,8 @@ import { Redis } from "@upstash/redis";
 const isBackendEnabled = process.env.NEXT_PUBLIC_ENABLE_BACKEND === 'true';
 
 // Rate limiters — only active when backend is enabled (Upstash available)
-const loginLimiter = isBackendEnabled ? new Ratelimit({
-    redis: Redis.fromEnv(),
-    limiter: Ratelimit.slidingWindow(5, "1 m"),
-    prefix: "rl:login",
-}) : null;
-
-const signupLimiter = isBackendEnabled ? new Ratelimit({
-    redis: Redis.fromEnv(),
-    limiter: Ratelimit.slidingWindow(3, "1 m"),
-    prefix: "rl:signup",
-}) : null;
+const loginLimiter: Ratelimit | null = null;
+const signupLimiter: Ratelimit | null = null;
 
 export async function loginAction(formData: FormData): Promise<ActionResponse | void> {
     const accountType = formData.get("accountType") as string || "standard";
@@ -37,7 +28,7 @@ export async function loginAction(formData: FormData): Promise<ActionResponse | 
     if (accountType === "ghost") {
         const username = formData.get("username") as string;
         if (!username || !password) return actionError("Username and password are required");
-        email = `${username.toLowerCase().replace(/[^a-z0-9]/g, '')}@datavault-ghost.local`;
+        email = `${username.toLowerCase().replace(/[^a-z0-9]/g, '')}@trove-ghost.com`;
     } else {
         if (!email || !password) return actionError("Email and password are required");
     }
@@ -57,7 +48,7 @@ export async function loginAction(formData: FormData): Promise<ActionResponse | 
     }
 
     revalidatePath("/", "layout");
-    redirect("/vault");
+    redirect("/dashboard");
 }
 
 export async function signupAction(formData: FormData): Promise<ActionResponse | void> {
@@ -82,7 +73,7 @@ export async function signupAction(formData: FormData): Promise<ActionResponse |
         // Enforce basic alphanumeric username to avoid weird emails
         const cleanUsername = username.toLowerCase().replace(/[^a-z0-9]/g, '');
         if (cleanUsername.length < 3) return actionError("Username must be at least 3 alphanumeric characters");
-        email = `${cleanUsername}@datavault-ghost.local`;
+        email = `${cleanUsername}@trove-ghost.com`;
         displayName = username; // Keep original casing for display
     } else {
         email = formData.get("email") as string;
@@ -130,7 +121,7 @@ export async function signupAction(formData: FormData): Promise<ActionResponse |
     }
 
     revalidatePath("/", "layout");
-    redirect("/vault");
+    redirect("/dashboard");
 }
 
 export async function signOutAction() {

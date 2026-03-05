@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 // ==========================================
 // Card 02 — "What It's Actually Worth"
 // Vault Unlock: scrambled prices decrypt to reveal value
-// Exact copy from DataVault AI
+// Exact copy from Trove AI
 // ==========================================
 const dataValues = [
     { type: "Street Photos", value: "$0.12", scrambled: "$█.██" },

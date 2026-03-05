@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 // ==========================================
 // Card 03 — "What Trove Pays You"
 // Before/After Morph: $0 flips to real earnings
-// Exact copy from DataVault AI
+// Exact copy from Trove AI
 // ==========================================
 const earningsRows = [
     { label: "PHOTOS ×50", zero: "$0.00", real: "+$4.00" },
