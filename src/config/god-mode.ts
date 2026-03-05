@@ -1,16 +1,16 @@
 // Admin Configuration for Trove AI
-// Set NEXT_PUBLIC_ENABLE_BACKEND=false in .env.local to completely bypass Supabase and R2.
-// Set NEXT_PUBLIC_ENABLE_BACKEND=true to save valid user files to R2 and Supabase.
+// Set ENABLE_BACKEND=false in .env.local to completely bypass Supabase and R2.
+// Set ENABLE_BACKEND=true to save valid user files to R2 and Supabase.
 
 // Production safety guard — warn if deploying with backend disabled
 if (
     process.env.NODE_ENV === 'production' &&
-    process.env.NEXT_PUBLIC_ENABLE_BACKEND !== 'true'
+    process.env.ENABLE_BACKEND !== 'true'
 ) {
     console.warn(
-        '🚨 WARNING: NEXT_PUBLIC_ENABLE_BACKEND is not "true" in production. ' +
+        '🚨 WARNING: ENABLE_BACKEND is not "true" in production. ' +
         'God mode should only be used in development/staging. ' +
-        'Set NEXT_PUBLIC_ENABLE_BACKEND=true in your production environment.'
+        'Set ENABLE_BACKEND=true in your production environment.'
     );
 }
 export const godModeConfig = {

@@ -8,7 +8,7 @@ import { ActionResponse, actionError, actionSuccess } from "@/types/actions";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 
-const isBackendEnabled = process.env.NEXT_PUBLIC_ENABLE_BACKEND === 'true';
+const isBackendEnabled = process.env.ENABLE_BACKEND === 'true';
 
 // Rate limiters — only active when backend is enabled (Upstash available)
 const loginLimiter: Ratelimit | null = null;

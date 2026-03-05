@@ -23,7 +23,7 @@ for (const key of requiredPublicVars) {
 }
 
 // Validate server secrets only on server-side AND when backend is enabled
-if (typeof window === 'undefined' && process.env.NEXT_PUBLIC_ENABLE_BACKEND === 'true') {
+if (typeof window === 'undefined' && process.env.ENABLE_BACKEND === 'true') {
     for (const key of requiredServerVars) {
         if (!process.env[key]) {
             throw new Error(`❌ Missing server environment variable: ${key}`);

@@ -4,7 +4,7 @@ import { createClient } from "@/utils/supabase/server";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 
-const isBackendEnabled = process.env.NEXT_PUBLIC_ENABLE_BACKEND === 'true';
+const isBackendEnabled = process.env.ENABLE_BACKEND === 'true';
 const hasUpstashConfig = process.env.UPSTASH_REDIS_REST_URL && !process.env.UPSTASH_REDIS_REST_URL.includes("dummy");
 
 const ratelimit = (isBackendEnabled && hasUpstashConfig) ? new Ratelimit({
@@ -15,7 +15,7 @@ const ratelimit = (isBackendEnabled && hasUpstashConfig) ? new Ratelimit({
 export async function POST(request: NextRequest) {
     try {
         // 1. GOD MODE CHECK #1: If backend is disabled entirely, pretend to succeed with no DB tracking.
-        if (process.env.NEXT_PUBLIC_ENABLE_BACKEND !== 'true') {
+        if (process.env.ENABLE_BACKEND !== 'true') {
             return NextResponse.json({
                 success: true,
                 url: "mock-url-//no-backend-enabled",
@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
         const uniqueFileName = `${user.id}/${Date.now()}-${sanitizedName.replace(/\s+/g, "_")}`;
 
         // HYBRID MODE CHECK: If we want real users but fake storage
-        if (process.env.NEXT_PUBLIC_MOCK_STORAGE_ONLY === 'true') {
+        if (process.env.MOCK_STORAGE_ONLY === 'true') {
             return NextResponse.json({
                 success: true,
                 url: "mock-url-//mock-storage-only", // The frontend won't actually hit this

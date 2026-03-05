@@ -85,7 +85,7 @@ export async function getAllUsersAction(): Promise<ActionResponse<AdminUserStats
         const isAdmin = await checkAdminAccess();
         if (!isAdmin) return actionError("Unauthorized access");
 
-        if (process.env.NEXT_PUBLIC_ENABLE_BACKEND !== 'true') {
+        if (process.env.ENABLE_BACKEND !== 'true') {
             // Return simulated god-mode users (all 75)
             const allMockUsers = Array.from({ length: 75 }).map((_, i) => ({
                 id: `mock-user-${i}`,
@@ -131,7 +131,7 @@ export async function setAdminOverrideEarningsAction(userId: string, overrideVal
         const isAdmin = await checkAdminAccess();
         if (!isAdmin) return { success: false, error: "Unauthorized access" };
 
-        if (process.env.NEXT_PUBLIC_ENABLE_BACKEND !== 'true') {
+        if (process.env.ENABLE_BACKEND !== 'true') {
             await new Promise((res) => setTimeout(res, 500));
             revalidatePath('/admin');
             return { success: true };
@@ -184,7 +184,7 @@ export async function setGlobalMultiplierAction(multiplier: number): Promise<{ s
             return { success: false, error: "Multiplier must be a number between 0 and 10" };
         }
 
-        if (process.env.NEXT_PUBLIC_ENABLE_BACKEND !== 'true') {
+        if (process.env.ENABLE_BACKEND !== 'true') {
             await new Promise((res) => setTimeout(res, 300));
             revalidatePath('/admin');
             return { success: true };
@@ -216,7 +216,7 @@ export async function toggleUserApprovalAction(userId: string, approved: boolean
         const isAdmin = await checkAdminAccess();
         if (!isAdmin) return { success: false, error: "Unauthorized access" };
 
-        if (process.env.NEXT_PUBLIC_ENABLE_BACKEND !== 'true') {
+        if (process.env.ENABLE_BACKEND !== 'true') {
             await new Promise((res) => setTimeout(res, 300));
             revalidatePath('/admin');
             return { success: true };

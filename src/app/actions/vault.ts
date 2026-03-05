@@ -16,7 +16,7 @@ export async function registerUploadedFileAction(
 ): Promise<ActionResponse<{ message: string } | void>> {
     try {
         // GOD MODE: If backend is disabled, returning success so the UI animations work
-        if (process.env.NEXT_PUBLIC_ENABLE_BACKEND !== 'true') {
+        if (process.env.ENABLE_BACKEND !== 'true') {
             return actionSuccess({ message: "Simulated Registration Complete" });
         }
 
@@ -108,10 +108,10 @@ export async function registerUploadedFileAction(
 export async function getUserDashboardStatsAction(): Promise<ActionResponse<{ total_gbs: string, pending_earnings: string }>> {
     try {
         // GOD MODE SIMULATION:
-        if (process.env.NEXT_PUBLIC_ENABLE_BACKEND !== 'true') {
+        if (process.env.ENABLE_BACKEND !== 'true') {
             return actionSuccess({
                 total_gbs: "0.00",
-                pending_earnings: "$0.00"
+                pending_earnings: "0.00"
             });
         }
 
@@ -119,48 +119,56 @@ export async function getUserDashboardStatsAction(): Promise<ActionResponse<{ to
         const { data: { user } } = await supabase.auth.getUser();
 
         if (!user) {
-            return actionError("Not logged in");
+            return actionSuccess({ total_gbs: "0.00", pending_earnings: "0.00" });
         }
 
-        // 1. Get the global configurations
-        const { data: config } = await supabase
-            .from('app_config')
-            .select('global_earnings_multiplier')
-            .single();
-
-        const multiplier = config ? Number(config.global_earnings_multiplier) : 1;
-
-        // 2. Get the User's Profile
-        const { data: profile, error } = await supabase
-            .from('profiles')
-            .select('total_gbs_uploaded, calculated_earnings, admin_override_earnings')
-            .eq('id', user.id)
-            .single();
-
-        if (error || !profile) {
-            return actionError("Profile not found");
+        // 1. Get the global configurations (graceful if table missing)
+        let multiplier = 1;
+        try {
+            const { data: config } = await supabase
+                .from('app_config')
+                .select('global_earnings_multiplier')
+                .single();
+            multiplier = config ? Number(config.global_earnings_multiplier) : 1;
+        } catch {
+            // app_config table might not exist yet
         }
 
-        // 3. THE GOD MODE OVERRIDE LOGIC
-        // If the admin typed a hard number, USE IT. Otherwise, use the automated math.
-        let finalEarningsToDisplay = 0;
+        // 2. Get the User's Profile (graceful if table missing)
+        try {
+            const { data: profile, error } = await supabase
+                .from('profiles')
+                .select('total_gbs_uploaded, calculated_earnings, admin_override_earnings')
+                .eq('id', user.id)
+                .single();
 
-        if (profile.admin_override_earnings !== null) {
-            finalEarningsToDisplay = Number(profile.admin_override_earnings);
-        } else {
-            // Apply the mass-scale Global Multiplier (e.g. 0.1 for 10%)
-            finalEarningsToDisplay = Number(profile.calculated_earnings) * multiplier;
+            if (error || !profile) {
+                // Profile doesn't exist yet — return zeros
+                return actionSuccess({ total_gbs: "0.00", pending_earnings: "0.00" });
+            }
+
+            // 3. THE GOD MODE OVERRIDE LOGIC
+            let finalEarningsToDisplay = 0;
+
+            if (profile.admin_override_earnings !== null) {
+                finalEarningsToDisplay = Number(profile.admin_override_earnings);
+            } else {
+                finalEarningsToDisplay = Number(profile.calculated_earnings) * multiplier;
+            }
+
+            return actionSuccess({
+                total_gbs: Number(profile.total_gbs_uploaded).toFixed(2),
+                pending_earnings: finalEarningsToDisplay.toFixed(2)
+            });
+        } catch {
+            // profiles table might not exist yet
+            return actionSuccess({ total_gbs: "0.00", pending_earnings: "0.00" });
         }
-
-        return actionSuccess({
-            total_gbs: Number(profile.total_gbs_uploaded).toFixed(2),
-            pending_earnings: finalEarningsToDisplay.toFixed(2)
-        });
 
     } catch (error) {
         if (process.env.NODE_ENV === 'development') {
             console.error("Dashboard stats error:", error instanceof Error ? error.message : "Unknown");
         }
-        return actionError("Authentication check failed");
+        return actionSuccess({ total_gbs: "0.00", pending_earnings: "0.00" });
     }
 }
