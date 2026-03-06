@@ -145,8 +145,8 @@ export async function signOutAction() {
 
 export async function oAuthSignInAction(provider: Provider): Promise<ActionResponse | void> {
     const supabase = await createClient();
-    const siteUrl = process.env.SITE_URL || process.env.NEXT_PUBLIC_SITE_URL;
-    if (!siteUrl) throw new Error("SITE_URL or NEXT_PUBLIC_SITE_URL must be configured");
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+    if (!siteUrl) throw new Error("NEXT_PUBLIC_SITE_URL must be configured");
 
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
