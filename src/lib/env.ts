@@ -18,7 +18,7 @@ const requiredServerVars = [
 // Validate public vars on module load
 for (const key of requiredPublicVars) {
     if (!process.env[key]) {
-        throw new Error(`❌ Missing required environment variable: ${key}`);
+        console.warn(`⚠️ Warning: Missing required public environment variable: ${key}`);
     }
 }
 
@@ -26,11 +26,11 @@ for (const key of requiredPublicVars) {
 if (typeof window === 'undefined' && process.env.ENABLE_BACKEND === 'true') {
     for (const key of requiredServerVars) {
         if (!process.env[key]) {
-            throw new Error(`❌ Missing server environment variable: ${key}`);
+            // Next.js evaluates modules during static build phases
+            // Using console.warn instead of throw prevents the Vercel build from crashing
+            console.warn(`⚠️ Warning: Missing server environment variable: ${key}`);
         }
     }
-
-    // Error disabled for local build testing
 }
 
 export const env = {
