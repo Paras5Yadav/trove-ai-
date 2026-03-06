@@ -3,21 +3,35 @@
 import { motion } from "framer-motion";
 import { UploadCloud, Database, Wallet, Activity, CheckCircle2 } from "lucide-react";
 import { FileUploadArea } from "@/components/dashboard/FileUploadArea";
-import { getUserDashboardStatsAction } from "@/app/actions/vault";
+import { getUserDashboardStatsAction, getBatchVolumeAction } from "@/app/actions/vault";
+
 import { useEffect, useState } from "react";
+
+const BASE_TB = 12.4; // Starting base volume
+const TOTAL_CAPACITY_TB = 50.0; // Total batch capacity
 
 export default function Dashboard() {
     const [earnings, setEarnings] = useState("0.00");
     const [totalGbs, setTotalGbs] = useState("0.00");
+    const [batchVolumeTB, setBatchVolumeTB] = useState(BASE_TB);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         async function fetchStats() {
             try {
-                const result = await getUserDashboardStatsAction();
-                if (result.success && result.data) {
-                    setEarnings(result.data.pending_earnings);
-                    setTotalGbs(result.data.total_gbs);
+                const [statsResult, volumeResult] = await Promise.all([
+                    getUserDashboardStatsAction(),
+                    getBatchVolumeAction(),
+                ]);
+
+                if (statsResult.success && statsResult.data) {
+                    setEarnings(statsResult.data.pending_earnings);
+                    setTotalGbs(statsResult.data.total_gbs);
+                }
+
+                if (volumeResult.success && volumeResult.data) {
+                    // Add real uploads on top of the 12.4 TB base
+                    setBatchVolumeTB(BASE_TB + volumeResult.data.totalTB);
                 }
             } catch (err) {
                 console.error("Failed to fetch dashboard stats:", err);
@@ -27,6 +41,9 @@ export default function Dashboard() {
         }
         fetchStats();
     }, []);
+
+    const volumeDisplay = batchVolumeTB >= 1 ? `${batchVolumeTB.toFixed(1)}` : `${(batchVolumeTB * 1024).toFixed(0)} GB`;
+    const progressPercent = Math.min((batchVolumeTB / TOTAL_CAPACITY_TB) * 100, 100).toFixed(1);
 
     return (
         <main className="min-h-screen bg-gradz-cream pt-32 pb-24 px-6 sm:px-12 md:px-24">
@@ -60,12 +77,12 @@ export default function Dashboard() {
                         <div className="w-full md:w-1/2 bg-white/5 rounded-2xl p-6 border border-white/10">
                             <div className="flex justify-between items-end mb-4">
                                 <div className="text-sm text-gradz-cream/60 font-mono">Volume Collected</div>
-                                <div className="text-xl font-bold">12.4 <span className="text-sm font-normal text-gradz-cream/60">/ 50.0 TB</span></div>
+                                <div className="text-xl font-bold">{volumeDisplay} <span className="text-sm font-normal text-gradz-cream/60">/ {TOTAL_CAPACITY_TB.toFixed(1)} TB</span></div>
                             </div>
                             <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
                                 <motion.div
                                     initial={{ width: 0 }}
-                                    animate={{ width: "24.8%" }}
+                                    animate={{ width: `${progressPercent}%` }}
                                     transition={{ duration: 1.5, ease: "easeOut" }}
                                     className="h-full bg-gradz-green rounded-full relative"
                                 >

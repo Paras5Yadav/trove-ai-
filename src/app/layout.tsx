@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, Playfair_Display } from "next/font/google";
 import "./globals.css";
+import "@/lib/env"; // Validates environment variables on startup
 import { cn } from "@/lib/utils";
 import { Navbar } from "@/components/Navbar";
 

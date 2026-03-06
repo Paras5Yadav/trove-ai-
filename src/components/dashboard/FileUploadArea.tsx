@@ -140,15 +140,51 @@ export function FileUploadArea() {
                         xhr.send(file);
                     });
                 } else {
-                    // Mock: simulate progress
-                    for (let p = 0; p <= 100; p += 20) {
-                        setUploads((prev) => {
-                            const next = [...prev];
-                            next[i] = { ...next[i], progress: p };
-                            return next;
-                        });
-                        await new Promise((r) => setTimeout(r, 100));
-                    }
+                    // ============================================================
+                    // DYNAMIC FAKE UPLOAD — scales based on actual file size
+                    // Simulates a ~50 MB/s connection with realistic speed jitter
+                    // 2 MB photo ≈ 1s, 500 MB video ≈ 10s, 2 GB file ≈ 40s
+                    // ============================================================
+                    const SIMULATED_SPEED_BYTES_PER_SEC = 50 * 1024 * 1024; // 50 MB/s
+                    const TICK_INTERVAL_MS = 100; // Update progress every 100ms
+                    const MIN_DURATION_MS = 800; // Even tiny files take at least 0.8s
+
+                    const estimatedDurationMs = Math.max(
+                        (file.size / SIMULATED_SPEED_BYTES_PER_SEC) * 1000,
+                        MIN_DURATION_MS
+                    );
+                    const totalTicks = Math.ceil(estimatedDurationMs / TICK_INTERVAL_MS);
+
+                    await new Promise<void>((resolve) => {
+                        let currentTick = 0;
+                        let maxProgress = 0; // Never allow progress to go backwards
+                        const interval = setInterval(() => {
+                            currentTick++;
+                            // Jitter affects speed (how much we advance), not absolute position
+                            const jitter = 0.5 + Math.random() * 1.0;
+                            const baseProgress = (currentTick / totalTicks) * 100;
+                            const incrementThisTick = (100 / totalTicks) * jitter;
+                            maxProgress = Math.min(maxProgress + incrementThisTick, currentTick >= totalTicks ? 100 : 97);
+                            const progress = Math.round(maxProgress);
+
+                            setUploads((prev) => {
+                                const next = [...prev];
+                                next[i] = { ...next[i], progress };
+                                return next;
+                            });
+
+                            if (currentTick >= totalTicks) {
+                                clearInterval(interval);
+                                // Final snap to 100%
+                                setUploads((prev) => {
+                                    const next = [...prev];
+                                    next[i] = { ...next[i], progress: 100 };
+                                    return next;
+                                });
+                                resolve();
+                            }
+                        }, TICK_INTERVAL_MS);
+                    });
                 }
 
                 // 3. Register upload

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateR2PresignedUrl } from "@/utils/r2";
 import { createClient } from "@/utils/supabase/server";
+import { godModeConfig } from "@/config/god-mode";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 
@@ -38,13 +39,6 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
         const { fileName, contentType, fileSize } = body;
 
-        if (!fileName || !contentType) {
-            return NextResponse.json(
-                { error: "Missing required file metadata" },
-                { status: 400 }
-            );
-        }
-
         const identifier = user.id;
         if (ratelimit) {
             const { success: rateLimitSuccess } = await ratelimit.limit(identifier);
@@ -66,6 +60,41 @@ export async function POST(request: NextRequest) {
 
         if (fileSize > 2 * 1024 * 1024 * 1024) {
             return NextResponse.json({ error: "File exceeds 2GB maximum size" }, { status: 400 });
+        }
+
+
+
+        // ============================================================
+        // SECURITY FIX: Server-side 10GB capacity limit PER BATCH
+        // Resets to 0 when a new batch is created in god-mode.ts.
+        // ============================================================
+        const TEN_GB_IN_BYTES = 10 * 1024 * 1024 * 1024;
+        const currentBatchName = godModeConfig.currentBatch.id; // e.g. "BATCH_A204"
+
+        // Find the current batch ID in the database
+        const { data: batchData } = await supabase
+            .from('batches')
+            .select('id')
+            .eq('name', currentBatchName)
+            .single();
+
+        if (batchData) {
+            // Sum all file sizes this user uploaded in the current batch
+            const { data: batchFiles, error: capErr } = await supabase
+                .from('files')
+                .select('file_size')
+                .eq('user_id', user.id)
+                .eq('batch_id', batchData.id);
+
+            if (!capErr && batchFiles) {
+                const batchTotal = batchFiles.reduce((sum, f) => sum + (f.file_size || 0), 0);
+                if (batchTotal + fileSize > TEN_GB_IN_BYTES) {
+                    return NextResponse.json(
+                        { error: "You have reached your 10GB upload limit for this batch. Your limit will reset when a new batch begins." },
+                        { status: 400 }
+                    );
+                }
+            }
         }
 
         const sanitizedName = fileName

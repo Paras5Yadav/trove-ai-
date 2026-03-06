@@ -9,10 +9,22 @@ import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 
 const isBackendEnabled = process.env.ENABLE_BACKEND === 'true';
+const hasUpstashConfig = process.env.UPSTASH_REDIS_REST_URL && !process.env.UPSTASH_REDIS_REST_URL.includes("dummy");
 
 // Rate limiters — only active when backend is enabled (Upstash available)
-const loginLimiter: Ratelimit | null = null;
-const signupLimiter: Ratelimit | null = null;
+// Login: 5 failed attempts per minute per email (brute-force protection)
+const loginLimiter = (isBackendEnabled && hasUpstashConfig) ? new Ratelimit({
+    redis: Redis.fromEnv(),
+    limiter: Ratelimit.slidingWindow(5, "1 m"),
+    prefix: "ratelimit:login",
+}) : null;
+
+// Signup: 3 new accounts per hour per identifier (spam bot protection)
+const signupLimiter = (isBackendEnabled && hasUpstashConfig) ? new Ratelimit({
+    redis: Redis.fromEnv(),
+    limiter: Ratelimit.slidingWindow(3, "1 h"),
+    prefix: "ratelimit:signup",
+}) : null;
 
 export async function loginAction(formData: FormData): Promise<ActionResponse | void> {
     const accountType = formData.get("accountType") as string || "standard";

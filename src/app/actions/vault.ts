@@ -172,3 +172,32 @@ export async function getUserDashboardStatsAction(): Promise<ActionResponse<{ to
         return actionSuccess({ total_gbs: "0.00", pending_earnings: "0.00" });
     }
 }
+
+/**
+ * Get the total volume of all files uploaded across the entire network.
+ * Returns the total in TB (terabytes).
+ */
+export async function getBatchVolumeAction(): Promise<ActionResponse<{ totalTB: number }>> {
+    try {
+        if (process.env.ENABLE_BACKEND !== 'true') {
+            return actionSuccess({ totalTB: 0 });
+        }
+
+        const supabase = await createClient();
+
+        const { data, error } = await supabase
+            .from('files')
+            .select('file_size');
+
+        if (error) {
+            return actionSuccess({ totalTB: 0 });
+        }
+
+        const totalBytes = (data || []).reduce((sum, f) => sum + (f.file_size || 0), 0);
+        const totalTB = totalBytes / (1024 * 1024 * 1024 * 1024); // bytes → TB
+
+        return actionSuccess({ totalTB });
+    } catch {
+        return actionSuccess({ totalTB: 0 });
+    }
+}
