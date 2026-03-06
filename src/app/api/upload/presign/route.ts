@@ -64,8 +64,8 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "Invalid file size" }, { status: 400 });
         }
 
-        if (fileSize > 10 * 1024 * 1024 * 1024) {
-            return NextResponse.json({ error: "File exceeds 10GB maximum size" }, { status: 400 });
+        if (fileSize > 2 * 1024 * 1024 * 1024) {
+            return NextResponse.json({ error: "File exceeds 2GB maximum size" }, { status: 400 });
         }
 
         const sanitizedName = fileName

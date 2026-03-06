@@ -127,12 +127,12 @@ export default function Dashboard() {
                                         <div className="mt-4 w-full">
                                             <div className="flex justify-between text-[10px] font-mono text-gradz-charcoal/50 uppercase tracking-widest mb-1">
                                                 <span>Your Limit</span>
-                                                <span>{totalGbs} / 15 GB</span>
+                                                <span>{totalGbs} / 10 GB</span>
                                             </div>
-                                            <div className="w-full h-1.5 bg-gradz-cream rounded-full overflow-hidden">
+                                            <div className="h-1.5 w-full bg-gradz-charcoal/10 rounded-full overflow-hidden">
                                                 <div
-                                                    className="h-full bg-gradz-green rounded-full transition-all duration-500"
-                                                    style={{ width: `${Math.min((parseFloat(totalGbs) / 15) * 100, 100)}%` }}
+                                                    className="h-full bg-gradz-green transition-all duration-1000 ease-out"
+                                                    style={{ width: `${Math.min((parseFloat(totalGbs) / 10) * 100, 100)}%` }}
                                                 />
                                             </div>
                                         </div>

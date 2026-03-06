@@ -34,7 +34,7 @@ export async function updateSession(request: NextRequest) {
         data: { user },
     } = await supabase.auth.getUser()
 
-    const isAdminRoute = request.nextUrl.pathname.startsWith('/admin')
+    const isAdminRoute = request.nextUrl.pathname.startsWith('/mac-sam-0005')
     const isVaultRoute = request.nextUrl.pathname.startsWith('/dashboard')
     const isProtectedRoute = isAdminRoute || isVaultRoute
 

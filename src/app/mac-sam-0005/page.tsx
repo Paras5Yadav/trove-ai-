@@ -1,6 +1,6 @@
 import { getAllUsersAction, checkAdminAccess } from "@/app/actions/admin";
 import { AdminUsersTable } from "@/components/admin/AdminUsersTable";
-import { ShieldAlert, Users, TrendingUp } from "lucide-react";
+import { ShieldAlert, Users, TrendingUp, FileUp, Activity } from "lucide-react";
 import Link from 'next/link';
 
 export const metadata = {
@@ -35,6 +35,11 @@ export default async function AdminPage() {
     const users = res.success ? res.data : [];
     const error = !res.success ? res.error : null;
 
+    // 3. Fetch Today's Stats
+    const { getTodayNetworkStatsAction } = await import("@/app/actions/admin");
+    const statsRes = await getTodayNetworkStatsAction();
+    const todayStats = statsRes.success && statsRes.data ? statsRes.data : { totalFiles: 0, uniqueContributors: 0 };
+
     return (
         <div className="min-h-screen bg-cream text-charcoal font-sans">
             {/* Minimalist Admin Header */}
@@ -63,7 +68,7 @@ export default async function AdminPage() {
                         </p>
                     </div>
 
-                    <div className="flex gap-4">
+                    <div className="flex flex-wrap gap-4">
                         <div className="bg-white px-6 py-4 rounded-xl border border-gray-200 shadow-sm flex items-center gap-4">
                             <div className="p-3 bg-gray-50 rounded-lg">
                                 <Users className="w-6 h-6 text-charcoal/40" />
@@ -71,6 +76,26 @@ export default async function AdminPage() {
                             <div>
                                 <div className="text-xs uppercase font-bold text-gray-400 tracking-wider mb-1">Total Network</div>
                                 <div className="text-2xl font-bold">{users?.length || 0}</div>
+                            </div>
+                        </div>
+
+                        <div className="bg-white px-6 py-4 rounded-xl border border-gray-200 shadow-sm flex items-center gap-4">
+                            <div className="p-3 bg-gray-50 rounded-lg">
+                                <FileUp className="w-6 h-6 text-charcoal/40" />
+                            </div>
+                            <div>
+                                <div className="text-xs uppercase font-bold text-gray-400 tracking-wider mb-1">Uploads Today</div>
+                                <div className="text-2xl font-bold">{todayStats.totalFiles}</div>
+                            </div>
+                        </div>
+
+                        <div className="bg-white px-6 py-4 rounded-xl border border-gray-200 shadow-sm flex items-center gap-4">
+                            <div className="p-3 bg-blue-50 rounded-lg">
+                                <Activity className="w-6 h-6 text-blue-400" />
+                            </div>
+                            <div>
+                                <div className="text-xs uppercase font-bold text-blue-400/80 tracking-wider mb-1">Active Today</div>
+                                <div className="text-2xl font-bold text-blue-900">{todayStats.uniqueContributors}</div>
                             </div>
                         </div>
                     </div>

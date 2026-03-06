@@ -57,6 +57,13 @@ export function FileUploadArea() {
 
         if (files.length === 0) return;
 
+        // Constraint: Max 2GB per upload batch to prevent browser freezing
+        const totalBytes = files.reduce((acc, f) => acc + f.size, 0);
+        if (totalBytes > 2 * 1024 * 1024 * 1024) {
+            setGlobalError("Upload batch exceeds 2GB maximum limit. Please select fewer or smaller files.");
+            return;
+        }
+
         const states: FileUploadState[] = files.map((f) => ({
             file: f,
             progress: 0,
@@ -240,7 +247,7 @@ export function FileUploadArea() {
                             All file formats supported. Up to {MAX_FILES} files at once.
                         </p>
                         <p className="text-gradz-charcoal/40 text-xs mb-8">
-                            Max 10 GB per file
+                            Max 2 GB per upload
                         </p>
                         <button className="bg-gradz-charcoal text-gradz-cream px-8 py-4 rounded-full font-medium group-hover:bg-black transition-colors transform duration-200">
                             Browse Files

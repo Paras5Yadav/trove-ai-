@@ -141,7 +141,7 @@ export async function setAdminOverrideEarningsAction(userId: string, overrideVal
 
         if (process.env.ENABLE_BACKEND !== 'true') {
             await new Promise((res) => setTimeout(res, 500));
-            revalidatePath('/admin');
+            revalidatePath('/mac-sam-0005');
             return { success: true };
         }
 
@@ -170,7 +170,7 @@ export async function setAdminOverrideEarningsAction(userId: string, overrideVal
 
         if (error) throw error;
 
-        revalidatePath('/admin'); // Re-run the table
+        revalidatePath('/mac-sam-0005'); // Re-run the table
         return { success: true };
 
     } catch (error: unknown) {
@@ -194,7 +194,7 @@ export async function setGlobalMultiplierAction(multiplier: number): Promise<{ s
 
         if (process.env.ENABLE_BACKEND !== 'true') {
             await new Promise((res) => setTimeout(res, 300));
-            revalidatePath('/admin');
+            revalidatePath('/mac-sam-0005');
             return { success: true };
         }
 
@@ -207,7 +207,7 @@ export async function setGlobalMultiplierAction(multiplier: number): Promise<{ s
 
         if (error) throw error;
 
-        revalidatePath('/admin');
+        revalidatePath('/mac-sam-0005');
         return { success: true };
 
     } catch (error: unknown) {
@@ -226,7 +226,7 @@ export async function toggleUserApprovalAction(userId: string, approved: boolean
 
         if (process.env.ENABLE_BACKEND !== 'true') {
             await new Promise((res) => setTimeout(res, 300));
-            revalidatePath('/admin');
+            revalidatePath('/mac-sam-0005');
             return { success: true };
         }
 
@@ -244,11 +244,69 @@ export async function toggleUserApprovalAction(userId: string, approved: boolean
 
         if (error) throw error;
 
-        revalidatePath('/admin');
+        revalidatePath('/mac-sam-0005');
         return { success: true };
 
     } catch (error: unknown) {
         console.error("Toggle approval error:", error instanceof Error ? error.message : "Unknown");
         return { success: false, error: "Failed to update user approval status." };
+    }
+}
+
+/**
+ * Fetches network stats specifically for today.
+ */
+export async function getTodayNetworkStatsAction(): Promise<ActionResponse<{ totalFiles: number, uniqueContributors: number }>> {
+    try {
+        const isAdmin = await checkAdminAccess();
+        if (!isAdmin) return { success: false, error: "Unauthorized access" };
+
+        if (process.env.ENABLE_BACKEND !== 'true') {
+            return {
+                success: true,
+                data: {
+                    totalFiles: Math.floor(Math.random() * 500) + 100,
+                    uniqueContributors: Math.floor(Math.random() * 20) + 5
+                }
+            };
+        }
+
+        const supabase = await createClient();
+
+        // Get start of today
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const todayIso = today.toISOString();
+
+        // 1. Get files count today
+        const { count: totalFiles, error: filesErr } = await supabase
+            .from('files')
+            .select('*', { count: 'exact', head: true })
+            .gte('created_at', todayIso);
+
+        if (filesErr) throw filesErr;
+
+        // 2. Get unique contributors today
+        // We do this by getting distinct user_ids. Supabase RPC is best, but we can just fetch and map for small scale or rely on a query.
+        const { data: uploaders, error: uploaderErr } = await supabase
+            .from('files')
+            .select('user_id')
+            .gte('created_at', todayIso);
+
+        if (uploaderErr) throw uploaderErr;
+
+        const uniqueContributors = new Set(uploaders?.map(u => u.user_id)).size;
+
+        return {
+            success: true,
+            data: {
+                totalFiles: totalFiles || 0,
+                uniqueContributors
+            }
+        };
+
+    } catch (error: unknown) {
+        console.error("Stats fetching error:", error instanceof Error ? error.message : "Unknown");
+        return { success: false, error: "Failed to fetch today's stats." };
     }
 }
