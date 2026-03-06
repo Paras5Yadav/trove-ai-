@@ -1,0 +1,59 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background rounded square -->
+  <rect width="512" height="512" rx="100" fill="#2D3B33"/>
+  
+  <g stroke="#FFFFFF" fill="#FFFFFF">
+    <!-- Center dot -->
+    <circle cx="256" cy="256" r="16"/>
+    
+    <!-- Inner solid ring -->
+    <circle cx="256" cy="256" r="64" stroke-width="24" fill="none"/>
+    
+    <!-- Middle dotted ring -->
+    <!-- Up, Down, Left, Right, Diagonals -->
+    <circle cx="256" cy="150" r="10"/>
+    <circle cx="256" cy="362" r="10"/>
+    <circle cx="150" cy="256" r="10"/>
+    <circle cx="362" cy="256" r="10"/>
+    <circle cx="181" cy="181" r="10"/>
+    <circle cx="331" cy="181" r="10"/>
+    <circle cx="181" cy="331" r="10"/>
+    <circle cx="331" cy="331" r="10"/>
+    
+    <!-- Outer solid ring -->
+    <circle cx="256" cy="256" r="144" stroke-width="24" fill="none"/>
+    
+    <!-- 8 Spokes with T-caps -->
+    <!-- Spoke 1: Top -->
+    <path d="M256 112 L256 40" stroke-width="24" stroke-linecap="round"/>
+    <path d="M226 40 L286 40" stroke-width="24" stroke-linecap="round"/>
+    
+    <!-- Spoke 2: Bottom -->
+    <path d="M256 400 L256 472" stroke-width="24" stroke-linecap="round"/>
+    <path d="M226 472 L286 472" stroke-width="24" stroke-linecap="round"/>
+    
+    <!-- Spoke 3: Left -->
+    <path d="M112 256 L40 256" stroke-width="24" stroke-linecap="round"/>
+    <path d="M40 226 L40 286" stroke-width="24" stroke-linecap="round"/>
+    
+    <!-- Spoke 4: Right -->
+    <path d="M400 256 L472 256" stroke-width="24" stroke-linecap="round"/>
+    <path d="M472 226 L472 286" stroke-width="24" stroke-linecap="round"/>
+    
+    <!-- Spoke 5: Top Right -->
+    <path d="M358 154 L409 103" stroke-width="24" stroke-linecap="round"/>
+    <path d="M388 82 L430 124" stroke-width="24" stroke-linecap="round"/>
+    
+    <!-- Spoke 6: Bottom Right -->
+    <path d="M358 358 L409 409" stroke-width="24" stroke-linecap="round"/>
+    <path d="M430 388 L388 430" stroke-width="24" stroke-linecap="round"/>
+    
+    <!-- Spoke 7: Bottom Left -->
+    <path d="M154 358 L103 409" stroke-width="24" stroke-linecap="round"/>
+    <path d="M124 430 L82 388" stroke-width="24" stroke-linecap="round"/>
+    
+    <!-- Spoke 8: Top Left -->
+    <path d="M154 154 L103 103" stroke-width="24" stroke-linecap="round"/>
+    <path d="M82 124 L124 82" stroke-width="24" stroke-linecap="round"/>
+  </g>
+</svg>

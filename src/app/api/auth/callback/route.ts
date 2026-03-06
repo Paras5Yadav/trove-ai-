@@ -16,6 +16,20 @@ export async function GET(request: NextRequest) {
         const supabase = await createClient();
         const { error } = await supabase.auth.exchangeCodeForSession(code);
         if (!error) {
+            // Create a profile row for OAuth users (upsert to avoid duplicates)
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                await supabase
+                    .from('profiles')
+                    .upsert({
+                        id: user.id,
+                        email: user.email,
+                        display_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'User',
+                        account_type: 'standard',
+                        total_gbs_uploaded: 0,
+                        calculated_earnings: 0
+                    }, { onConflict: 'id' });
+            }
             return NextResponse.redirect(`${origin}${safePath}`);
         }
     }

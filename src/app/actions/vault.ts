@@ -28,6 +28,18 @@ export async function registerUploadedFileAction(
             return actionError("Must be logged in to register a file.");
         }
 
+        // 1b. Ensure a profile row exists (fallback for OAuth users who may not have one yet)
+        await supabase
+            .from('profiles')
+            .upsert({
+                id: user.id,
+                email: user.email,
+                display_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'User',
+                account_type: 'standard',
+                total_gbs_uploaded: 0,
+                calculated_earnings: 0
+            }, { onConflict: 'id', ignoreDuplicates: true });
+
         // 2. We need to find or create the current Batch
         const batchName = godModeConfig.currentBatch.id; // e.g. "BATCH_A204"
 
@@ -72,7 +84,7 @@ export async function registerUploadedFileAction(
             });
 
         if (fileError) {
-            console.error("Database Insert Error:", fileError.message);
+            console.error("Database Insert Error:", fileError.message, "| Details:", fileError.details, "| Hint:", fileError.hint, "| Code:", fileError.code);
             return actionError("Failed to save file metadata.");
         }
 
