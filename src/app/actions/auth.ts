@@ -101,9 +101,17 @@ export async function signupAction(formData: FormData): Promise<ActionResponse |
 
     const supabase = await createClient();
 
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+
     const { error, data } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+            // Ghost accounts use internal emails, no need for redirect
+            ...(accountType === "standard" && {
+                emailRedirectTo: `${siteUrl}/api/auth/callback`,
+            }),
+        },
     });
 
     if (error) {
@@ -132,8 +140,14 @@ export async function signupAction(formData: FormData): Promise<ActionResponse |
         }
     }
 
-    revalidatePath("/", "layout");
-    redirect("/dashboard");
+    // Ghost accounts can sign in immediately (no real email to verify)
+    if (accountType === "ghost") {
+        revalidatePath("/", "layout");
+        redirect("/dashboard");
+    }
+
+    // Standard accounts need to verify their email first
+    return actionSuccess({ emailConfirmation: true } as never);
 }
 
 export async function signOutAction() {
@@ -162,4 +176,40 @@ export async function oAuthSignInAction(provider: Provider): Promise<ActionRespo
     if (data.url) {
         redirect(data.url);
     }
+}
+
+export async function resetPasswordAction(email: string): Promise<ActionResponse> {
+    if (!email) return actionError("Please enter your email address.");
+
+    const supabase = await createClient();
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${siteUrl}/reset-password`,
+    });
+
+    if (error) {
+        return actionError(error.message);
+    }
+
+    // Always return success even if email doesn't exist (security best practice)
+    return actionSuccess({ emailSent: true } as never);
+}
+
+export async function updatePasswordAction(newPassword: string): Promise<ActionResponse> {
+    if (!newPassword || newPassword.length < 8) {
+        return actionError("Password must be at least 8 characters.");
+    }
+
+    const supabase = await createClient();
+
+    const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+    });
+
+    if (error) {
+        return actionError(error.message);
+    }
+
+    return actionSuccess();
 }
