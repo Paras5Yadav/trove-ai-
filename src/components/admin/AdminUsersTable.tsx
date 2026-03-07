@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { AdminUserStats, setAdminOverrideEarningsAction, toggleUserApprovalAction } from "@/app/actions/admin";
-import { Check, Edit2, X, DollarSign, Database, Loader2, CheckCircle2, XCircle, Search } from "lucide-react";
+import { AdminUserStats, setAdminOverrideEarningsAction, toggleUserApprovalAction, approveUserFilesBulkAction } from "@/app/actions/admin";
+import { Check, Edit2, X, DollarSign, Database, Loader2, CheckCircle2, XCircle, Search, FileCheck } from "lucide-react";
 
 export function AdminUsersTable({ users }: { users: AdminUserStats[] }) {
     const [searchQuery, setSearchQuery] = useState("");
@@ -11,6 +11,10 @@ export function AdminUsersTable({ users }: { users: AdminUserStats[] }) {
     const [isSaving, setIsSaving] = useState(false);
     const [actionError, setActionError] = useState<string | null>(null);
     const [localUsers, setLocalUsers] = useState<AdminUserStats[]>(users);
+    
+    // File Approval State
+    const [approvingUserId, setApprovingUserId] = useState<string | null>(null);
+    const [approveFileCount, setApproveFileCount] = useState<string>("");
 
     const handleEditClick = (user: AdminUserStats) => {
         setEditingUserId(user.id);
@@ -59,6 +63,41 @@ export function AdminUsersTable({ users }: { users: AdminUserStats[] }) {
         }
     };
 
+    const handleApproveFiles = async (userId: string, currentPending: number) => {
+        const count = parseInt(approveFileCount);
+        if (isNaN(count) || count <= 0) {
+            setActionError("Please enter a valid number of files to approve.");
+            return;
+        }
+        if (count > currentPending) {
+            setActionError(`User only has ${currentPending} pending files.`);
+            return;
+        }
+
+        setApprovingUserId(userId);
+        const res = await approveUserFilesBulkAction(userId, count);
+        
+        if (!res.success) {
+            setActionError(res.error || "Failed to approve files");
+            setApprovingUserId(null);
+            return;
+        }
+
+        // We assume an average of $0.05 per file for the optimistic update,
+        // The real value is calculated on the server and will perfectly sync on the next page load.
+        const optimisticEarningsIncrease = res.data.approvedCount * 0.05; 
+
+        setLocalUsers(prev => prev.map(u => 
+            u.id === userId ? { 
+                ...u, 
+                pending_files_count: (u.pending_files_count || 0) - res.data.approvedCount,
+                calculated_earnings: (Number(u.calculated_earnings || 0) + optimisticEarningsIncrease).toString()
+            } : u
+        ));
+        setApproveFileCount("");
+        setApprovingUserId(null);
+    };
+
     const filteredUsers = localUsers.filter(user =>
         user.display_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         user.email.toLowerCase().includes(searchQuery.toLowerCase())
@@ -94,6 +133,7 @@ export function AdminUsersTable({ users }: { users: AdminUserStats[] }) {
                         <tr>
                             <th className="px-6 py-4 font-medium">Contributor</th>
                             <th className="px-6 py-4 font-medium"><div className="flex items-center gap-1.5"><Database className="w-3.5 h-3.5" />Data Uploaded</div></th>
+                            <th className="px-6 py-4 font-medium"><div className="flex items-center gap-1.5"><FileCheck className="w-3.5 h-3.5" />Pending Files</div></th>
                             <th className="px-6 py-4 font-medium text-center">Approved for Payout</th>
                             <th className="px-6 py-4 font-medium text-right"><div className="flex items-center justify-end gap-1.5"><DollarSign className="w-3.5 h-3.5" /> God Mode Override</div></th>
                         </tr>
@@ -126,6 +166,36 @@ export function AdminUsersTable({ users }: { users: AdminUserStats[] }) {
                                             <span className="text-xs text-gray-500 whitespace-nowrap mt-0.5">
                                                 {Number(user.total_gbs_uploaded).toFixed(2)} GB
                                             </span>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="flex flex-col items-start gap-2">
+                                            <span className="text-gray-900 font-medium">
+                                                {user.pending_files_count || 0} pending
+                                            </span>
+                                            {(user.pending_files_count || 0) > 0 && (
+                                                <div className="flex items-center gap-2">
+                                                    <input 
+                                                        type="number" 
+                                                        min="1"
+                                                        max={user.pending_files_count}
+                                                        placeholder="Qty"
+                                                        value={approvingUserId === user.id ? approveFileCount : ""}
+                                                        onChange={(e) => {
+                                                            setApprovingUserId(user.id);
+                                                            setApproveFileCount(e.target.value);
+                                                        }}
+                                                        className="w-16 px-2 py-1 text-xs border border-gray-200 rounded-md focus:outline-none focus:border-blue-500"
+                                                    />
+                                                    <button 
+                                                        onClick={() => handleApproveFiles(user.id, user.pending_files_count || 0)}
+                                                        disabled={approvingUserId === user.id && (!approveFileCount || isNaN(parseInt(approveFileCount)))}
+                                                        className="px-3 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs font-semibold rounded-md transition-colors disabled:opacity-50"
+                                                    >
+                                                        {approvingUserId === user.id && isSaving ? <Loader2 className="w-3 h-3 animate-spin"/> : 'Approve'}
+                                                    </button>
+                                                </div>
+                                            )}
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 text-center">

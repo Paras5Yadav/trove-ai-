@@ -1,21 +1,17 @@
-import { createClient } from '@supabase/supabase-js';
+import fs from 'fs';
+import dotenv from 'dotenv';
+const envConfig = dotenv.parse(fs.readFileSync('.env.local'));
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://qjrgnsgsoohkjfhsnfpd.supabase.co';
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFqcmduc2dzb29oa2pmaHNuZnBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2NzM1NTIsImV4cCI6MjA4ODI0OTU1Mn0.VcSWdbRTAsdAW5blCVZlEb1O1elINifJlvCOmKW7dD4';
+const url = envConfig.NEXT_PUBLIC_SUPABASE_URL + '/rest/v1/files?select=id,file_name,file_size,file_category,created_at,user_id,profiles(display_name,email)&status=eq.pending_review&order=created_at.desc&limit=1';
 
-const supabase = createClient(supabaseUrl, supabaseKey);
-
-async function check() {
-    console.log("Fetching profiles with file counts...");
-    const { data, error } = await supabase
-        .from('profiles')
-        .select('*, files(count)')
-        .limit(1);
-
-    if (error) {
-        console.error("Error:", error);
-    } else {
-        console.log("Data:", JSON.stringify(data, null, 2));
+async function run() {
+  const res = await fetch(url, {
+    headers: {
+      'apikey': envConfig.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      'Authorization': 'Bearer ' + envConfig.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     }
+  });
+  const text = await res.text();
+  console.log("Response:", text);
 }
-check();
+run();

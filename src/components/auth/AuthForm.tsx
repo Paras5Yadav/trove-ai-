@@ -5,6 +5,7 @@ import { Loader2, Mail, Lock, AlertCircle, ArrowRight, User, Ghost, CheckCircle,
 import { loginAction, signupAction, oAuthSignInAction } from "@/app/actions/auth";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 type AuthMode = "login" | "signup";
@@ -25,6 +26,9 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
     const [error, setError] = useState<string | null>(null);
     const [accountType, setAccountType] = useState<"standard" | "ghost">("standard");
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+    const searchParams = useSearchParams();
+    const referralCode = searchParams.get("ref") || "";
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -127,6 +131,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
 
                 <form onSubmit={handleSubmit} className="space-y-4 relative" style={successMessage ? { display: 'none' } : undefined}>
                     <input type="hidden" name="accountType" value={accountType} />
+                    <input type="hidden" name="referralCode" value={referralCode} />
 
                     {accountType === "standard" ? (
                         <>
@@ -136,7 +141,8 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
                                     type="button"
                                     onClick={async () => {
                                         setIsGoogleLoading(true);
-                                        await oAuthSignInAction("google");
+                                        // Pass the referral code through the OAuth state or URL
+                                        await oAuthSignInAction("google", referralCode);
                                     }}
                                     disabled={isLoading || isGoogleLoading}
                                     className="w-full font-semibold py-3.5 rounded-xl border-2 border-charcoal/10 hover:border-charcoal/30 bg-white hover:bg-gray-50 transition-all flex items-center justify-center gap-3 disabled:opacity-70 disabled:pointer-events-none"

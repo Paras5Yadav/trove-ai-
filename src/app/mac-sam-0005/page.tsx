@@ -1,6 +1,7 @@
-import { getAllUsersAction, checkAdminAccess } from "@/app/actions/admin";
+import { getAllUsersAction, checkAdminAccess, getPendingWithdrawalsAction } from "@/app/actions/admin";
 import { AdminUsersTable } from "@/components/admin/AdminUsersTable";
-import { ShieldAlert, Users, TrendingUp, FileUp, Activity } from "lucide-react";
+import { AdminPayoutManager } from "@/components/admin/AdminPayoutManager";
+import { ShieldAlert, Users, TrendingUp, FileUp, Activity, Banknote } from "lucide-react";
 import Link from 'next/link';
 
 export const metadata = {
@@ -39,6 +40,10 @@ export default async function AdminPage() {
     const { getTodayNetworkStatsAction } = await import("@/app/actions/admin");
     const statsRes = await getTodayNetworkStatsAction();
     const todayStats = statsRes.success && statsRes.data ? statsRes.data : { totalFiles: 0, uniqueContributors: 0 };
+
+    // 5. Fetch Pending Withdrawals
+    const pendingWithdrawalsRes = await getPendingWithdrawalsAction();
+    const pendingWithdrawalsData = pendingWithdrawalsRes.success && pendingWithdrawalsRes.data ? pendingWithdrawalsRes.data : { withdrawals: [], totalAmount: 0 };
 
     return (
         <div className="min-h-screen bg-cream text-charcoal font-sans">
@@ -106,10 +111,22 @@ export default async function AdminPage() {
                         {error}
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 gap-8">
-                        {/* Users Override Table */}
+                    <div className="grid grid-cols-1 gap-12">
+                        {/* Payout Management Table */}
                         <div className="space-y-4">
-                            <h3 className="text-lg font-bold flex items-center gap-2">
+                            <h3 className="text-xl font-bold flex items-center gap-2 font-jakarta">
+                                <Banknote className="w-5 h-5 text-green-600" />
+                                Payout Management
+                            </h3>
+                            <AdminPayoutManager
+                                withdrawals={pendingWithdrawalsData.withdrawals}
+                                totalAmount={pendingWithdrawalsData.totalAmount}
+                            />
+                        </div>
+
+                        {/* Users Override Table */}
+                        <div className="space-y-4 pt-8 border-t border-gray-200">
+                            <h3 className="text-xl font-bold flex items-center gap-2 font-jakarta">
                                 <TrendingUp className="w-5 h-5 text-moss" />
                                 Individual Earning Modifications
                             </h3>

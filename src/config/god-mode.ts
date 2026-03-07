@@ -51,4 +51,14 @@ export const godModeConfig = {
 
     // Earnings rate (in dollars) per MB (e.g. $0.001 per MB)
     payRatePerMB: 0.005,
+
+    // ---------------------------------------------------------
+    // PLATFORM FEES & REFERRAL
+    // ---------------------------------------------------------
+
+    // Platform fee deducted from every approved file (15%)
+    platformFeePercent: 0.15,
+
+    // Referral bonus paid to the referrer from every approved file (15%)
+    referralBonusPercent: 0.15,
 };

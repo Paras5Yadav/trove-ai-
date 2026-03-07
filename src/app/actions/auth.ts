@@ -64,6 +64,7 @@ export async function loginAction(formData: FormData): Promise<ActionResponse | 
 export async function signupAction(formData: FormData): Promise<ActionResponse | void> {
     const accountType = formData.get("accountType") as string || "standard";
     const password = formData.get("password") as string;
+    const referralCode = formData.get("referralCode") as string;
 
     // Rate limit check
     if (signupLimiter) {
@@ -114,6 +115,21 @@ export async function signupAction(formData: FormData): Promise<ActionResponse |
         return actionError(error.message);
     }
 
+    // Process Referral Code
+    let referredByUserId = null;
+    if (referralCode) {
+        // Find the user with this referral code
+        const { data: referrer } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('referral_code', referralCode)
+            .single();
+            
+        if (referrer) {
+            referredByUserId = referrer.id;
+        }
+    }
+
     // Create the user profile
     if (data.user) {
         const { error: profileError } = await supabase
@@ -124,7 +140,8 @@ export async function signupAction(formData: FormData): Promise<ActionResponse |
                 display_name: displayName,
                 account_type: accountType,
                 total_gbs_uploaded: 0,
-                calculated_earnings: 0
+                calculated_earnings: 0,
+                referred_by_user_id: referredByUserId,
             }, { onConflict: 'id' });
 
         if (profileError) {
@@ -149,15 +166,20 @@ export async function signOutAction() {
     redirect("/");
 }
 
-export async function oAuthSignInAction(provider: Provider): Promise<ActionResponse | void> {
+export async function oAuthSignInAction(provider: Provider, referralCode?: string): Promise<ActionResponse | void> {
     const supabase = await createClient();
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
     if (!siteUrl) throw new Error("NEXT_PUBLIC_SITE_URL must be configured");
 
+    let redirectUrl = `${siteUrl}/api/auth/callback`;
+    if (referralCode) {
+        redirectUrl += `?ref=${encodeURIComponent(referralCode)}`;
+    }
+
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-            redirectTo: `${siteUrl}/api/auth/callback`,
+            redirectTo: redirectUrl,
         },
     });
 

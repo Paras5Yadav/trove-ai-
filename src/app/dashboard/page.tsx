@@ -6,15 +6,25 @@ import { FileUploadArea } from "@/components/dashboard/FileUploadArea";
 import { getUserDashboardStatsAction, getBatchVolumeAction } from "@/app/actions/vault";
 
 import { useEffect, useState } from "react";
+import { WithdrawModal } from "@/components/dashboard/WithdrawModal";
+import { ReferralSection } from "@/components/dashboard/ReferralSection";
+import { Clock, HelpCircle } from "lucide-react";
 
 const BASE_TB = 12.4; // Starting base volume
 const TOTAL_CAPACITY_TB = 50.0; // Total batch capacity
 
 export default function Dashboard() {
-    const [earnings, setEarnings] = useState("0.00");
+    // New stats state based on updated architecture
+    const [pendingEarnings, setPendingEarnings] = useState("0.00");
+    const [withdrawable, setWithdrawable] = useState("0.00");
+    const [referralEarnings, setReferralEarnings] = useState("0.00");
     const [totalGbs, setTotalGbs] = useState("0.00");
+    const [totalFiles, setTotalFiles] = useState(0);
+    const [referralCode, setReferralCode] = useState("");
+    
     const [batchVolumeTB, setBatchVolumeTB] = useState(BASE_TB);
     const [isLoading, setIsLoading] = useState(true);
+    const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
 
     useEffect(() => {
         async function fetchStats() {
@@ -25,8 +35,12 @@ export default function Dashboard() {
                 ]);
 
                 if (statsResult.success && statsResult.data) {
-                    setEarnings(statsResult.data.pending_earnings);
+                    setPendingEarnings(statsResult.data.pending_review_value);
+                    setWithdrawable(statsResult.data.withdrawable_balance);
+                    setReferralEarnings(statsResult.data.referral_earnings);
                     setTotalGbs(statsResult.data.total_gbs);
+                    setTotalFiles(statsResult.data.total_files_count);
+                    setReferralCode(statsResult.data.referral_code);
                 }
 
                 if (volumeResult.success && volumeResult.data) {
@@ -113,19 +127,59 @@ export default function Dashboard() {
                         </h3>
 
                         <div className="space-y-4">
-                            {/* Stat 1 — Total Earnings */}
+                            {/* In Review Earnings */}
                             <div className="bg-white rounded-3xl p-6 shadow-sm border border-gradz-charcoal/5">
-                                <div className="flex items-center gap-3 mb-4">
-                                    <div className="p-3 bg-gradz-butter/30 rounded-xl">
-                                        <Wallet className="w-5 h-5 text-gradz-charcoal" />
+                                <div className="flex items-start justify-between mb-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-3 bg-gradz-charcoal/5 rounded-xl">
+                                            <Clock className="w-5 h-5 text-gradz-charcoal/70" />
+                                        </div>
+                                        <div className="text-sm font-medium text-gradz-charcoal/60 leading-tight">
+                                            In Review <br />
+                                            <span className="text-xs font-normal opacity-70">Pending Verification</span>
+                                        </div>
                                     </div>
-                                    <div className="text-sm font-medium text-gradz-charcoal/60">Total Earnings</div>
+                                    <div className="group relative cursor-help">
+                                        <HelpCircle className="w-4 h-4 text-gradz-charcoal/25 mt-1" />
+                                        <div className="absolute right-0 w-48 p-3 bg-gray-900 text-white text-[11px] leading-relaxed rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 bottom-full mb-2 shadow-xl whitespace-normal break-words">
+                                            These funds will become available for withdrawal once the system verifies your files for authenticity and quality.
+                                        </div>
+                                    </div>
                                 </div>
                                 {isLoading ? (
-                                    <div className="h-10 w-32 bg-gradz-cream animate-pulse rounded-lg" />
+                                    <div className="h-10 w-32 bg-gradz-charcoal/5 animate-pulse rounded-lg" />
                                 ) : (
-                                    <div className="text-4xl font-mono font-bold text-gradz-charcoal">${earnings}</div>
+                                    <div className="text-3xl font-mono font-bold text-gradz-charcoal">${pendingEarnings}</div>
                                 )}
+                            </div>
+
+                            {/* Available to Withdraw */}
+                            <div className="bg-white rounded-3xl p-6 shadow-sm border border-gradz-charcoal/5 relative overflow-hidden">
+                                <div className="relative z-10">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className="p-3 bg-gradz-charcoal/5 rounded-xl">
+                                            <Wallet className="w-5 h-5 text-gradz-charcoal/70" />
+                                        </div>
+                                        <div className="text-sm font-medium text-gradz-charcoal/60 leading-tight">
+                                            Cleared Balance <br />
+                                            <span className="text-xs font-normal opacity-70">Available to Withdraw</span>
+                                        </div>
+                                    </div>
+                                    {isLoading ? (
+                                        <div className="h-10 w-32 bg-gradz-charcoal/5 animate-pulse rounded-lg mb-4" />
+                                    ) : (
+                                        <div className="flex items-end justify-between gap-4 mb-4">
+                                            <div className="text-4xl font-mono font-bold text-gradz-charcoal">${withdrawable}</div>
+                                        </div>
+                                    )}
+                                    <button 
+                                        onClick={() => setIsWithdrawModalOpen(true)}
+                                        disabled={isLoading || parseFloat(withdrawable) <= 0}
+                                        className="w-full py-2.5 bg-gradz-charcoal hover:bg-gradz-charcoal/90 text-white font-medium rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                                    >
+                                        Withdraw via UPI
+                                    </button>
+                                </div>
                             </div>
 
                             {/* Stat 2 — Data Contributed */}
@@ -141,6 +195,10 @@ export default function Dashboard() {
                                 ) : (
                                     <>
                                         <div className="text-4xl font-mono font-bold text-gradz-charcoal">{totalGbs} <span className="text-xl">GB</span></div>
+                                        <div className="mt-2 text-sm text-gradz-charcoal/60 font-medium">
+                                            Batch Files: <span className="text-gradz-charcoal font-bold">{totalFiles}</span>
+                                        </div>
+                                        
                                         <div className="mt-4 w-full">
                                             <div className="flex justify-between text-[10px] font-mono text-gradz-charcoal/50 uppercase tracking-widest mb-1">
                                                 <span>Your Limit</span>
@@ -156,11 +214,25 @@ export default function Dashboard() {
                                     </>
                                 )}
                             </div>
+                            
+                            {/* Referral Section */}
+                            {!isLoading && referralCode && (
+                                <ReferralSection 
+                                    referralCode={referralCode} 
+                                    referralEarnings={referralEarnings} 
+                                />
+                            )}
                         </div>
                     </div>
 
                 </div>
             </div>
+            
+            <WithdrawModal 
+                isOpen={isWithdrawModalOpen}
+                onClose={() => setIsWithdrawModalOpen(false)}
+                maxAmount={parseFloat(withdrawable)}
+            />
         </main>
     );
 }

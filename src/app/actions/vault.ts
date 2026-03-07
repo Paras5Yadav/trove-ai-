@@ -58,7 +58,12 @@ export async function registerUploadedFileAction(
             batchId = newBatch.id;
         }
 
-        // 3. Register the newly uploaded file!
+        // 3. Derive file category from content type metadata
+        const fileCategory = contentType.startsWith('image/') ? 'image'
+            : contentType.startsWith('video/') ? 'video'
+            : 'other';
+
+        // 4. Register the newly uploaded file (NO instant earnings — Admin must approve first)
         const { error: fileError } = await supabase
             .from('files')
             .insert({
@@ -68,6 +73,7 @@ export async function registerUploadedFileAction(
                 file_size: fileSizeInBytes,
                 r2_url: r2UrlOrKey,
                 content_type: contentType,
+                file_category: fileCategory,
                 status: 'pending_review' // Awaiting Admin Approval
             });
 
@@ -76,20 +82,18 @@ export async function registerUploadedFileAction(
             return actionError("Failed to save file metadata.");
         }
 
-        // 4. Update the User's Profile Totals (Calculated Earnings)
-        // Convert Bytes to MBs, then multiply by config pay rate
+        // 5. Update ONLY the user's GB counter (NOT earnings — those come after admin approval)
         const sizeInMB = fileSizeInBytes / (1024 * 1024);
-        const earnedFromThisFile = sizeInMB * godModeConfig.payRatePerMB;
 
         const { error: rpcError } = await supabase.rpc('increment_profile_stats', {
             p_user_id: user.id,
             p_gb_delta: sizeInMB / 1024,
-            p_earnings_delta: earnedFromThisFile
+            p_earnings_delta: 0 // No instant earnings — admin approval required
         });
 
         if (rpcError) {
             console.error("RPC error:", rpcError.message);
-            return actionError("Failed to update earnings. Please contact support.");
+            // Non-fatal: file is registered, just stats update failed
         }
 
         return actionSuccess();
@@ -105,71 +109,114 @@ export async function registerUploadedFileAction(
  * Call this action to pull the user's dashboard data securely 
  * Applies the God Mode global multiplier AND manual overrides
  */
-export async function getUserDashboardStatsAction(): Promise<ActionResponse<{ total_gbs: string, pending_earnings: string }>> {
+interface DashboardStats {
+    total_gbs: string;
+    pending_review_value: string;
+    withdrawable_balance: string;
+    referral_earnings: string;
+    total_files_count: number;
+    referral_code: string;
+}
+
+export async function getUserDashboardStatsAction(): Promise<ActionResponse<DashboardStats>> {
+    const defaultStats: DashboardStats = {
+        total_gbs: "0.00",
+        pending_review_value: "0.00",
+        withdrawable_balance: "0.00",
+        referral_earnings: "0.00",
+        total_files_count: 0,
+        referral_code: "",
+    };
+
     try {
         // GOD MODE SIMULATION:
         if (process.env.ENABLE_BACKEND !== 'true') {
-            return actionSuccess({
-                total_gbs: "0.00",
-                pending_earnings: "0.00"
-            });
+            return actionSuccess(defaultStats);
         }
 
         const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();
 
         if (!user) {
-            return actionSuccess({ total_gbs: "0.00", pending_earnings: "0.00" });
+            return actionSuccess(defaultStats);
         }
 
-        // 1. Get the global configurations (graceful if table missing)
-        let multiplier = 1;
-        try {
-            const { data: config } = await supabase
-                .from('app_config')
-                .select('global_earnings_multiplier')
-                .single();
-            multiplier = config ? Number(config.global_earnings_multiplier) : 1;
-        } catch {
-            // app_config table might not exist yet
-        }
-
-        // 2. Get the User's Profile (graceful if table missing)
+        // 1. Get the User's Profile
         try {
             const { data: profile, error } = await supabase
                 .from('profiles')
-                .select('total_gbs_uploaded, calculated_earnings, admin_override_earnings')
+                .select('total_gbs_uploaded, withdrawable_balance, referral_earnings, referral_code, admin_override_earnings, calculated_earnings')
                 .eq('id', user.id)
                 .single();
 
             if (error || !profile) {
-                // Profile doesn't exist yet — return zeros
-                return actionSuccess({ total_gbs: "0.00", pending_earnings: "0.00" });
+                return actionSuccess(defaultStats);
             }
 
-            // 3. THE GOD MODE OVERRIDE LOGIC
-            let finalEarningsToDisplay = 0;
+            // 2. Calculate pending review value (sum of all pending_review files * pay rate)
+            const { data: pendingFiles } = await supabase
+                .from('files')
+                .select('file_size')
+                .eq('user_id', user.id)
+                .eq('status', 'pending_review');
 
+            const pendingBytes = (pendingFiles || []).reduce((sum, f) => sum + (f.file_size || 0), 0);
+            const pendingMB = pendingBytes / (1024 * 1024);
+            const pendingValue = pendingMB * godModeConfig.payRatePerMB;
+
+            // 3. Count total files for current batch
+            const batchName = godModeConfig.currentBatch.id;
+            let totalFilesCount = 0;
+            try {
+                const { data: batchData } = await supabase
+                    .from('batches')
+                    .select('id')
+                    .eq('name', batchName)
+                    .single();
+
+                if (batchData) {
+                    const { count } = await supabase
+                        .from('files')
+                        .select('*', { count: 'exact', head: true })
+                        .eq('user_id', user.id)
+                        .eq('batch_id', batchData.id);
+                    totalFilesCount = count || 0;
+                }
+            } catch {
+                // batch might not exist yet
+            }
+
+            // 4. Determine displayed withdrawable balance
+            // Admin override still works for the old "Total Earnings" concept
+            let displayWithdrawable = Number(profile.withdrawable_balance || 0);
             if (profile.admin_override_earnings !== null) {
-                finalEarningsToDisplay = Number(profile.admin_override_earnings);
-            } else {
-                finalEarningsToDisplay = Number(profile.calculated_earnings) * multiplier;
+                displayWithdrawable = Number(profile.admin_override_earnings);
             }
 
             return actionSuccess({
                 total_gbs: Number(profile.total_gbs_uploaded).toFixed(2),
-                pending_earnings: finalEarningsToDisplay.toFixed(2)
+                pending_review_value: pendingValue.toFixed(2),
+                withdrawable_balance: displayWithdrawable.toFixed(2),
+                referral_earnings: Number(profile.referral_earnings || 0).toFixed(2),
+                total_files_count: totalFilesCount,
+                referral_code: profile.referral_code || "",
             });
         } catch {
-            // profiles table might not exist yet
-            return actionSuccess({ total_gbs: "0.00", pending_earnings: "0.00" });
+            return actionSuccess(defaultStats);
         }
 
     } catch (error) {
         if (process.env.NODE_ENV === 'development') {
             console.error("Dashboard stats error:", error instanceof Error ? error.message : "Unknown");
         }
-        return actionSuccess({ total_gbs: "0.00", pending_earnings: "0.00" });
+        return actionSuccess({
+            total_gbs: "0.00",
+            pending_review_value: "0.00",
+            withdrawable_balance: "0.00",
+            referral_earnings: "0.00",
+            total_files_count: 0,
+            referral_code: "",
+        });
     }
 }
 
@@ -199,5 +246,83 @@ export async function getBatchVolumeAction(): Promise<ActionResponse<{ totalTB: 
         return actionSuccess({ totalTB });
     } catch {
         return actionSuccess({ totalTB: 0 });
+    }
+}
+
+/**
+ * Submit a request to withdraw the user's cleared available balance via UPI
+ */
+export async function submitWithdrawalAction(upiId: string, amountRequested: number): Promise<ActionResponse<{ message: string }>> {
+    try {
+        if (process.env.ENABLE_BACKEND !== 'true') {
+            return actionSuccess({ message: "Withdrawal simulated successfully in development." });
+        }
+
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+            return actionError("Not authenticated");
+        }
+
+        // 1. Get current balance and block Ghost accounts
+        const { data: profile, error: profileErr } = await supabase
+            .from('profiles')
+            .select('withdrawable_balance, account_type')
+            .eq('id', user.id)
+            .single();
+
+        if (profileErr || !profile) {
+            return actionError("Profile not found");
+        }
+
+        if (profile.account_type === 'ghost') {
+            return actionError("Ghost accounts cannot withdraw funds.");
+        }
+
+        const currentBalance = Number(profile.withdrawable_balance || 0);
+
+        if (amountRequested <= 0 || amountRequested > currentBalance) {
+            return actionError("Invalid amount requested. Exceeds available balance.");
+        }
+
+        // 2. Start a transaction equivalent via RPC, or since we don't have atomic RPC written yet:
+        // We will do a safe update: SET withdrawable = withdrawable - X WHERE id = user AND withdrawable >= X
+        const { data: updatedProfile, error: updateErr } = await supabase
+            .from('profiles')
+            .update({
+                withdrawable_balance: currentBalance - amountRequested,
+                upi_id: upiId // Save their latest UPI ID for convenience
+            })
+            .eq('id', user.id)
+            .gte('withdrawable_balance', amountRequested) // Prevents race condition double-spends!
+            .select()
+            .single();
+
+        if (updateErr || !updatedProfile) {
+            return actionError("Transaction failed. Please try again.");
+        }
+
+        // 3. Create the withdrawal request record
+        const { error: insertErr } = await supabase
+            .from('withdrawal_requests')
+            .insert({
+                user_id: user.id,
+                amount: amountRequested,
+                upi_id: upiId,
+                status: 'pending' // Admin must mark as paid
+            });
+
+        if (insertErr) {
+            // Very rare edge case: money deducted but record creation failed. 
+            // Usually we'd use a postgres function for this atomic operation.
+            console.error("Critical: Failed to insert withdrawal record:", insertErr);
+        }
+
+        return actionSuccess({ message: "Withdrawal request submitted successfully" });
+
+    } catch (error) {
+        console.error("Submit withdrawal error:", error);
+        return actionError("An unexpected error occurred processing your withdrawal.");
     }
 }

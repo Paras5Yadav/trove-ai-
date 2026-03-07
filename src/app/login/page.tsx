@@ -1,5 +1,6 @@
 import { AuthForm } from "@/components/auth/AuthForm";
 import { ShieldAlert } from "lucide-react";
+import { Suspense } from "react";
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ message?: string }> }) {
     const params = await searchParams;
@@ -29,7 +30,9 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
             )}
 
             <div className="w-full relative z-10">
-                <AuthForm mode="login" />
+                <Suspense fallback={<div className="h-96 flex items-center justify-center">Loading...</div>}>
+                    <AuthForm mode="login" />
+                </Suspense>
             </div>
 
             <div className="mt-16 text-xs text-charcoal/40 text-center max-w-sm relative z-10">
