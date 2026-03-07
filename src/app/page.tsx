@@ -37,15 +37,15 @@ export default function Home() {
       >
         {/* Intro Block */}
         <motion.div variants={itemVariants} className="mb-24 md:mb-40 max-w-2xl">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gradz-green/40 bg-gradz-green/10 text-gradz-green font-medium text-sm mb-8">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#85d7ff]/20 bg-[#85d7ff]/10 text-[#85d7ff] font-medium text-sm mb-8">
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gradz-green opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-gradz-green"></span>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#85d7ff] opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#85d7ff]"></span>
             </span>
             Monetize Reality
           </div>
 
-          <h1 className="text-6xl md:text-8xl font-serif tracking-tight leading-[0.9] text-gradz-green mb-8">
+          <h1 className="text-6xl md:text-8xl font-serif tracking-tight leading-[0.9] text-[#85d7ff] mb-8">
             <span className="text-gradz-charcoal block">Your Data</span>
             <span className="italic block pl-8 md:pl-16 relative">
               Is The
@@ -95,7 +95,7 @@ export default function Home() {
         <div className="max-w-5xl mx-auto mt-24 md:mt-40 mb-16 px-6 sm:px-0">
           <div className="mb-16">
             <div className="flex items-center gap-2 mb-6">
-              <span className="text-gradz-green font-mono text-sm tracking-wider font-semibold uppercase">
+              <span className="text-[#85d7ff] font-mono text-sm tracking-wider font-semibold uppercase">
                 &gt; THE CONTRIBUTOR ARCHIVE
               </span>
             </div>
