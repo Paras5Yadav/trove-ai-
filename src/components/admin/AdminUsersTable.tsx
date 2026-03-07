@@ -135,6 +135,7 @@ export function AdminUsersTable({ users }: { users: AdminUserStats[] }) {
                             <th className="px-6 py-4 font-medium"><div className="flex items-center gap-1.5"><Database className="w-3.5 h-3.5" />Data Uploaded</div></th>
                             <th className="px-6 py-4 font-medium"><div className="flex items-center gap-1.5"><FileCheck className="w-3.5 h-3.5" />Pending Files</div></th>
                             <th className="px-6 py-4 font-medium text-center">Approved for Payout</th>
+                            <th className="px-6 py-4 font-medium"><div className="flex items-center gap-1.5">Earnings</div></th>
                             <th className="px-6 py-4 font-medium text-right"><div className="flex items-center justify-end gap-1.5"><DollarSign className="w-3.5 h-3.5" /> God Mode Override</div></th>
                         </tr>
                     </thead>

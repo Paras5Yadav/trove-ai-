@@ -139,9 +139,9 @@ export default function Dashboard() {
                                             <span className="text-xs font-normal opacity-70">Pending Verification</span>
                                         </div>
                                     </div>
-                                    <div className="group relative cursor-help">
+                                    <div className="group relative cursor-help outline-none" tabIndex={0}>
                                         <HelpCircle className="w-4 h-4 text-gradz-charcoal/25 mt-1" />
-                                        <div className="absolute right-0 w-48 p-3 bg-gray-900 text-white text-[11px] leading-relaxed rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 bottom-full mb-2 shadow-xl whitespace-normal break-words">
+                                        <div className="absolute right-0 w-48 p-3 bg-gray-900 text-white text-[11px] leading-relaxed rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible focus-within:opacity-100 focus-within:visible group-focus:opacity-100 group-focus:visible active:opacity-100 active:visible transition-all z-10 bottom-full mb-2 shadow-xl whitespace-normal break-words pointer-events-none group-focus:pointer-events-auto">
                                             These funds will become available for withdrawal once the system verifies your files for authenticity and quality.
                                         </div>
                                     </div>
