@@ -12,14 +12,12 @@ const isBackendEnabled = process.env.ENABLE_BACKEND === 'true';
 const hasUpstashConfig = process.env.UPSTASH_REDIS_REST_URL && !process.env.UPSTASH_REDIS_REST_URL.includes("dummy");
 
 // Rate limiters — only active when backend is enabled (Upstash available)
-// Login: 5 failed attempts per minute per email (brute-force protection)
 const loginLimiter = (isBackendEnabled && hasUpstashConfig) ? new Ratelimit({
     redis: Redis.fromEnv(),
     limiter: Ratelimit.slidingWindow(5, "1 m"),
     prefix: "ratelimit:login",
 }) : null;
 
-// Signup: 3 new accounts per hour per identifier (spam bot protection)
 const signupLimiter = (isBackendEnabled && hasUpstashConfig) ? new Ratelimit({
     redis: Redis.fromEnv(),
     limiter: Ratelimit.slidingWindow(3, "1 h"),
@@ -67,47 +65,42 @@ export async function signupAction(formData: FormData): Promise<ActionResponse |
     const accountType = formData.get("accountType") as string || "standard";
     const password = formData.get("password") as string;
 
-    // Rate limit check (use email or username as identifier)
+    // Rate limit check
     if (signupLimiter) {
         const rateLimitKey = (formData.get("email") as string) ?? (formData.get("username") as string) ?? 'anonymous';
         const { success } = await signupLimiter.limit(rateLimitKey);
         if (!success) return actionError("Too many signup attempts. Please wait 1 minute.");
     }
 
-    const confirmPassword = formData.get("confirmPassword") as string;
+    if (!password || password.length < 8) {
+        return actionError("Password must be at least 8 characters");
+    }
 
     let email = "";
     let displayName = "";
 
     if (accountType === "ghost") {
         const username = formData.get("username") as string;
-        if (!username || !password) return actionError("Username and password are required");
-        // Enforce basic alphanumeric username to avoid weird emails
+        if (!username) return actionError("Username is required");
+        
         const cleanUsername = username.toLowerCase().replace(/[^a-z0-9]/g, '');
         if (cleanUsername.length < 3) return actionError("Username must be at least 3 alphanumeric characters");
+        
         email = `${cleanUsername}@trove-ghost.com`;
-        displayName = username; // Keep original casing for display
+        displayName = username;
     } else {
         email = formData.get("email") as string;
         displayName = formData.get("displayName") as string;
-        if (!email || !displayName || !password) return actionError("Email, Display Name, and password are required");
-    }
-
-    if (password.length < 8) return actionError("Password must be at least 8 characters");
-
-    if (password !== confirmPassword) {
-        return actionError("Passwords do not match");
+        if (!email || !displayName) return actionError("Email and Display Name are required");
     }
 
     const supabase = await createClient();
-
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
     const { error, data } = await supabase.auth.signUp({
         email,
         password,
         options: {
-            // Ghost accounts use internal emails, no need for redirect
             ...(accountType === "standard" && {
                 emailRedirectTo: `${siteUrl}/api/auth/callback`,
             }),
@@ -115,14 +108,13 @@ export async function signupAction(formData: FormData): Promise<ActionResponse |
     });
 
     if (error) {
-        // If the email is taken, it means the username is taken
         if (error.message.includes("User already registered") && accountType === "ghost") {
             return actionError("This Ghost username is already taken. Please choose another one.");
         }
         return actionError(error.message);
     }
 
-    // Explicitly create the user profile if signUp succeeds
+    // Create the user profile
     if (data.user) {
         const { error: profileError } = await supabase
             .from('profiles')
@@ -140,13 +132,13 @@ export async function signupAction(formData: FormData): Promise<ActionResponse |
         }
     }
 
-    // Ghost accounts can sign in immediately (no real email to verify)
+    // If Ghost account, redirect immediately since there's no email to confirm
     if (accountType === "ghost") {
         revalidatePath("/", "layout");
         redirect("/dashboard");
     }
 
-    // Standard accounts need to verify their email first
+    // For standard accounts, return success so the form can show the "check your email" message
     return actionSuccess({ emailConfirmation: true } as never);
 }
 
@@ -176,40 +168,4 @@ export async function oAuthSignInAction(provider: Provider): Promise<ActionRespo
     if (data.url) {
         redirect(data.url);
     }
-}
-
-export async function resetPasswordAction(email: string): Promise<ActionResponse> {
-    if (!email) return actionError("Please enter your email address.");
-
-    const supabase = await createClient();
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${siteUrl}/reset-password`,
-    });
-
-    if (error) {
-        return actionError(error.message);
-    }
-
-    // Always return success even if email doesn't exist (security best practice)
-    return actionSuccess({ emailSent: true } as never);
-}
-
-export async function updatePasswordAction(newPassword: string): Promise<ActionResponse> {
-    if (!newPassword || newPassword.length < 8) {
-        return actionError("Password must be at least 8 characters.");
-    }
-
-    const supabase = await createClient();
-
-    const { error } = await supabase.auth.updateUser({
-        password: newPassword,
-    });
-
-    if (error) {
-        return actionError(error.message);
-    }
-
-    return actionSuccess();
 }
