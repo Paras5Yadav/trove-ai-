@@ -2,6 +2,7 @@
 
 import { motion, Variants } from "framer-motion";
 import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 import Image from "next/image";
 import { DataGravityWell } from "@/components/cards/DiagnosticShuffler";
 import { LiveAuctionBoard } from "@/components/cards/TelemetryTypewriter";
@@ -59,8 +60,10 @@ export default function Home() {
 
           <div className="flex items-center gap-4 text-sm font-bold uppercase tracking-widest text-gradz-charcoal">
             <SmartUploadButton />
-            <span className="opacity-40 ml-4 hidden sm:inline-block">Scroll to explore</span>
-            <ArrowRight className="w-5 h-5 opacity-40 animate-pulse hidden sm:block" />
+            <Link href="/policies" className="group flex items-center gap-2 opacity-50 hover:opacity-100 transition-opacity ml-4 hidden sm:flex">
+                <span>Review Data Policies</span>
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </Link>
           </div>
         </motion.div>
 

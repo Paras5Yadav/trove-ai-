@@ -21,7 +21,7 @@ export default function SignupPage() {
             </div>
 
             <div className="mt-16 text-xs text-charcoal/40 text-center max-w-sm relative z-10">
-                By signing up, you agree to securely contribute datasets for AI training purposes.
+                By signing up, you agree that your uploaded data will be sold to verified research partners and AI companies.
             </div>
         </div>
     );

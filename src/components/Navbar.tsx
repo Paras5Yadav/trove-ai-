@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
-import { signOutAction } from "@/app/actions/auth";
 import { VaultLogo } from "@/components/icons/VaultLogo";
+import { ClientNav } from "@/components/ClientNav";
 
 export async function Navbar() {
     const supabase = await createClient();
@@ -13,28 +13,7 @@ export async function Navbar() {
                 <VaultLogo className="w-6 h-6 text-moss" />
                 <Link href="/">TROVE</Link>
             </div>
-            <nav className="flex items-center gap-6 text-sm font-medium tracking-wide uppercase opacity-60 pointer-events-auto">
-                <Link href="/" className="hover:opacity-100 transition-opacity">Home</Link>
-                <Link href="/dashboard" className="hover:opacity-100 transition-opacity">Dashboard</Link>
-
-                {user ? (
-                    <form action={signOutAction}>
-                        <button
-                            type="submit"
-                            className="hover:opacity-100 transition-opacity text-red-500/80 hover:text-red-500"
-                        >
-                            Sign Out
-                        </button>
-                    </form>
-                ) : (
-                    <Link
-                        href="/login"
-                        className="hover:opacity-100 transition-opacity bg-gradz-charcoal text-gradz-cream px-4 py-2 rounded-full text-xs"
-                    >
-                        Sign In
-                    </Link>
-                )}
-            </nav>
+            <ClientNav isLoggedIn={!!user} />
         </header>
     );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { CloudUpload, CheckCircle2, Loader2, AlertCircle, FileIcon, X } from "lucide-react";
+import { CloudUpload, CheckCircle2, Loader2, AlertCircle, FileIcon, X, Info } from "lucide-react";
 import { godModeConfig } from "@/config/god-mode";
 import { registerUploadedFileAction } from "@/app/actions/vault";
 
@@ -268,6 +268,16 @@ export function FileUploadArea() {
                 className="hidden"
                 multiple
             />
+
+            {/* Data Consent Reminder */}
+            {isIdle && (
+                <div className="flex items-center gap-2.5 px-4 py-2.5 mb-3 rounded-xl bg-moss/5 border border-moss/15">
+                    <Info className="w-3.5 h-3.5 text-moss flex-shrink-0" />
+                    <p className="text-[11px] text-moss/80 font-medium">
+                        Files you upload will be sold to verified research partners and AI companies. You earn money for every file sold.
+                    </p>
+                </div>
+            )}
 
             <div
                 className={`border-2 border-dashed rounded-3xl p-12 flex flex-col items-center justify-center text-center transition-colors duration-300 ${isDragging ? "border-gradz-green bg-gradz-green/5" : "border-gradz-charcoal/20 bg-white"} min-h-[400px]`}

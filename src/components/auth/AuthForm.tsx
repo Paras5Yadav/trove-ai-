@@ -26,6 +26,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
     const [error, setError] = useState<string | null>(null);
     const [accountType, setAccountType] = useState<"standard" | "ghost">("standard");
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
+    const [consentChecked, setConsentChecked] = useState(false);
 
     const searchParams = useSearchParams();
     const referralCode = searchParams.get("ref") || "";
@@ -43,6 +44,11 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
             const confirmPwd = formData.get("confirmPassword") as string;
             if (pwd !== confirmPwd) {
                 setError("Passwords do not match");
+                setIsLoading(false);
+                return;
+            }
+            if (!consentChecked) {
+                setError("You must agree to the data contribution terms to create an account.");
                 setIsLoading(false);
                 return;
             }
@@ -140,6 +146,10 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
                                 <button
                                     type="button"
                                     onClick={async () => {
+                                        if (mode === "signup" && !consentChecked) {
+                                            setError("You must agree to the data contribution terms to create an account.");
+                                            return;
+                                        }
                                         setIsGoogleLoading(true);
                                         // Pass the referral code through the OAuth state or URL
                                         await oAuthSignInAction("google", referralCode);
@@ -263,8 +273,23 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
                             )}
                         </div>
                     )}
+                    {mode === "signup" && (
+                        <div className="pt-2">
+                            <label className="flex items-start gap-3 cursor-pointer group">
+                                <input
+                                    type="checkbox"
+                                    checked={consentChecked}
+                                    onChange={(e) => setConsentChecked(e.target.checked)}
+                                    className="mt-1 w-4 h-4 rounded border-charcoal/30 text-moss focus:ring-moss cursor-pointer"
+                                />
+                                <span className="text-xs text-charcoal/70 leading-relaxed">
+                                    I understand and agree that files I upload to Trove AI <strong className="text-charcoal">will be sold to verified research partners and AI companies</strong>. I will earn money for every file sold. I also understand that while I can delete my account at any time, data that has already been purchased by partners cannot be retracted.
+                                </span>
+                            </label>
+                        </div>
+                    )}
 
-                    <div className="pt-4">
+                    <div className="pt-4 space-y-3">
                         <button
                             type="submit"
                             disabled={isLoading}
@@ -280,6 +305,12 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
                                 </>
                             )}
                         </button>
+
+                        {mode === "signup" && (
+                            <p className="text-[10px] text-center text-charcoal/50 leading-relaxed max-w-sm mx-auto">
+                                By clicking Initialize Account, you confirm that you have read and agreed to the <a href="/policies" target="_blank" className="underline hover:text-moss transition-colors">Data Contributor Policies</a>.
+                            </p>
+                        )}
                     </div>
 
                     <div className="text-center pt-6 text-sm text-charcoal/60">

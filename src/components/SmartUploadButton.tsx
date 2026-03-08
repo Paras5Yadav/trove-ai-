@@ -19,7 +19,7 @@ export function SmartUploadButton() {
     }, []);
 
     return (
-        <Link href={isLoggedIn ? "/dashboard" : "/signup"}>
+        <Link href={isLoggedIn ? "/dashboard" : "/policies"}>
             <button className="bg-gradz-charcoal text-gradz-cream px-8 py-4 rounded-full hover:bg-black hover:scale-105 transition-all duration-300">
                 Start Uploading
             </button>
