@@ -166,6 +166,41 @@ export async function signOutAction() {
     redirect("/");
 }
 
+export async function deleteAccountAction(): Promise<ActionResponse | void> {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+        return actionError("You must be logged in to delete your account.");
+    }
+
+    try {
+        // We use the service client to bypass RLS and use the admin API to delete the user completely
+        const { createServiceClient } = await import("@/utils/supabase/server");
+        const adminClient = await createServiceClient();
+
+        // 1. Delete all user profile data first (if RLS prevents cascade deletes, though auth.users cascade usually handles this)
+        await adminClient.from("profiles").delete().eq("id", user.id);
+
+        // 2. Delete the user from the Supabase auth system completely
+        const { error: deletionError } = await adminClient.auth.admin.deleteUser(user.id);
+
+        if (deletionError) {
+            console.error("Error deleting user from auth:", deletionError);
+            return actionError("Failed to delete account. Please contact support.");
+        }
+
+        // 3. Sign them out of the current session locally
+        await supabase.auth.signOut();
+
+        revalidatePath("/", "layout");
+        redirect("/");
+    } catch (error) {
+        console.error("Account deletion failed:", error);
+        return actionError("An unexpected error occurred while deleting your account.");
+    }
+}
+
 export async function oAuthSignInAction(provider: Provider, referralCode?: string): Promise<ActionResponse | void> {
     const supabase = await createClient();
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
