@@ -13,6 +13,7 @@ export interface AdminUserStats {
     total_gbs_uploaded: string;
     calculated_earnings: string;
     admin_override_earnings: string | null;
+    withdrawable_balance: string;
     approved_for_payment: boolean;
     files_count?: number;
     pending_files_count?: number;
@@ -96,6 +97,7 @@ export async function getAllUsersAction(): Promise<ActionResponse<AdminUserStats
                 total_gbs_uploaded: (Math.random() * 50).toFixed(2),
                 calculated_earnings: (Math.random() * 200).toFixed(2),
                 admin_override_earnings: i === 0 ? "500.00" : null,
+                withdrawable_balance: i === 0 ? "500.00" : "0.00",
                 approved_for_payment: i % 3 === 0,
                 created_at: new Date(Date.now() - Math.random() * 10000000000).toISOString(),
                 files_count: Math.floor(Math.random() * 50),
@@ -109,7 +111,7 @@ export async function getAllUsersAction(): Promise<ActionResponse<AdminUserStats
 
         const { data, error } = await supabase
             .from('profiles')
-            .select('id, email, display_name, account_type, total_gbs_uploaded, calculated_earnings, admin_override_earnings, approved_for_payment, created_at, files(count)')
+            .select('id, email, display_name, account_type, total_gbs_uploaded, calculated_earnings, admin_override_earnings, withdrawable_balance, approved_for_payment, created_at, files(count)')
             .order('created_at', { ascending: false })
             .limit(10000); // Fetch all users up to 10k
 

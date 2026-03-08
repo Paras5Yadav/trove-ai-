@@ -79,8 +79,8 @@ export function WithdrawModal({ isOpen, onClose, maxAmount, savedUpiId }: Withdr
 
                 {success ? (
                     <div className="text-center py-8">
-                        <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <Banknote className="w-8 h-8 text-green-600" />
+                        <div className="w-16 h-16 bg-gradz-charcoal/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <Banknote className="w-8 h-8 text-gradz-charcoal" />
                         </div>
                         <h3 className="text-xl font-bold text-gray-900 mb-2">Withdrawal Requested!</h3>
                         <p className="text-gray-500 text-sm">We'll process your payment shortly.</p>
@@ -88,8 +88,8 @@ export function WithdrawModal({ isOpen, onClose, maxAmount, savedUpiId }: Withdr
                 ) : (
                     <>
                         <div className="flex items-center gap-3 mb-6">
-                            <div className="p-3 bg-green-50 rounded-xl">
-                                <Banknote className="w-6 h-6 text-green-600" />
+                            <div className="p-3 bg-gradz-charcoal/10 rounded-xl">
+                                <Banknote className="w-6 h-6 text-gradz-charcoal" />
                             </div>
                             <div>
                                 <h3 className="text-xl font-bold text-gray-900">Withdraw via UPI</h3>
@@ -114,7 +114,7 @@ export function WithdrawModal({ isOpen, onClose, maxAmount, savedUpiId }: Withdr
                                     value={upiId}
                                     onChange={(e) => setUpiId(e.target.value)}
                                     placeholder="name@ybl, name@paytm, 9876543210@upi"
-                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all placeholder:text-gray-300 font-medium text-gray-900"
+                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-gradz-charcoal focus:border-transparent outline-none transition-all placeholder:text-gray-300 font-medium text-gray-900"
                                 />
                             </div>
 
@@ -132,13 +132,13 @@ export function WithdrawModal({ isOpen, onClose, maxAmount, savedUpiId }: Withdr
                                         step="0.01"
                                         min="0.01"
                                         max={maxAmount}
-                                        className="w-full pl-8 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all placeholder:text-gray-300 font-medium text-gray-900"
+                                        className="w-full pl-8 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-gradz-charcoal focus:border-transparent outline-none transition-all placeholder:text-gray-300 font-medium text-gray-900"
                                     />
                                 </div>
                                 <button
                                     type="button"
                                     onClick={() => setAmount(maxAmount.toFixed(2))}
-                                    className="text-xs text-green-600 font-semibold hover:underline pl-1"
+                                    className="text-xs text-gradz-charcoal font-semibold hover:underline pl-1"
                                 >
                                     Withdraw All
                                 </button>
@@ -147,7 +147,7 @@ export function WithdrawModal({ isOpen, onClose, maxAmount, savedUpiId }: Withdr
                             <button
                                 type="submit"
                                 disabled={isSubmitting}
-                                className="w-full py-3.5 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
+                                className="w-full py-3.5 bg-gradz-green hover:opacity-90 text-gradz-charcoal font-bold rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-60"
                             >
                                 {isSubmitting ? (
                                     <Loader2 className="w-5 h-5 animate-spin" />

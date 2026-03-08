@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { AdminUserStats, setAdminOverrideEarningsAction, toggleUserApprovalAction } from "@/app/actions/admin";
-import { Check, Edit2, X, DollarSign, Database, Loader2, CheckCircle2, XCircle, Search } from "lucide-react";
+import { Check, Edit2, X, DollarSign, Database, Loader2, CheckCircle2, XCircle, Search, Banknote } from "lucide-react";
 
 export function AdminUsersTable({ users }: { users: AdminUserStats[] }) {
     const [searchQuery, setSearchQuery] = useState("");
@@ -98,6 +98,7 @@ export function AdminUsersTable({ users }: { users: AdminUserStats[] }) {
                             <th className="px-6 py-4 font-medium"><div className="flex items-center gap-1.5"><Database className="w-3.5 h-3.5" />Data Uploaded</div></th>
                             <th className="px-6 py-4 font-medium text-center">Approved for Payout</th>
                             <th className="px-6 py-4 font-medium"><div className="flex items-center gap-1.5">Earnings</div></th>
+                            <th className="px-6 py-4 font-medium"><div className="flex items-center gap-1.5"><Banknote className="w-3.5 h-3.5" />Withdrawable</div></th>
                             <th className="px-6 py-4 font-medium text-right"><div className="flex items-center justify-end gap-1.5"><DollarSign className="w-3.5 h-3.5" /> God Mode Override</div></th>
                         </tr>
                     </thead>
@@ -149,6 +150,11 @@ export function AdminUsersTable({ users }: { users: AdminUserStats[] }) {
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <span className={`px-2 py-1 rounded text-xs font-medium ${hasOverride ? "bg-gray-100 text-gray-400 line-through" : "bg-green-50 text-green-700"}`}>
                                             ${Number(user.calculated_earnings).toFixed(2)}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <span className={`px-2.5 py-1 rounded-lg text-xs font-bold ${Number(user.withdrawable_balance || 0) > 0 ? "bg-green-50 text-green-700" : "text-gray-300"}`}>
+                                            ${Number(user.withdrawable_balance || 0).toFixed(2)}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 text-right min-w-[200px]">

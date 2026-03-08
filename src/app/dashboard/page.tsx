@@ -1,13 +1,14 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { UploadCloud, Database, Wallet, Activity, CheckCircle2 } from "lucide-react";
+import { UploadCloud, Database, Wallet, Activity, CheckCircle2, Banknote } from "lucide-react";
 import { FileUploadArea } from "@/components/dashboard/FileUploadArea";
 import { getUserDashboardStatsAction, getBatchVolumeAction } from "@/app/actions/vault";
 
 import { useEffect, useState } from "react";
 
 import { ReferralSection } from "@/components/dashboard/ReferralSection";
+import { WithdrawModal } from "@/components/dashboard/WithdrawModal";
 import { Clock, HelpCircle } from "lucide-react";
 
 const BASE_TB = 12.4; // Starting base volume
@@ -19,6 +20,9 @@ export default function Dashboard() {
     const [totalGbs, setTotalGbs] = useState("0.00");
     const [totalFiles, setTotalFiles] = useState(0);
     const [referralCode, setReferralCode] = useState("");
+    const [withdrawableBalance, setWithdrawableBalance] = useState("0.00");
+    const [savedUpiId, setSavedUpiId] = useState("");
+    const [showWithdrawModal, setShowWithdrawModal] = useState(false);
     
     const [batchVolumeTB, setBatchVolumeTB] = useState(BASE_TB);
     const [isLoading, setIsLoading] = useState(true);
@@ -37,6 +41,8 @@ export default function Dashboard() {
                     setTotalGbs(statsResult.data.total_gbs);
                     setTotalFiles(statsResult.data.total_files_count);
                     setReferralCode(statsResult.data.referral_code);
+                    setWithdrawableBalance(statsResult.data.withdrawable_balance);
+                    setSavedUpiId(statsResult.data.upi_id || "");
                 }
 
                 if (volumeResult.success && volumeResult.data) {
@@ -179,6 +185,38 @@ export default function Dashboard() {
                                 )}
                             </div>
                             
+                            {/* Available to Withdraw */}
+                            <div className="bg-white rounded-3xl p-6 shadow-sm border border-gradz-charcoal/5">
+                                <div className="flex items-start justify-between mb-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-3 bg-gradz-charcoal/10 rounded-xl">
+                                            <Banknote className="w-5 h-5 text-gradz-charcoal" />
+                                        </div>
+                                        <div className="text-sm font-medium text-gradz-charcoal/60">Available to Withdraw</div>
+                                    </div>
+                                </div>
+                                {isLoading ? (
+                                    <div className="h-10 w-32 bg-gradz-charcoal/5 animate-pulse rounded-lg" />
+                                ) : (
+                                    <>
+                                        <div className="text-4xl font-mono font-bold text-gradz-charcoal">${withdrawableBalance}</div>
+                                        {savedUpiId && (
+                                            <div className="mt-2 text-xs text-gradz-charcoal/50 font-mono truncate">
+                                                UPI: {savedUpiId}
+                                            </div>
+                                        )}
+                                        <button
+                                            onClick={() => setShowWithdrawModal(true)}
+                                            disabled={parseFloat(withdrawableBalance) <= 0}
+                                            className="mt-4 w-full py-2.5 bg-gradz-charcoal hover:bg-gradz-charcoal/90 text-white font-semibold rounded-xl transition-colors text-sm disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                        >
+                                            <Banknote className="w-4 h-4" />
+                                            Withdraw via UPI
+                                        </button>
+                                    </>
+                                )}
+                            </div>
+
                             {/* Referral Section */}
                             {!isLoading && referralCode && (
                                 <ReferralSection 
@@ -191,7 +229,14 @@ export default function Dashboard() {
 
                 </div>
             </div>
-            
+
+            {/* Withdraw Modal */}
+            <WithdrawModal
+                isOpen={showWithdrawModal}
+                onClose={() => setShowWithdrawModal(false)}
+                maxAmount={parseFloat(withdrawableBalance)}
+                savedUpiId={savedUpiId}
+            />
 
         </main>
     );

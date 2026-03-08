@@ -118,6 +118,7 @@ interface DashboardStats {
     referral_earnings: string;
     total_files_count: number;
     referral_code: string;
+    upi_id: string;
 }
 
 export async function getUserDashboardStatsAction(): Promise<ActionResponse<DashboardStats>> {
@@ -128,6 +129,7 @@ export async function getUserDashboardStatsAction(): Promise<ActionResponse<Dash
         referral_earnings: "0.00",
         total_files_count: 0,
         referral_code: "",
+        upi_id: "",
     };
 
     try {
@@ -147,7 +149,7 @@ export async function getUserDashboardStatsAction(): Promise<ActionResponse<Dash
         try {
             const { data: profile, error } = await supabase
                 .from('profiles')
-                .select('total_gbs_uploaded, withdrawable_balance, referral_earnings, referral_code, admin_override_earnings, calculated_earnings')
+                .select('total_gbs_uploaded, withdrawable_balance, referral_earnings, referral_code, admin_override_earnings, calculated_earnings, upi_id')
                 .eq('id', user.id)
                 .single();
 
@@ -195,6 +197,7 @@ export async function getUserDashboardStatsAction(): Promise<ActionResponse<Dash
                 referral_earnings: Number(profile.referral_earnings || 0).toFixed(2),
                 total_files_count: totalFilesCount,
                 referral_code: profile.referral_code || "",
+                upi_id: profile.upi_id || "",
             });
         } catch {
             return actionSuccess(defaultStats);
