@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { UploadCloud, Database, Wallet, Activity, CheckCircle2, Banknote } from "lucide-react";
+import { UploadCloud, Database, Wallet, Activity, CheckCircle2, Banknote, Clock, XCircle, ChevronRight } from "lucide-react";
 import { FileUploadArea } from "@/components/dashboard/FileUploadArea";
 import { getUserDashboardStatsAction, getBatchVolumeAction } from "@/app/actions/vault";
 
@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 
 import { ReferralSection } from "@/components/dashboard/ReferralSection";
 import { WithdrawModal } from "@/components/dashboard/WithdrawModal";
-import { Clock, HelpCircle } from "lucide-react";
+import { HelpCircle } from "lucide-react";
 
 const BASE_TB = 12.4; // Starting base volume
 const TOTAL_CAPACITY_TB = 50.0; // Total batch capacity
@@ -23,6 +23,7 @@ export default function Dashboard() {
     const [withdrawableBalance, setWithdrawableBalance] = useState("0.00");
     const [savedUpiId, setSavedUpiId] = useState("");
     const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+    const [recentWithdrawals, setRecentWithdrawals] = useState<any[]>([]);
     
     const [batchVolumeTB, setBatchVolumeTB] = useState(BASE_TB);
     const [isLoading, setIsLoading] = useState(true);
@@ -43,6 +44,7 @@ export default function Dashboard() {
                     setReferralCode(statsResult.data.referral_code);
                     setWithdrawableBalance(statsResult.data.withdrawable_balance);
                     setSavedUpiId(statsResult.data.upi_id || "");
+                    setRecentWithdrawals(statsResult.data.recent_withdrawals || []);
                 }
 
                 if (volumeResult.success && volumeResult.data) {
@@ -213,6 +215,57 @@ export default function Dashboard() {
                                             <Banknote className="w-4 h-4" />
                                             Withdraw via UPI
                                         </button>
+                                        
+                                        {/* Withdrawal Status Banner */}
+                                        {recentWithdrawals.length > 0 && recentWithdrawals[0].status === 'pending' && (
+                                            <div className="mt-5 p-3.5 rounded-xl bg-yellow-50/80 border border-yellow-200/60">
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-2">
+                                                        <Clock className="w-4 h-4 text-yellow-500" />
+                                                        <span className="text-sm font-semibold text-yellow-800">Withdrawal Pending</span>
+                                                    </div>
+                                                    <span className="text-sm font-bold text-yellow-800">
+                                                        ${Number(recentWithdrawals[0].amount).toFixed(2)}
+                                                    </span>
+                                                </div>
+                                                <div className="text-[11px] text-yellow-600/70 mt-1">
+                                                    Requested {new Date(recentWithdrawals[0].created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                                                </div>
+                                            </div>
+                                        )}
+                                        {recentWithdrawals.length > 0 && recentWithdrawals[0].status === 'paid' && (
+                                            <div className="mt-5 p-3.5 rounded-xl bg-green-50/80 border border-green-200/60">
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-2">
+                                                        <CheckCircle2 className="w-4 h-4 text-green-600" />
+                                                        <span className="text-sm font-semibold text-green-800">Withdrawal Paid</span>
+                                                    </div>
+                                                    <span className="text-sm font-bold text-green-800">
+                                                        ${Number(recentWithdrawals[0].amount).toFixed(2)}
+                                                    </span>
+                                                </div>
+                                                <div className="text-[11px] text-green-600/70 mt-1">
+                                                    Paid on {new Date(recentWithdrawals[0].paid_at || recentWithdrawals[0].created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                                                </div>
+                                            </div>
+                                        )}
+                                        {recentWithdrawals.length > 0 && recentWithdrawals[0].status === 'denied' && (
+                                            <div className="mt-5 p-3.5 rounded-xl bg-red-50/80 border border-red-200/60">
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-2">
+                                                        <XCircle className="w-4 h-4 text-red-500" />
+                                                        <span className="text-sm font-semibold text-red-800">Withdrawal Denied</span>
+                                                    </div>
+                                                    <span className="text-sm font-bold text-red-800">
+                                                        ${Number(recentWithdrawals[0].amount).toFixed(2)}
+                                                    </span>
+                                                </div>
+                                                {recentWithdrawals[0].admin_note && (
+                                                    <div className="text-xs text-red-600 mt-1.5">{recentWithdrawals[0].admin_note}</div>
+                                                )}
+                                                <div className="text-[11px] text-red-400 mt-1">Your funds have been refunded to your balance.</div>
+                                            </div>
+                                        )}
                                     </>
                                 )}
                             </div>

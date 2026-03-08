@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { AdminUserStats, setAdminOverrideEarningsAction, toggleUserApprovalAction } from "@/app/actions/admin";
-import { Check, Edit2, X, DollarSign, Database, Loader2, CheckCircle2, XCircle, Search, Banknote } from "lucide-react";
+import { Search, Loader2, DollarSign, Check, X, ShieldAlert, Database, Banknote, CheckCircle2, XCircle, FilePlus, ShieldCheck, Edit2 } from "lucide-react";
 
 export function AdminUsersTable({ users }: { users: AdminUserStats[] }) {
     const [searchQuery, setSearchQuery] = useState("");
@@ -14,7 +14,7 @@ export function AdminUsersTable({ users }: { users: AdminUserStats[] }) {
 
     const handleEditClick = (user: AdminUserStats) => {
         setEditingUserId(user.id);
-        setEditValue(user.admin_override_earnings !== null ? user.admin_override_earnings.toString() : "");
+        setEditValue(user.admin_override_earnings != null ? user.admin_override_earnings.toString() : "");
     };
 
     const handleCancel = () => {
@@ -95,8 +95,9 @@ export function AdminUsersTable({ users }: { users: AdminUserStats[] }) {
                     <thead className="text-xs text-gray-500 bg-gray-50/50 uppercase border-b border-gray-100">
                         <tr>
                             <th className="px-6 py-4 font-medium">Contributor</th>
-                            <th className="px-6 py-4 font-medium"><div className="flex items-center gap-1.5"><Database className="w-3.5 h-3.5" />Data Uploaded</div></th>
-                            <th className="px-6 py-4 font-medium text-center">Approved for Payout</th>
+                            <th className="px-6 py-4 font-medium"><div className="flex items-center gap-1.5"><Database className="w-3.5 h-3.5" />Lifetime Uploads</div></th>
+                            <th className="px-6 py-4 font-medium"><div className="flex items-center gap-1.5"><FilePlus className="w-3.5 h-3.5" />Batch Files</div></th>
+                            <th className="px-6 py-4 font-medium text-center"><div className="flex justify-center" title="Approved for Payout"><ShieldCheck className="w-3.5 h-3.5" /></div></th>
                             <th className="px-6 py-4 font-medium"><div className="flex items-center gap-1.5">Earnings</div></th>
                             <th className="px-6 py-4 font-medium"><div className="flex items-center gap-1.5"><Banknote className="w-3.5 h-3.5" />Withdrawable</div></th>
                             <th className="px-6 py-4 font-medium text-right"><div className="flex items-center justify-end gap-1.5"><DollarSign className="w-3.5 h-3.5" /> God Mode Override</div></th>
@@ -127,8 +128,18 @@ export function AdminUsersTable({ users }: { users: AdminUserStats[] }) {
                                             <span className="text-gray-900 font-medium whitespace-nowrap">
                                                 {user.files_count || 0} file{user.files_count === 1 ? '' : 's'}
                                             </span>
-                                            <span className="text-xs text-gray-500 whitespace-nowrap mt-0.5">
+                                            <span className="text-xs text-gray-500 whitespace-nowrap mt-0.5" title="Lifetime GBs">
                                                 {Number(user.total_gbs_uploaded).toFixed(2)} GB
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 text-center">
+                                        <div className="flex flex-col items-center">
+                                            <div className="inline-flex items-center justify-center min-w-[32px] h-8 px-3 rounded-lg bg-blue-50 text-blue-700 font-bold border border-blue-100">
+                                                {user.batch_files_count || 0}
+                                            </div>
+                                            <span className="text-xs text-gray-500 mt-1">
+                                                {user.batch_gbs || '0.00'} GB
                                             </span>
                                         </div>
                                     </td>

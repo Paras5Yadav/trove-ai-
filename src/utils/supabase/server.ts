@@ -31,3 +31,24 @@ export async function createClient() {
         }
     )
 }
+
+/**
+ * Admin client that bypasses RLS policies entirely.
+ * MUST ONLY BE USED IN SECURE SERVER ACTIONS AFTER VALIDATION!
+ */
+export async function createServiceClient() {
+    return createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!, // Use the service role key
+        {
+            cookies: {
+                getAll() {
+                    return []
+                },
+                setAll() {
+                    // Do nothing for service client
+                },
+            },
+        }
+    )
+}

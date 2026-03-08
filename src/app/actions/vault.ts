@@ -119,6 +119,14 @@ interface DashboardStats {
     total_files_count: number;
     referral_code: string;
     upi_id: string;
+    recent_withdrawals: Array<{
+        id: string;
+        amount: number;
+        status: string;
+        admin_note: string | null;
+        created_at: string;
+        paid_at: string | null;
+    }>;
 }
 
 export async function getUserDashboardStatsAction(): Promise<ActionResponse<DashboardStats>> {
@@ -130,6 +138,7 @@ export async function getUserDashboardStatsAction(): Promise<ActionResponse<Dash
         total_files_count: 0,
         referral_code: "",
         upi_id: "",
+        recent_withdrawals: [],
     };
 
     try {
@@ -149,7 +158,7 @@ export async function getUserDashboardStatsAction(): Promise<ActionResponse<Dash
         try {
             const { data: profile, error } = await supabase
                 .from('profiles')
-                .select('total_gbs_uploaded, withdrawable_balance, referral_earnings, referral_code, admin_override_earnings, calculated_earnings, upi_id')
+                .select('withdrawable_balance, referral_earnings, referral_code, admin_override_earnings, upi_id')
                 .eq('id', user.id)
                 .single();
 
@@ -157,10 +166,17 @@ export async function getUserDashboardStatsAction(): Promise<ActionResponse<Dash
                 return actionSuccess(defaultStats);
             }
 
-            // 2. Count total files for current batch
+            // 2. Calculate stats ONLY for the current batch
             const batchName = godModeConfig.currentBatch.id;
             let totalFilesCount = 0;
+            let currentBatchAssetValue = 0;
+            let currentBatchGBs = 0;
+
             try {
+                // Get the global earnings multiplier first
+                const { data: config } = await supabase.from('app_config').select('global_earnings_multiplier').single();
+                const multiplier = config ? Number(config.global_earnings_multiplier) : 1;
+
                 const { data: batchData } = await supabase
                     .from('batches')
                     .select('id')
@@ -168,21 +184,51 @@ export async function getUserDashboardStatsAction(): Promise<ActionResponse<Dash
                     .single();
 
                 if (batchData) {
-                    const { count } = await supabase
+                    const { data: batchFiles } = await supabase
                         .from('files')
-                        .select('*', { count: 'exact', head: true })
+                        .select('file_size, approved_value')
                         .eq('user_id', user.id)
                         .eq('batch_id', batchData.id);
-                    totalFilesCount = count || 0;
+
+                    if (batchFiles) {
+                        totalFilesCount = batchFiles.length;
+                        
+                        let totalBytes = 0;
+                        let totalCalculatedEarnings = 0;
+                        
+                        batchFiles.forEach(file => {
+                            totalBytes += Number(file.file_size || 0);
+                            
+                            // Calculate base value using the same formula as registerFileAction
+                            const fileSizeInMB = Number(file.file_size || 0) / (1024 * 1024);
+                            const val = fileSizeInMB * godModeConfig.payRatePerMB * multiplier;
+                            totalCalculatedEarnings += (file.approved_value ? Number(file.approved_value) : val);
+                        });
+                        
+                        currentBatchGBs = totalBytes / (1024 * 1024 * 1024); // Convert bytes to GBs
+                        currentBatchAssetValue = totalCalculatedEarnings;
+                    }
                 }
-            } catch {
-                // batch might not exist yet
+            } catch (err) {
+                console.warn("Batch calculation error (safe to ignore if no batch):", err);
             }
 
-            // 3. Asset Value = Total Uploaded Value + Global Multiplier
-            const { data: config } = await supabase.from('app_config').select('global_earnings_multiplier').single();
-            const multiplier = config ? Number(config.global_earnings_multiplier) : 1;
-            const trueAssetValue = Number(profile.calculated_earnings) * multiplier;
+            // 3. Fetch the most recent withdrawal request (any status) so user sees feedback
+            let recentWithdrawals: DashboardStats['recent_withdrawals'] = [];
+            try {
+                const { data: withdrawalsData } = await supabase
+                    .from('withdrawal_requests')
+                    .select('id, amount, status, admin_note, created_at, paid_at')
+                    .eq('user_id', user.id)
+                    .order('created_at', { ascending: false })
+                    .limit(1);
+                
+                if (withdrawalsData) {
+                    recentWithdrawals = withdrawalsData as DashboardStats['recent_withdrawals'];
+                }
+            } catch {
+                // non-fatal if history fails
+            }
 
             // 4. Cleared Balance = God Mode Override (or 0 if not set)
             let clearedBalance = 0;
@@ -191,13 +237,14 @@ export async function getUserDashboardStatsAction(): Promise<ActionResponse<Dash
             }
 
             return actionSuccess({
-                total_gbs: Number(profile.total_gbs_uploaded).toFixed(2),
-                asset_value: trueAssetValue.toFixed(2),
+                total_gbs: currentBatchGBs.toFixed(2),
+                asset_value: currentBatchAssetValue.toFixed(2),
                 withdrawable_balance: clearedBalance.toFixed(2),
                 referral_earnings: Number(profile.referral_earnings || 0).toFixed(2),
                 total_files_count: totalFilesCount,
                 referral_code: profile.referral_code || "",
                 upi_id: profile.upi_id || "",
+                recent_withdrawals: recentWithdrawals,
             });
         } catch {
             return actionSuccess(defaultStats);
@@ -245,7 +292,8 @@ export async function getBatchVolumeAction(): Promise<ActionResponse<{ totalTB: 
  */
 export async function submitWithdrawalAction(upiId: string, amountRequested: number): Promise<ActionResponse<{ message: string }>> {
     try {
-        if (process.env.ENABLE_BACKEND !== 'true') {
+        // In development, still allow real database inserts if Supabase is connected
+        if (process.env.ENABLE_BACKEND !== 'true' && !process.env.NEXT_PUBLIC_SUPABASE_URL) {
             return actionSuccess({ message: "Withdrawal simulated successfully in development." });
         }
 

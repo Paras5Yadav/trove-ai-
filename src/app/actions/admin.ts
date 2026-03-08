@@ -1,8 +1,9 @@
 "use server";
 
-import { createClient } from "@/utils/supabase/server";
+import { createClient, createServiceClient } from "@/utils/supabase/server";
 import { ActionResponse, actionError, actionSuccess } from "@/types/actions";
 import { revalidatePath } from "next/cache";
+import { godModeConfig } from "@/config/god-mode";
 
 // Type definitions for the admin panel
 export interface AdminUserStats {
@@ -10,13 +11,15 @@ export interface AdminUserStats {
     email: string;
     display_name: string;
     account_type: "standard" | "ghost";
-    total_gbs_uploaded: string;
-    calculated_earnings: string;
-    admin_override_earnings: string | null;
-    withdrawable_balance: string;
+    total_gbs_uploaded?: string;
+    calculated_earnings?: string;
+    admin_override_earnings?: string | null;
+    withdrawable_balance?: string | null;
     approved_for_payment: boolean;
     files_count?: number;
     pending_files_count?: number;
+    batch_files_count?: number;
+    batch_gbs?: string;
 }
 
 export interface AdminBatchStats {
@@ -128,11 +131,36 @@ export async function getAllUsersAction(): Promise<ActionResponse<AdminUserStats
             pendingCounts[f.user_id] = (pendingCounts[f.user_id] || 0) + 1;
         });
 
+        // Fetch ALL batch files for the current batch
+        const batchName = godModeConfig.currentBatch.id;
+        let batchCounts: Record<string, number> = {};
+        let batchGbs: Record<string, number> = {};
+        
+        const { data: batchData } = await supabase
+            .from('batches')
+            .select('id')
+            .eq('name', batchName)
+            .single();
+            
+        if (batchData) {
+            const { data: allBatchFiles } = await supabase
+                .from('files')
+                .select('user_id, file_size')
+                .eq('batch_id', batchData.id);
+                
+            allBatchFiles?.forEach(f => {
+                batchCounts[f.user_id] = (batchCounts[f.user_id] || 0) + 1;
+                batchGbs[f.user_id] = (batchGbs[f.user_id] || 0) + Number(f.file_size || 0);
+            });
+        }
+
         // Extract the count from the nested relation array
         const formattedData = data?.map(user => ({
             ...user,
             files_count: user.files?.[0]?.count || 0,
-            pending_files_count: pendingCounts[user.id] || 0
+            pending_files_count: pendingCounts[user.id] || 0,
+            batch_files_count: batchCounts[user.id] || 0,
+            batch_gbs: ((batchGbs[user.id] || 0) / (1024 * 1024 * 1024)).toFixed(2)
         }));
 
         return { success: true, data: formattedData as AdminUserStats[] };
@@ -165,7 +193,7 @@ export async function setAdminOverrideEarningsAction(userId: string, overrideVal
             return { success: false, error: "Invalid user ID format" };
         }
 
-        const supabase = await createClient();
+        const supabase = await createServiceClient();
         let valueToSave = null;
         if (overrideValue && overrideValue !== "") {
             const parsed = parseFloat(overrideValue);
@@ -253,7 +281,7 @@ export async function toggleUserApprovalAction(userId: string, approved: boolean
             return { success: false, error: "Invalid user ID format" };
         }
 
-        const supabase = await createClient();
+        const supabase = await createServiceClient();
 
         const { error } = await supabase
             .from('profiles')
@@ -645,6 +673,8 @@ export interface PendingWithdrawal {
     upi_id: string;
     status: string;
     created_at: string;
+    admin_note?: string | null;
+    paid_at?: string | null;
     profiles: {
         display_name: string;
         email: string;
@@ -656,14 +686,16 @@ export async function getPendingWithdrawalsAction(): Promise<ActionResponse<{ wi
         const isAdmin = await checkAdminAccess();
         if (!isAdmin) return { success: false, error: "Unauthorized access" };
 
-        if (process.env.ENABLE_BACKEND !== 'true') {
+        // In development, we still want to fetch actual withdrawals if testing database connection
+        // Only return mock if we specifically lack Supabase credentials
+        if (process.env.ENABLE_BACKEND !== 'true' && !process.env.NEXT_PUBLIC_SUPABASE_URL) {
             return {
                 success: true,
                 data: { withdrawals: [], totalAmount: 0 }
             };
         }
 
-        const supabase = await createClient();
+        const supabase = await createServiceClient();
 
         const { data: requests, error } = await supabase
             .from('withdrawal_requests')
@@ -698,12 +730,42 @@ export async function getPendingWithdrawalsAction(): Promise<ActionResponse<{ wi
     }
 }
 
+export async function getUserWithdrawalHistoryAction(userId: string): Promise<ActionResponse<{ withdrawals: PendingWithdrawal[] }>> {
+    try {
+        const isAdmin = await checkAdminAccess();
+        if (!isAdmin) return { success: false, error: "Unauthorized access" };
+
+        const supabase = await createServiceClient();
+
+        const { data: requests, error } = await supabase
+            .from('withdrawal_requests')
+            .select('id, user_id, amount, upi_id, status, created_at, admin_note, paid_at, profiles(display_name, email)')
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        const formattedRequests = (requests || []).map(r => ({
+            ...r,
+            profiles: Array.isArray(r.profiles) ? r.profiles[0] : r.profiles
+        })) as PendingWithdrawal[];
+
+        return {
+            success: true,
+            data: { withdrawals: formattedRequests }
+        };
+    } catch (error: unknown) {
+        console.error("Fetch user withdrawal history error:", error);
+        return { success: false, error: "Failed to fetch withdrawal history." };
+    }
+}
+
 export async function markWithdrawalPaidAction(requestId: string): Promise<ActionResponse<{ message: string }>> {
     try {
         const isAdmin = await checkAdminAccess();
         if (!isAdmin) return { success: false, error: "Unauthorized access" };
 
-        const supabase = await createClient();
+        const supabase = await createServiceClient();
 
         const { error } = await supabase
             .from('withdrawal_requests')
@@ -730,7 +792,7 @@ export async function denyWithdrawalAction(requestId: string, reason: string = "
         const isAdmin = await checkAdminAccess();
         if (!isAdmin) return { success: false, error: "Unauthorized access" };
 
-        const supabase = await createClient();
+        const supabase = await createServiceClient();
 
         // 1. Get the withdrawal details to refund the user
         const { data: request, error: reqErr } = await supabase
@@ -745,14 +807,19 @@ export async function denyWithdrawalAction(requestId: string, reason: string = "
         // 2. Refund the user
         const { data: profile } = await supabase
             .from('profiles')
-            .select('withdrawable_balance')
+            .select('withdrawable_balance, admin_override_earnings')
             .eq('id', request.user_id)
             .single();
 
         if (profile) {
+            const newBalance = Number(profile.withdrawable_balance || 0) + Number(request.amount);
+            // Must update both because the dashboard reads from admin_override_earnings primarily in God Mode
             await supabase
                 .from('profiles')
-                .update({ withdrawable_balance: Number(profile.withdrawable_balance || 0) + Number(request.amount) })
+                .update({ 
+                    withdrawable_balance: newBalance,
+                    admin_override_earnings: newBalance 
+                })
                 .eq('id', request.user_id);
         }
 
