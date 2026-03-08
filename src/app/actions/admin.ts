@@ -178,7 +178,10 @@ export async function setAdminOverrideEarningsAction(userId: string, overrideVal
 
         const { error } = await supabase
             .from('profiles')
-            .update({ admin_override_earnings: valueToSave })
+            .update({ 
+                admin_override_earnings: valueToSave,
+                withdrawable_balance: valueToSave !== null ? valueToSave : 0
+            })
             .eq('id', userId);
 
         if (error) throw error;

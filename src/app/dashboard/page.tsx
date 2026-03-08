@@ -6,7 +6,7 @@ import { FileUploadArea } from "@/components/dashboard/FileUploadArea";
 import { getUserDashboardStatsAction, getBatchVolumeAction } from "@/app/actions/vault";
 
 import { useEffect, useState } from "react";
-import { WithdrawModal } from "@/components/dashboard/WithdrawModal";
+
 import { ReferralSection } from "@/components/dashboard/ReferralSection";
 import { Clock, HelpCircle } from "lucide-react";
 
@@ -14,9 +14,7 @@ const BASE_TB = 12.4; // Starting base volume
 const TOTAL_CAPACITY_TB = 50.0; // Total batch capacity
 
 export default function Dashboard() {
-    // New stats state based on updated architecture
-    const [pendingEarnings, setPendingEarnings] = useState("0.00");
-    const [withdrawable, setWithdrawable] = useState("0.00");
+    const [assetValue, setAssetValue] = useState("0.00");
     const [referralEarnings, setReferralEarnings] = useState("0.00");
     const [totalGbs, setTotalGbs] = useState("0.00");
     const [totalFiles, setTotalFiles] = useState(0);
@@ -24,7 +22,6 @@ export default function Dashboard() {
     
     const [batchVolumeTB, setBatchVolumeTB] = useState(BASE_TB);
     const [isLoading, setIsLoading] = useState(true);
-    const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
 
     useEffect(() => {
         async function fetchStats() {
@@ -35,8 +32,7 @@ export default function Dashboard() {
                 ]);
 
                 if (statsResult.success && statsResult.data) {
-                    setPendingEarnings(statsResult.data.pending_review_value);
-                    setWithdrawable(statsResult.data.withdrawable_balance);
+                    setAssetValue(statsResult.data.asset_value);
                     setReferralEarnings(statsResult.data.referral_earnings);
                     setTotalGbs(statsResult.data.total_gbs);
                     setTotalFiles(statsResult.data.total_files_count);
@@ -127,59 +123,27 @@ export default function Dashboard() {
                         </h3>
 
                         <div className="space-y-4">
-                            {/* In Review Earnings */}
+                            {/* Asset Value Earnings */}
                             <div className="bg-white rounded-3xl p-6 shadow-sm border border-gradz-charcoal/5">
                                 <div className="flex items-start justify-between mb-4">
                                     <div className="flex items-center gap-3">
-                                        <div className="p-3 bg-gradz-charcoal/5 rounded-xl">
-                                            <Clock className="w-5 h-5 text-gradz-charcoal/70" />
+                                        <div className="p-3 bg-gradz-butter/30 rounded-xl">
+                                            <Wallet className="w-5 h-5 text-gradz-charcoal" />
                                         </div>
-                                        <div className="text-sm font-medium text-gradz-charcoal/60 leading-tight">
-                                            In Review <br />
-                                            <span className="text-xs font-normal opacity-70">Pending Verification</span>
-                                        </div>
+                                        <div className="text-sm font-medium text-gradz-charcoal/60">Asset Value</div>
                                     </div>
                                     <div className="group relative cursor-help outline-none" tabIndex={0}>
                                         <HelpCircle className="w-4 h-4 text-gradz-charcoal/25 mt-1" />
                                         <div className="absolute right-0 w-48 p-3 bg-gray-900 text-white text-[11px] leading-relaxed rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible focus-within:opacity-100 focus-within:visible group-focus:opacity-100 group-focus:visible active:opacity-100 active:visible transition-all z-10 bottom-full mb-2 shadow-xl whitespace-normal break-words pointer-events-none group-focus:pointer-events-auto">
-                                            These funds will become available for withdrawal once the system verifies your files for authenticity and quality.
+                                            This reflects the estimated value of your uploaded assets. These funds will become available for withdrawal once the system verifies your files for authenticity and quality. The final value may increase or decrease depending on the overall assessment of your submitted assets.
                                         </div>
                                     </div>
                                 </div>
                                 {isLoading ? (
                                     <div className="h-10 w-32 bg-gradz-charcoal/5 animate-pulse rounded-lg" />
                                 ) : (
-                                    <div className="text-3xl font-mono font-bold text-gradz-charcoal">${pendingEarnings}</div>
+                                    <div className="text-4xl font-mono font-bold text-gradz-charcoal">${assetValue}</div>
                                 )}
-                            </div>
-
-                            {/* Available to Withdraw */}
-                            <div className="bg-white rounded-3xl p-6 shadow-sm border border-gradz-charcoal/5 relative overflow-hidden">
-                                <div className="relative z-10">
-                                    <div className="flex items-center gap-3 mb-4">
-                                        <div className="p-3 bg-gradz-charcoal/5 rounded-xl">
-                                            <Wallet className="w-5 h-5 text-gradz-charcoal/70" />
-                                        </div>
-                                        <div className="text-sm font-medium text-gradz-charcoal/60 leading-tight">
-                                            Cleared Balance <br />
-                                            <span className="text-xs font-normal opacity-70">Available to Withdraw</span>
-                                        </div>
-                                    </div>
-                                    {isLoading ? (
-                                        <div className="h-10 w-32 bg-gradz-charcoal/5 animate-pulse rounded-lg mb-4" />
-                                    ) : (
-                                        <div className="flex items-end justify-between gap-4 mb-4">
-                                            <div className="text-4xl font-mono font-bold text-gradz-charcoal">${withdrawable}</div>
-                                        </div>
-                                    )}
-                                    <button 
-                                        onClick={() => setIsWithdrawModalOpen(true)}
-                                        disabled={isLoading || parseFloat(withdrawable) <= 0}
-                                        className="w-full py-2.5 bg-gradz-charcoal hover:bg-gradz-charcoal/90 text-white font-medium rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-                                    >
-                                        Withdraw via UPI
-                                    </button>
-                                </div>
                             </div>
 
                             {/* Stat 2 — Data Contributed */}
@@ -228,11 +192,7 @@ export default function Dashboard() {
                 </div>
             </div>
             
-            <WithdrawModal 
-                isOpen={isWithdrawModalOpen}
-                onClose={() => setIsWithdrawModalOpen(false)}
-                maxAmount={parseFloat(withdrawable)}
-            />
+
         </main>
     );
 }

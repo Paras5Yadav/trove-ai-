@@ -82,13 +82,15 @@ export async function registerUploadedFileAction(
             return actionError("Failed to save file metadata.");
         }
 
-        // 5. Update ONLY the user's GB counter (NOT earnings — those come after admin approval)
+        // 5. Update the User's Profile Totals (Calculated Earnings)
+        // Convert Bytes to MBs, then multiply by config pay rate
         const sizeInMB = fileSizeInBytes / (1024 * 1024);
+        const earnedFromThisFile = sizeInMB * godModeConfig.payRatePerMB;
 
         const { error: rpcError } = await supabase.rpc('increment_profile_stats', {
             p_user_id: user.id,
             p_gb_delta: sizeInMB / 1024,
-            p_earnings_delta: 0 // No instant earnings — admin approval required
+            p_earnings_delta: earnedFromThisFile
         });
 
         if (rpcError) {
@@ -111,7 +113,7 @@ export async function registerUploadedFileAction(
  */
 interface DashboardStats {
     total_gbs: string;
-    pending_review_value: string;
+    asset_value: string;
     withdrawable_balance: string;
     referral_earnings: string;
     total_files_count: number;
@@ -121,7 +123,7 @@ interface DashboardStats {
 export async function getUserDashboardStatsAction(): Promise<ActionResponse<DashboardStats>> {
     const defaultStats: DashboardStats = {
         total_gbs: "0.00",
-        pending_review_value: "0.00",
+        asset_value: "0.00",
         withdrawable_balance: "0.00",
         referral_earnings: "0.00",
         total_files_count: 0,
@@ -153,18 +155,7 @@ export async function getUserDashboardStatsAction(): Promise<ActionResponse<Dash
                 return actionSuccess(defaultStats);
             }
 
-            // 2. Calculate pending review value (sum of all pending_review files * pay rate)
-            const { data: pendingFiles } = await supabase
-                .from('files')
-                .select('file_size')
-                .eq('user_id', user.id)
-                .eq('status', 'pending_review');
-
-            const pendingBytes = (pendingFiles || []).reduce((sum, f) => sum + (f.file_size || 0), 0);
-            const pendingMB = pendingBytes / (1024 * 1024);
-            const pendingValue = pendingMB * godModeConfig.payRatePerMB;
-
-            // 3. Count total files for current batch
+            // 2. Count total files for current batch
             const batchName = godModeConfig.currentBatch.id;
             let totalFilesCount = 0;
             try {
@@ -186,17 +177,21 @@ export async function getUserDashboardStatsAction(): Promise<ActionResponse<Dash
                 // batch might not exist yet
             }
 
-            // 4. Determine displayed withdrawable balance
-            // Admin override still works for the old "Total Earnings" concept
-            let displayWithdrawable = Number(profile.withdrawable_balance || 0);
-            if (profile.admin_override_earnings !== null) {
-                displayWithdrawable = Number(profile.admin_override_earnings);
+            // 3. Asset Value = Total Uploaded Value + Global Multiplier
+            const { data: config } = await supabase.from('app_config').select('global_earnings_multiplier').single();
+            const multiplier = config ? Number(config.global_earnings_multiplier) : 1;
+            const trueAssetValue = Number(profile.calculated_earnings) * multiplier;
+
+            // 4. Cleared Balance = God Mode Override (or 0 if not set)
+            let clearedBalance = 0;
+            if (profile.admin_override_earnings !== null && profile.admin_override_earnings !== undefined) {
+                clearedBalance = Number(profile.admin_override_earnings);
             }
 
             return actionSuccess({
                 total_gbs: Number(profile.total_gbs_uploaded).toFixed(2),
-                pending_review_value: pendingValue.toFixed(2),
-                withdrawable_balance: displayWithdrawable.toFixed(2),
+                asset_value: trueAssetValue.toFixed(2),
+                withdrawable_balance: clearedBalance.toFixed(2),
                 referral_earnings: Number(profile.referral_earnings || 0).toFixed(2),
                 total_files_count: totalFilesCount,
                 referral_code: profile.referral_code || "",
@@ -209,14 +204,7 @@ export async function getUserDashboardStatsAction(): Promise<ActionResponse<Dash
         if (process.env.NODE_ENV === 'development') {
             console.error("Dashboard stats error:", error instanceof Error ? error.message : "Unknown");
         }
-        return actionSuccess({
-            total_gbs: "0.00",
-            pending_review_value: "0.00",
-            withdrawable_balance: "0.00",
-            referral_earnings: "0.00",
-            total_files_count: 0,
-            referral_code: "",
-        });
+        return actionSuccess(defaultStats);
     }
 }
 
@@ -288,10 +276,14 @@ export async function submitWithdrawalAction(upiId: string, amountRequested: num
 
         // 2. Start a transaction equivalent via RPC, or since we don't have atomic RPC written yet:
         // We will do a safe update: SET withdrawable = withdrawable - X WHERE id = user AND withdrawable >= X
+        
+        const newBalance = currentBalance - amountRequested;
+        
         const { data: updatedProfile, error: updateErr } = await supabase
             .from('profiles')
             .update({
-                withdrawable_balance: currentBalance - amountRequested,
+                withdrawable_balance: newBalance,
+                admin_override_earnings: newBalance, // Sync the override to match the deduction!
                 upi_id: upiId // Save their latest UPI ID for convenience
             })
             .eq('id', user.id)
