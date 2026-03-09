@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { CloudUpload, CheckCircle2, Loader2, AlertCircle, FileIcon, X, Info } from "lucide-react";
+import { CloudUpload, CheckCircle2, Loader2, AlertCircle, FileIcon, X, Info, ShieldAlert } from "lucide-react";
 import { godModeConfig } from "@/config/god-mode";
 import { registerUploadedFileAction } from "@/app/actions/vault";
+import { validateFileAuthenticity } from "@/utils/authenticity";
 
 const MAX_FILES = 13;
 
@@ -64,10 +65,62 @@ export function FileUploadArea() {
             return;
         }
 
-        const states: FileUploadState[] = files.map((f) => ({
+        // ============================================================
+        // CONTENT AUTHENTICITY GATE
+        // If enabled, validate each file's EXIF data + generate pHash
+        // before starting any uploads. Controlled by .env.local toggle.
+        // ============================================================
+        const fileHashes: Map<number, string | undefined> = new Map();
+
+        if (godModeConfig.enableAuthenticityChecks) {
+            const validatedFiles: FileUploadState[] = files.map((f) => ({
+                file: f,
+                progress: 0,
+                status: "pending" as const,
+            }));
+            setUploads(validatedFiles);
+            setIsUploading(true);
+            setIsAllDone(false);
+            setGlobalError(null);
+
+            let hasRejections = false;
+
+            for (let i = 0; i < files.length; i++) {
+                const result = await validateFileAuthenticity(files[i]);
+
+                if (!result.valid) {
+                    hasRejections = true;
+                    setUploads((prev) => {
+                        const next = [...prev];
+                        next[i] = { ...next[i], status: "error", error: result.reason };
+                        return next;
+                    });
+                } else {
+                    fileHashes.set(i, result.duplicateHash);
+                    setUploads((prev) => {
+                        const next = [...prev];
+                        next[i] = { ...next[i], progress: 0 };
+                        return next;
+                    });
+                }
+            }
+
+            // If ALL files were rejected, stop here
+            const validCount = files.filter((_, i) => fileHashes.has(i)).length;
+            if (validCount === 0) {
+                setIsUploading(false);
+                return;
+            }
+
+            // If some files were rejected, continue uploading only the valid ones
+            // (rejected files already show their error in the UI)
+        }
+
+        const states: FileUploadState[] = files.map((f, i) => ({
             file: f,
             progress: 0,
-            status: "pending" as const,
+            status: (godModeConfig.enableAuthenticityChecks && !fileHashes.has(i)) ? "error" as const : "pending" as const,
+            error: godModeConfig.enableAuthenticityChecks && !fileHashes.has(i) ? "Rejected by authenticity check" : undefined,
         }));
 
         setUploads(states);
@@ -86,6 +139,11 @@ export function FileUploadArea() {
 
         // Upload files sequentially to avoid overwhelming the server
         for (let i = 0; i < files.length; i++) {
+            // Skip files that failed authenticity check
+            if (godModeConfig.enableAuthenticityChecks && !fileHashes.has(i)) {
+                continue;
+            }
+
             const file = files[i];
 
             setUploads((prev) => {
@@ -187,12 +245,13 @@ export function FileUploadArea() {
                     });
                 }
 
-                // 3. Register upload
+                // 3. Register upload (pass pHash for duplicate detection)
                 const registerRes = await registerUploadedFileAction(
                     uniqueFileName,
                     file.size,
                     file.type || "application/octet-stream",
-                    uniqueFileName
+                    uniqueFileName,
+                    fileHashes.get(i) ?? null
                 );
 
                 if (!registerRes.success) {

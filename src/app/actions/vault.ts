@@ -12,7 +12,8 @@ export async function registerUploadedFileAction(
     fileName: string,
     fileSizeInBytes: number,
     contentType: string,
-    r2UrlOrKey: string
+    r2UrlOrKey: string,
+    duplicateHash: string | null = null
 ): Promise<ActionResponse<{ message: string } | void>> {
     try {
         // GOD MODE: If backend is disabled, returning success so the UI animations work
@@ -63,19 +64,44 @@ export async function registerUploadedFileAction(
             : contentType.startsWith('video/') ? 'video'
             : 'other';
 
+        // ============================================================
+        // DUPLICATE DETECTION: Check if this exact image was already uploaded
+        // Uses the perceptual hash (pHash) generated in the browser.
+        // Only runs if a hash was provided (images only, not videos/other).
+        // ============================================================
+        if (duplicateHash) {
+            const { data: existingFile } = await supabase
+                .from('files')
+                .select('id')
+                .eq('duplicate_hash', duplicateHash)
+                .limit(1)
+                .maybeSingle();
+
+            if (existingFile) {
+                return actionError("This exact image has already been uploaded to the Trove network. Duplicate uploads are not allowed.");
+            }
+        }
+
         // 4. Register the newly uploaded file (NO instant earnings — Admin must approve first)
+        const fileRecord: Record<string, unknown> = {
+            batch_id: batchId,
+            user_id: user.id,
+            file_name: fileName,
+            file_size: fileSizeInBytes,
+            r2_url: r2UrlOrKey,
+            content_type: contentType,
+            file_category: fileCategory,
+            status: 'pending_review', // Awaiting Admin Approval
+        };
+
+        // Only include duplicate_hash if a hash was provided (avoids error if column doesn't exist yet)
+        if (duplicateHash) {
+            fileRecord.duplicate_hash = duplicateHash;
+        }
+
         const { error: fileError } = await supabase
             .from('files')
-            .insert({
-                batch_id: batchId,
-                user_id: user.id,
-                file_name: fileName,
-                file_size: fileSizeInBytes,
-                r2_url: r2UrlOrKey,
-                content_type: contentType,
-                file_category: fileCategory,
-                status: 'pending_review' // Awaiting Admin Approval
-            });
+            .insert(fileRecord);
 
         if (fileError) {
             console.error("Database Insert Error:", fileError.message);
