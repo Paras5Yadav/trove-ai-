@@ -33,7 +33,7 @@ export function WithdrawModal({ isOpen, onClose, maxAmount, savedUpiId }: Withdr
             return;
         }
         if (numAmount > maxAmount) {
-            setError(`Maximum available: $${maxAmount.toFixed(2)}`);
+            setError(`Maximum available: ₹${maxAmount.toFixed(2)}`);
             return;
         }
 
@@ -93,7 +93,7 @@ export function WithdrawModal({ isOpen, onClose, maxAmount, savedUpiId }: Withdr
                             </div>
                             <div>
                                 <h3 className="text-xl font-bold text-gray-900">Withdraw via UPI</h3>
-                                <p className="text-sm text-gray-500">Available: ${maxAmount.toFixed(2)}</p>
+                                <p className="text-sm text-gray-500">Available: ₹{maxAmount.toFixed(2)}</p>
                             </div>
                         </div>
 
@@ -120,10 +120,10 @@ export function WithdrawModal({ isOpen, onClose, maxAmount, savedUpiId }: Withdr
 
                             <div className="space-y-1.5">
                                 <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider pl-1">
-                                    Amount (USD)
+                                    Amount (INR)
                                 </label>
                                 <div className="relative">
-                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">$</span>
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">₹</span>
                                     <input
                                         type="number"
                                         value={amount}

@@ -121,7 +121,7 @@ export function AdminPayoutManager({ withdrawals, totalAmount }: AdminPayoutMana
                     </div>
                     <div>
                         <div className="text-xs uppercase font-bold text-gray-400 tracking-wider">Total Amount Pending</div>
-                        <div className="text-xl font-bold text-gray-900">${totalAmount.toFixed(2)}</div>
+                        <div className="text-xl font-bold text-gray-900">₹{totalAmount.toFixed(2)}</div>
                     </div>
                 </div>
             </div>
@@ -170,7 +170,7 @@ export function AdminPayoutManager({ withdrawals, totalAmount }: AdminPayoutMana
                                             </td>
                                             <td className="py-4 px-6">
                                                 <span className="text-lg font-mono font-bold text-gray-900">
-                                                    ${Number(req.amount).toFixed(2)}
+                                                    ₹{Number(req.amount).toFixed(2)}
                                                 </span>
                                             </td>
                                             <td className="py-4 px-6">
@@ -235,7 +235,7 @@ export function AdminPayoutManager({ withdrawals, totalAmount }: AdminPayoutMana
                                                                     <div className="flex items-center gap-3">
                                                                         {getStatusBadge(h.status)}
                                                                         <span className="text-sm font-bold text-gray-900">
-                                                                            ${Number(h.amount).toFixed(2)}
+                                                                            ₹{Number(h.amount).toFixed(2)}
                                                                         </span>
                                                                     </div>
                                                                     <div className="flex items-center gap-4">

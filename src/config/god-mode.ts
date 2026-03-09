@@ -25,7 +25,7 @@ export const godModeConfig = {
     // The fake numbers to display when overrideGlobalStats is true:
     manualTotalFilesUploaded: "3,842+",
     manualTotalStorageUsed: "300GB",
-    manualTotalPaidOut: "$420.00",
+    manualTotalPaidOut: "₹38,640",
 
     // ---------------------------------------------------------
     // BATCH OVERRIDES
@@ -49,8 +49,8 @@ export const godModeConfig = {
     // The maximum upload limit per user for the current batch
     userUploadCapacityLimit: "10GB",
 
-    // Earnings rate (in dollars) per MB (e.g. $0.001 per MB)
-    payRatePerMB: 0.005,
+    // Earnings rate (in rupees) per MB (e.g. ₹0.46 per MB)
+    payRatePerMB: 0.46,
 
     // ---------------------------------------------------------
     // PLATFORM FEES & REFERRAL

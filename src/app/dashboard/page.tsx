@@ -150,7 +150,7 @@ export default function Dashboard() {
                                 {isLoading ? (
                                     <div className="h-10 w-32 bg-gradz-charcoal/5 animate-pulse rounded-lg" />
                                 ) : (
-                                    <div className="text-4xl font-mono font-bold text-gradz-charcoal">${assetValue}</div>
+                                    <div className="text-4xl font-mono font-bold text-gradz-charcoal">₹{assetValue}</div>
                                 )}
                             </div>
 
@@ -201,7 +201,7 @@ export default function Dashboard() {
                                     <div className="h-10 w-32 bg-gradz-charcoal/5 animate-pulse rounded-lg" />
                                 ) : (
                                     <>
-                                        <div className="text-4xl font-mono font-bold text-gradz-charcoal">${withdrawableBalance}</div>
+                                        <div className="text-4xl font-mono font-bold text-gradz-charcoal">₹{withdrawableBalance}</div>
                                         {savedUpiId && (
                                             <div className="mt-2 text-xs text-gradz-charcoal/50 font-mono truncate">
                                                 UPI: {savedUpiId}
@@ -225,7 +225,7 @@ export default function Dashboard() {
                                                         <span className="text-sm font-semibold text-yellow-800">Withdrawal Pending</span>
                                                     </div>
                                                     <span className="text-sm font-bold text-yellow-800">
-                                                        ${Number(recentWithdrawals[0].amount).toFixed(2)}
+                                                        ₹{Number(recentWithdrawals[0].amount).toFixed(2)}
                                                     </span>
                                                 </div>
                                                 <div className="text-[11px] text-yellow-600/70 mt-1">
@@ -241,7 +241,7 @@ export default function Dashboard() {
                                                         <span className="text-sm font-semibold text-green-800">Withdrawal Paid</span>
                                                     </div>
                                                     <span className="text-sm font-bold text-green-800">
-                                                        ${Number(recentWithdrawals[0].amount).toFixed(2)}
+                                                        ₹{Number(recentWithdrawals[0].amount).toFixed(2)}
                                                     </span>
                                                 </div>
                                                 <div className="text-[11px] text-green-600/70 mt-1">
@@ -257,7 +257,7 @@ export default function Dashboard() {
                                                         <span className="text-sm font-semibold text-red-800">Withdrawal Denied</span>
                                                     </div>
                                                     <span className="text-sm font-bold text-red-800">
-                                                        ${Number(recentWithdrawals[0].amount).toFixed(2)}
+                                                        ₹{Number(recentWithdrawals[0].amount).toFixed(2)}
                                                     </span>
                                                 </div>
                                                 {recentWithdrawals[0].admin_note && (

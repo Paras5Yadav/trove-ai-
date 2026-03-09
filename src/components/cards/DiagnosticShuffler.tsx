@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 // ==========================================
 // Card 01 — "What They Take"
-// Drain Counter: data given away ticking up, $0 frozen
+// Drain Counter: data given away ticking up, ₹0 frozen
 // Exact copy from Trove AI
 // ==========================================
 const platforms = [
@@ -107,7 +107,7 @@ export function DataGravityWell() {
                                 </span>
                             </div>
                             <span className="text-red-400/80 font-bold animate-pulse">
-                                $0.00
+                                ₹0
                             </span>
                         </div>
                     ))}
@@ -117,7 +117,7 @@ export function DataGravityWell() {
             <div className="pt-4 border-t border-gradz-cream/10 mt-4">
                 <div className="font-mono text-[0.65rem] md:text-[0.75rem] text-gradz-cream flex justify-between tracking-wide">
                     <span>TOTAL PAID TO YOU:</span>
-                    <span className="text-red-400/80 font-bold">$0.00</span>
+                    <span className="text-red-400/80 font-bold">₹0</span>
                 </div>
             </div>
         </div>

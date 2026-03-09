@@ -379,7 +379,7 @@ export function FileUploadArea() {
                             <div className="h-8 w-px bg-gradz-charcoal/10 mx-4" />
                             <div className="flex flex-col text-right">
                                 <span className="text-[10px] font-mono text-gradz-charcoal/50 uppercase tracking-widest mb-1">Estimated Pay</span>
-                                <span className="text-gradz-green font-bold text-lg">${totalEarnings.toFixed(2)}</span>
+                                <span className="text-gradz-green font-bold text-lg">₹{totalEarnings.toFixed(2)}</span>
                             </div>
                         </div>
                     </div>

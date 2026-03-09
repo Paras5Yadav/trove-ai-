@@ -127,7 +127,7 @@ export default function Home() {
             <p className="text-gradz-charcoal/60 mb-6">High-definition environmental capture. Dashcam footage of potholes, 4K street walks, and 3D room scans.</p>
             <div className="flex items-center gap-2 bg-gradz-green/10 w-fit px-3 py-1.5 rounded-full mt-auto">
               <div className="w-2 h-2 rounded-full bg-gradz-green animate-pulse" />
-              <span className="text-xs font-mono font-medium text-gradz-charcoal/80">Avg. $0.05 – $2.00 / upload</span>
+              <span className="text-xs font-mono font-medium text-gradz-charcoal/80">Avg. ₹5 – ₹184 / upload</span>
             </div>
           </motion.div>
 
@@ -141,7 +141,7 @@ export default function Home() {
             <p className="text-gradz-charcoal/60 mb-6">Authentic human interaction is the rarest asset on the internet. From search histories to breakup texts.</p>
             <div className="flex items-center gap-2 bg-gradz-green/10 w-fit px-3 py-1.5 rounded-full mt-auto">
               <div className="w-2 h-2 rounded-full bg-gradz-green animate-pulse" />
-              <span className="text-xs font-mono font-medium text-gradz-charcoal/80">Avg. $0.50 – $5.00 / log</span>
+              <span className="text-xs font-mono font-medium text-gradz-charcoal/80">Avg. ₹46 – ₹460 / log</span>
             </div>
           </motion.div>
 
@@ -155,7 +155,7 @@ export default function Home() {
             <p className="text-gradz-charcoal/60 mb-6">Uncompressed field recordings, crowded cafes, mechanical hums, and localized soundscapes.</p>
             <div className="flex items-center gap-2 bg-gradz-green/10 w-fit px-3 py-1.5 rounded-full mt-auto">
               <div className="w-2 h-2 rounded-full bg-gradz-green animate-pulse" />
-              <span className="text-xs font-mono font-medium text-gradz-charcoal/80">Avg. $0.20 – $3.00 / min</span>
+              <span className="text-xs font-mono font-medium text-gradz-charcoal/80">Avg. ₹18 – ₹276 / min</span>
             </div>
           </motion.div>
 
@@ -169,7 +169,7 @@ export default function Home() {
             <p className="text-gradz-charcoal/60 mb-6">Bills, menus, retail receipts, handwritten notes—structured commercial data from the real world.</p>
             <div className="flex items-center gap-2 bg-gradz-green/10 w-fit px-3 py-1.5 rounded-full mt-auto">
               <div className="w-2 h-2 rounded-full bg-gradz-green animate-pulse" />
-              <span className="text-xs font-mono font-medium text-gradz-charcoal/80">Avg. $0.10 – $1.00 / scan</span>
+              <span className="text-xs font-mono font-medium text-gradz-charcoal/80">Avg. ₹9 – ₹92 / scan</span>
             </div>
           </motion.div>
 

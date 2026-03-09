@@ -47,7 +47,7 @@ export function ReferralSection({ referralCode, referralEarnings }: ReferralSect
             </div>
 
             <div className="text-2xl font-mono font-bold text-gradz-charcoal mb-4">
-                ${referralEarnings}
+                ₹{referralEarnings}
             </div>
 
             <div className="flex items-center gap-2">

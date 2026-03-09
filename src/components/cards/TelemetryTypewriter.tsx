@@ -9,18 +9,18 @@ import { cn } from "@/lib/utils";
 // Exact copy from Trove AI
 // ==========================================
 const dataValues = [
-    { type: "Street Photos", value: "$0.12", scrambled: "$█.██" },
-    { type: "4K Video Clip", value: "$3.40", scrambled: "$█.██" },
-    { type: "Drone Aerial", value: "$8.60", scrambled: "$█.██" },
-    { type: "Voice Recording", value: "$0.80", scrambled: "$█.██" },
-    { type: "Dashcam Footage", value: "$2.50", scrambled: "$█.██" },
-    { type: "Egocentric Clip", value: "$1.20", scrambled: "$█.██" },
+    { type: "Street Photos", value: "₹11", scrambled: "₹██" },
+    { type: "4K Video Clip", value: "₹313", scrambled: "₹███" },
+    { type: "Drone Aerial", value: "₹791", scrambled: "₹███" },
+    { type: "Voice Recording", value: "₹74", scrambled: "₹██" },
+    { type: "Dashcam Footage", value: "₹230", scrambled: "₹███" },
+    { type: "Egocentric Clip", value: "₹110", scrambled: "₹███" },
 ];
 
 export function LiveAuctionBoard() {
     const [unlockedCount, setUnlockedCount] = useState(0);
     const [scrambleChars, setScrambleChars] = useState<string[]>(
-        dataValues.map(() => "$█.██")
+        dataValues.map((d) => d.scrambled)
     );
     const scrambleRef = useRef<NodeJS.Timeout | null>(null);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -42,14 +42,14 @@ export function LiveAuctionBoard() {
         const unlockNext = () => {
             if (currentUnlock < dataValues.length) {
                 const idx = currentUnlock;
-                const chars = "█▓▒░$0123456789.";
+                const chars = "█▓▒░₹0123456789";
                 let scrambleCount = 0;
 
                 const scrambleInterval = setInterval(() => {
                     setScrambleChars((prev) => {
                         const next = [...prev];
                         next[idx] =
-                            "$" +
+                            "₹" +
                             Array.from(
                                 { length: 3 },
                                 () => chars[Math.floor(Math.random() * chars.length)]
@@ -73,7 +73,7 @@ export function LiveAuctionBoard() {
             } else {
                 setTimeout(() => {
                     setUnlockedCount(0);
-                    setScrambleChars(dataValues.map(() => "$█.██"));
+                    setScrambleChars(dataValues.map((d) => d.scrambled));
                     currentUnlock = 0;
                     setTimeout(unlockNext, 800);
                 }, 3000);

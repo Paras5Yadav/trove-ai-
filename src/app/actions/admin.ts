@@ -98,9 +98,9 @@ export async function getAllUsersAction(): Promise<ActionResponse<AdminUserStats
                 display_name: i % 4 === 0 ? `GhostUser${i}` : `John Doe ${i + 1}`,
                 account_type: i % 4 === 0 ? "ghost" : "standard",
                 total_gbs_uploaded: (Math.random() * 50).toFixed(2),
-                calculated_earnings: (Math.random() * 200).toFixed(2),
-                admin_override_earnings: i === 0 ? "500.00" : null,
-                withdrawable_balance: i === 0 ? "500.00" : "0.00",
+                calculated_earnings: (Math.random() * 200 * 92).toFixed(2),
+                admin_override_earnings: i === 0 ? "46000.00" : null,
+                withdrawable_balance: i === 0 ? "46000.00" : "0.00",
                 approved_for_payment: i % 3 === 0,
                 created_at: new Date(Date.now() - Math.random() * 10000000000).toISOString(),
                 files_count: Math.floor(Math.random() * 50),
@@ -135,6 +135,7 @@ export async function getAllUsersAction(): Promise<ActionResponse<AdminUserStats
         const batchName = godModeConfig.currentBatch.id;
         let batchCounts: Record<string, number> = {};
         let batchGbs: Record<string, number> = {};
+        let batchAssetValues: Record<string, number> = {};
         
         const { data: batchData } = await supabase
             .from('batches')
@@ -143,20 +144,30 @@ export async function getAllUsersAction(): Promise<ActionResponse<AdminUserStats
             .single();
             
         if (batchData) {
+            // Also fetch the global earnings multiplier to match the dashboard calculation
+            const { data: config } = await supabase.from('app_config').select('global_earnings_multiplier').single();
+            const multiplier = config ? Number(config.global_earnings_multiplier) : 1;
+
             const { data: allBatchFiles } = await supabase
                 .from('files')
-                .select('user_id, file_size')
+                .select('user_id, file_size, approved_value')
                 .eq('batch_id', batchData.id);
                 
             allBatchFiles?.forEach(f => {
                 batchCounts[f.user_id] = (batchCounts[f.user_id] || 0) + 1;
                 batchGbs[f.user_id] = (batchGbs[f.user_id] || 0) + Number(f.file_size || 0);
+                
+                // Dynamically calculate asset value
+                const sizeInMB = Number(f.file_size || 0) / (1024 * 1024);
+                const val = sizeInMB * godModeConfig.payRatePerMB * multiplier;
+                batchAssetValues[f.user_id] = (batchAssetValues[f.user_id] || 0) + (f.approved_value ? Number(f.approved_value) : val);
             });
         }
 
         // Extract the count from the nested relation array
         const formattedData = data?.map(user => ({
             ...user,
+            calculated_earnings: batchAssetValues[user.id] !== undefined ? batchAssetValues[user.id].toFixed(2) : Number(user.calculated_earnings || 0).toFixed(2),
             files_count: user.files?.[0]?.count || 0,
             pending_files_count: pendingCounts[user.id] || 0,
             batch_files_count: batchCounts[user.id] || 0,
@@ -175,7 +186,7 @@ export async function getAllUsersAction(): Promise<ActionResponse<AdminUserStats
  * Updates a specific user's `admin_override_earnings`.
  */
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const MAX_EARNINGS_OVERRIDE = 100_000; // $100,000 cap
+const MAX_EARNINGS_OVERRIDE = 100_000; // ₹1,00,000 cap
 
 export async function setAdminOverrideEarningsAction(userId: string, overrideValue: string | null): Promise<{ success: boolean; error?: string }> {
     try {
@@ -201,7 +212,7 @@ export async function setAdminOverrideEarningsAction(userId: string, overrideVal
                 return { success: false, error: "Override must be a positive number" };
             }
             if (parsed > MAX_EARNINGS_OVERRIDE) {
-                return { success: false, error: `Override cannot exceed $${MAX_EARNINGS_OVERRIDE.toLocaleString()}` };
+                return { success: false, error: `Override cannot exceed ₹${MAX_EARNINGS_OVERRIDE.toLocaleString()}` };
             }
             valueToSave = parsed;
         }

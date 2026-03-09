@@ -5,16 +5,16 @@ import { cn } from "@/lib/utils";
 
 // ==========================================
 // Card 03 — "What Trove Pays You"
-// Before/After Morph: $0 flips to real earnings
+// Before/After Morph: ₹0 flips to real earnings
 // Exact copy from Trove AI
 // ==========================================
 const earningsRows = [
-    { label: "PHOTOS ×50", zero: "$0.00", real: "+$4.00" },
-    { label: "VIDEOS 1080p ×10", zero: "$0.00", real: "+$3.40" },
-    { label: "4K VIDEOS ×5", zero: "$0.00", real: "+$8.50" },
-    { label: "DRONE ×3", zero: "$0.00", real: "+$8.40" },
-    { label: "EGOCENTRIC ×8", zero: "$0.00", real: "+$9.60" },
-    { label: "AUDIO ×20", zero: "$0.00", real: "+$2.00" },
+    { label: "PHOTOS ×50", zero: "₹0", real: "+₹368" },
+    { label: "VIDEOS 1080p ×10", zero: "₹0", real: "+₹313" },
+    { label: "4K VIDEOS ×5", zero: "₹0", real: "+₹782" },
+    { label: "DRONE ×3", zero: "₹0", real: "+₹773" },
+    { label: "EGOCENTRIC ×8", zero: "₹0", real: "+₹883" },
+    { label: "AUDIO ×20", zero: "₹0", real: "+₹184" },
 ];
 
 export function RevenueWaterfall() {
@@ -132,7 +132,7 @@ export function RevenueWaterfall() {
                 {showTotal && (
                     <>
                         <div className="animate-fade-in font-serif font-extrabold text-gradz-cream text-[0.75rem] tracking-wider uppercase whitespace-nowrap">
-                            Estimated Monthly: $432.90
+                            Estimated Monthly: ₹39,827
                         </div>
                         <svg
                             className="w-5 h-5 text-clay animate-draw-check"
