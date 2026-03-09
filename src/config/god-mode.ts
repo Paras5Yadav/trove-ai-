@@ -18,11 +18,6 @@ export const godModeConfig = {
     // GLOBAL OVERRIDES (Applies regardless of BACKEND=true/false)
     // ---------------------------------------------------------
 
-    // Content Authenticity Toggle (EXIF checks + duplicate hash prevention).
-    // Reads from NEXT_PUBLIC_ENABLE_AUTHENTICITY in .env.local.
-    // Set to false to bypass all checks and allow any file through.
-    enableAuthenticityChecks: process.env.NEXT_PUBLIC_ENABLE_AUTHENTICITY === 'true',
-
     // If true, the dashboard will display the manual stats below instead of the real database totals.
     // Use this to display massive numbers for marketing even if the real database is small.
     overrideGlobalStats: true,
