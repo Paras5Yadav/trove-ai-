@@ -147,7 +147,7 @@ export function WithdrawModal({ isOpen, onClose, maxAmount, savedUpiId }: Withdr
                             <button
                                 type="submit"
                                 disabled={isSubmitting}
-                                className="w-full py-3.5 bg-gradz-green hover:opacity-90 text-gradz-charcoal font-bold rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+                                className="w-full py-3.5 bg-sand hover:bg-[#e8e2d7] text-gradz-charcoal font-bold rounded-xl border border-gray-200 transition-all flex items-center justify-center gap-2 disabled:opacity-60 shadow-sm"
                             >
                                 {isSubmitting ? (
                                     <Loader2 className="w-5 h-5 animate-spin" />
