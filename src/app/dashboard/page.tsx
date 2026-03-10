@@ -119,10 +119,10 @@ export default function Dashboard() {
                     </div>
                 </motion.div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="flex flex-col gap-12">
 
                     {/* Main Upload Area */}
-                    <div className="lg:col-span-2 space-y-6">
+                    <div className="w-full space-y-6">
                         <h3 className="text-xl font-bold text-gradz-charcoal flex items-center gap-2">
                             <UploadCloud className="w-5 h-5" />
                             Upload Data
@@ -138,7 +138,7 @@ export default function Dashboard() {
                             Your Analytics
                         </h3>
 
-                        <div className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Asset Value Earnings */}
                             <div className="bg-white rounded-3xl p-6 shadow-sm border border-gradz-charcoal/5">
                                 <div className="flex items-start justify-between mb-4">
