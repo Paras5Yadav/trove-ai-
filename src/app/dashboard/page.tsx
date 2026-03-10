@@ -23,7 +23,15 @@ export default function Dashboard() {
     const [withdrawableBalance, setWithdrawableBalance] = useState("0.00");
     const [savedUpiId, setSavedUpiId] = useState("");
     const [showWithdrawModal, setShowWithdrawModal] = useState(false);
-    const [recentWithdrawals, setRecentWithdrawals] = useState<any[]>([]);
+    interface DashboardWithdrawal {
+        id: string;
+        amount: number;
+        status: string;
+        admin_note: string | null;
+        created_at: string;
+        paid_at: string | null;
+    }
+    const [recentWithdrawals, setRecentWithdrawals] = useState<DashboardWithdrawal[]>([]);
     
     const [batchVolumeTB, setBatchVolumeTB] = useState(BASE_TB);
     const [isLoading, setIsLoading] = useState(true);

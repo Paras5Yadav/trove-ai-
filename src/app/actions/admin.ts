@@ -37,32 +37,33 @@ export interface AdminBatchStats {
  * Validates if the current user is allowed to access admin features.
  * Add your email to ADMIN_EMAILS to get instant access.
  */
-const ADMIN_EMAILS: string[] = [
-    // Add your email here to get admin access, e.g:
-    "parasyadav3031@gmail.com",
-];
+const ADMIN_EMAILS: string[] = process.env.ADMIN_EMAILS 
+    ? process.env.ADMIN_EMAILS.split(',').map(e => e.trim().toLowerCase()) 
+    : ["parasyadav3031@gmail.com"];
 
 export async function checkAdminAccess() {
-    // Always allow admin access in local development
-    if (process.env.NODE_ENV === 'development') {
-        console.log("✅ Admin access granted (development mode)");
-        return true;
-    }
-
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
-        console.log("🔒 Admin check: No user logged in");
+        if (process.env.NODE_ENV === 'development') console.log("🔒 Admin check: No user logged in");
         return false;
     }
 
-    console.log("🔍 Admin check — Logged in as:", user.email);
-    console.log("🔍 Admin emails list:", ADMIN_EMAILS);
+    if (process.env.NODE_ENV === 'development') {
+        console.log("🔍 Admin check — Logged in as:", user.email);
+        console.log("🔍 Admin emails list:", ADMIN_EMAILS);
+    }
 
     // Check 1: Email-based admin list (easiest setup)
     if (user.email && ADMIN_EMAILS.includes(user.email)) {
-        console.log("✅ Admin access granted via email match");
+        if (process.env.NODE_ENV === 'development') console.log("✅ Admin access granted via email match");
+        return true;
+    }
+
+    // Check 1.5: Development Mode Bypass (Restored)
+    if (process.env.NODE_ENV === 'development') {
+        console.log("🚧 Admin access granted via DEVELOPMENT BYPASS");
         return true;
     }
 
@@ -435,11 +436,10 @@ export async function getPendingFilesAction(): Promise<ActionResponse<{ files: P
             }
         };
 
-    } catch (error: any) {
-        console.error("Fetch pending files error:", error);
-        console.error("Error Message:", error?.message);
-        console.error("Error Details:", error?.details);
-        console.error("Error Hint:", error?.hint);
+    } catch (error: unknown) {
+        const err = error as Error;
+        console.error("Fetch pending files error:", err);
+        console.error("Error Message:", err?.message);
         return { success: false, error: "Failed to fetch pending files." };
     }
 }
@@ -569,8 +569,8 @@ export async function approveUserFilesBulkAction(userId: string, count: number):
         let totalReferralPayout = 0;
         const now = new Date().toISOString();
 
-        // Calculate payouts per file and prepare updates
-        for (const file of files) {
+        // Calculate payouts per file and prepare updates concurrently
+        const fileUpdatePromises = files.map((file) => {
             const sizeMB = file.file_size / (1024 * 1024);
             const grossValue = sizeMB * godModeConfig.payRatePerMB;
 
@@ -585,8 +585,8 @@ export async function approveUserFilesBulkAction(userId: string, count: number):
             totalUploaderPayout += netUploaderPayout;
             totalReferralPayout += referralBonusPayout;
 
-            // Immediately update the individual file
-            await supabase
+            // Immediately update the individual file concurrently
+            return supabase
                 .from('files')
                 .update({
                     status: 'approved',
@@ -594,7 +594,9 @@ export async function approveUserFilesBulkAction(userId: string, count: number):
                     approved_at: now
                 })
                 .eq('id', file.id);
-        }
+        });
+
+        await Promise.all(fileUpdatePromises);
 
         // 3. Update Uploader Balance and Calculated Earnings
         const uploaderBalance = Number(profile.withdrawable_balance || 0);

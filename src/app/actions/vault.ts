@@ -357,9 +357,17 @@ export async function submitWithdrawalAction(upiId: string, amountRequested: num
             });
 
         if (insertErr) {
-            // Very rare edge case: money deducted but record creation failed. 
-            // Usually we'd use a postgres function for this atomic operation.
-            console.error("Critical: Failed to insert withdrawal record:", insertErr);
+            // VERY IMPORTANT: Rollback the deduction if the record creation failed!
+            await supabase
+                .from('profiles')
+                .update({
+                    withdrawable_balance: currentBalance,
+                    admin_override_earnings: currentBalance
+                })
+                .eq('id', user.id);
+                
+            console.error("Critical: Failed to insert withdrawal record, successfully rolled back user profile:", insertErr);
+            return actionError("Transaction failed to complete. Your balance has been refunded.");
         }
 
         return actionSuccess({ message: "Withdrawal request submitted successfully" });

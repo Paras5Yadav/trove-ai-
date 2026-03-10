@@ -1,15 +1,19 @@
 import { getAllUsersAction, checkAdminAccess, getPendingWithdrawalsAction } from "@/app/actions/admin";
 import { AdminUsersTable } from "@/components/admin/AdminUsersTable";
 import { AdminPayoutManager } from "@/components/admin/AdminPayoutManager";
+import { AdminPasswordGate } from "@/components/admin/AdminPasswordGate";
+import { LockTerminalButton } from "@/components/admin/LockTerminalButton";
+import { AdminRouteWatcher } from "@/components/admin/AdminRouteWatcher";
 import { ShieldAlert, Users, TrendingUp, FileUp, Activity, Banknote } from "lucide-react";
 import Link from 'next/link';
+import { cookies } from "next/headers";
 
 export const metadata = {
     title: "Admin Control | Trove AI",
 };
 
 export default async function AdminPage() {
-    // 1. Server-side security check
+    // 1. First Layer: Server-side security check (Supabase Auth / Whitelist / Localhost bypass)
     const isAdmin = await checkAdminAccess();
 
     if (!isAdmin) {
@@ -31,7 +35,17 @@ export default async function AdminPage() {
         );
     }
 
-    // 2. Fetch User Data
+    // 2. Second Layer: Password check for Production only
+    if (process.env.NODE_ENV === 'production') {
+        const cookieStore = await cookies();
+        const isUnlocked = cookieStore.get('admin_unlocked')?.value === 'true';
+
+        if (!isUnlocked) {
+            return <AdminPasswordGate />;
+        }
+    }
+
+    // 3. Fetch User Data
     const res = await getAllUsersAction();
     const users = res.success ? res.data : [];
     const error = !res.success ? res.error : null;
@@ -47,6 +61,9 @@ export default async function AdminPage() {
 
     return (
         <div className="min-h-screen bg-cream text-charcoal font-sans">
+            {/* Navigation Watcher (Production Only) */}
+            {process.env.NODE_ENV === 'production' && <AdminRouteWatcher />}
+
             {/* Minimalist Admin Header */}
             <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -58,6 +75,7 @@ export default async function AdminPage() {
                     </div>
                     <div className="flex items-center gap-4 text-sm font-medium text-gray-500">
                         <span>{users?.length || 0} Registered Contributors</span>
+                        {process.env.NODE_ENV === 'production' && <LockTerminalButton />}
                         <a href="/dashboard" className="text-moss hover:underline">Exit to Dashboard</a>
                     </div>
                 </div>

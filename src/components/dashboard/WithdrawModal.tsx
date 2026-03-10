@@ -8,9 +8,10 @@ interface WithdrawModalProps {
     onClose: () => void;
     maxAmount: number;
     savedUpiId?: string;
+    onSuccess?: () => void;
 }
 
-export function WithdrawModal({ isOpen, onClose, maxAmount, savedUpiId }: WithdrawModalProps) {
+export function WithdrawModal({ isOpen, onClose, maxAmount, savedUpiId, onSuccess }: WithdrawModalProps) {
     const [upiId, setUpiId] = useState(savedUpiId || "");
     const [amount, setAmount] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -52,8 +53,11 @@ export function WithdrawModal({ isOpen, onClose, maxAmount, savedUpiId }: Withdr
                     setSuccess(false);
                     setUpiId("");
                     setAmount("");
-                    // Reload to refresh balances
-                    window.location.reload();
+                    if (onSuccess) {
+                        onSuccess();
+                    } else {
+                        window.location.reload();
+                    }
                 }, 2000);
             }
         } catch {

@@ -60,8 +60,11 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
         if (result && !result.success) {
             setError(result.error);
             setIsLoading(false);
-        } else if (result && result.success && (result as any).data?.emailConfirmation) {
-            setSuccessMessage("Account created! Please check your email to verify your account.");
+        } else if (result && result.success) {
+            const resData = (result as { data?: { emailConfirmation?: boolean } }).data;
+            if (resData?.emailConfirmation) {
+                setSuccessMessage("Account created! Please check your email to verify your account.");
+            }
             setIsLoading(false);
         }
     };
@@ -308,7 +311,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
 
                         {mode === "signup" && (
                             <p className="text-[10px] text-center text-charcoal/50 leading-relaxed max-w-sm mx-auto">
-                                By clicking Initialize Account, you confirm that you have read and agreed to the <a href="/policies" target="_blank" className="underline hover:text-moss transition-colors">Data Contributor Policies</a>.
+                                By clicking Initialize Account, you confirm that you have read and agreed to the <a href="/policies" target="_blank" rel="noopener noreferrer" className="underline hover:text-moss transition-colors">Data Contributor Policies</a>.
                             </p>
                         )}
                     </div>

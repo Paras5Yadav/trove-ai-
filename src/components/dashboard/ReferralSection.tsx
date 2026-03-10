@@ -19,16 +19,8 @@ export function ReferralSection({ referralCode, referralEarnings }: ReferralSect
             await navigator.clipboard.writeText(referralLink);
             setCopied(true);
             setTimeout(() => setCopied(false), 2000);
-        } catch {
-            // Fallback
-            const textArea = document.createElement("textarea");
-            textArea.value = referralLink;
-            document.body.appendChild(textArea);
-            textArea.select();
-            document.execCommand("copy");
-            document.body.removeChild(textArea);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
+        } catch (err) {
+            console.error("Failed to copy link:", err);
         }
     };
 
