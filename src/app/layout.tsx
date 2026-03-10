@@ -4,6 +4,7 @@ import "./globals.css";
 import "@/lib/env"; // Validates environment variables on startup
 import { cn } from "@/lib/utils";
 import { Navbar } from "@/components/Navbar";
+import { Analytics } from "@vercel/analytics/react";
 
 const ibmPlexMono = IBM_Plex_Mono({ subsets: ["latin"], weight: ['300', '400', '500', '600'], variable: "--font-ibm-plex" });
 const playfair = Playfair_Display({ subsets: ["latin"], weight: ['400', '500', '600', '700', '800', '900'], style: ['normal', 'italic'], variable: "--font-playfair" });
@@ -29,6 +30,7 @@ export default function RootLayout({
       >
         <Navbar />
         {children}
+        <Analytics />
       </body>
     </html>
   );
