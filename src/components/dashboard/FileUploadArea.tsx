@@ -365,7 +365,7 @@ export function FileUploadArea() {
                             Upload Complete
                         </h3>
                         <p className="text-gradz-charcoal/60 font-medium mb-6">
-                            {uploads.filter((u) => u.status === "done").length} file{uploads.filter((u) => u.status === "done").length > 1 ? "s" : ""} secured and added to batch.
+                            {uploads.filter((u) => u.status === "done").length} file{uploads.filter((u) => u.status === "done").length > 1 ? "s" : ""} secured and added to batch for reviewing.
                             {uploads.some((u) => u.status === "error") && (
                                 <span className="text-red-500"> · {uploads.filter((u) => u.status === "error").length} failed</span>
                             )}
