@@ -6,7 +6,6 @@ import { loginAction, signupAction, oAuthSignInAction } from "@/app/actions/auth
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSearchParams } from "next/navigation";
-import { cn } from "@/lib/utils";
 
 type AuthMode = "login" | "signup";
 
@@ -38,7 +37,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
 
         const formData = new FormData(e.currentTarget);
 
-        // Client-side validation for sign up
+        // Client-side validation
         if (mode === "signup") {
             const pwd = formData.get("password") as string;
             const confirmPwd = formData.get("confirmPassword") as string;
@@ -47,13 +46,14 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
                 setIsLoading(false);
                 return;
             }
-            if (!consentChecked) {
-                setError("You must agree to the data contribution terms to create an account.");
-                setIsLoading(false);
-                return;
-            }
         }
-
+        
+        // Consent validation applies to both login and signup (for standard accounts)
+        if (accountType === "standard" && !consentChecked) {
+            setError("You must agree to the data contribution terms to proceed.");
+            setIsLoading(false);
+            return;
+        }
         const action = mode === "login" ? loginAction : signupAction;
         const result = await action(formData);
 
@@ -149,8 +149,8 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
                                 <button
                                     type="button"
                                     onClick={async () => {
-                                        if (mode === "signup" && !consentChecked) {
-                                            setError("You must agree to the data contribution terms to create an account.");
+                                        if (accountType === "standard" && !consentChecked) {
+                                            setError("You must agree to the data contribution terms to proceed.");
                                             return;
                                         }
                                         setIsGoogleLoading(true);
@@ -270,13 +270,13 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
                                 <div className="flex items-start gap-2 mt-3 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5">
                                     <ShieldAlert className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                                     <p className="text-xs text-amber-800 font-medium leading-relaxed">
-                                        Your password can't be reset. If you lose your password, you will permanently lose access to your account and all accumulated earnings. Keep it safe.
+                                        Your password can&apos;t be reset. If you lose your password, you will permanently lose access to your account and all accumulated earnings. Keep it safe.
                                     </p>
                                 </div>
                             )}
                         </div>
                     )}
-                    {mode === "signup" && (
+                    {accountType === "standard" && (
                         <div className="pt-2">
                             <label className="flex items-start gap-3 cursor-pointer group">
                                 <input
@@ -309,9 +309,9 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
                             )}
                         </button>
 
-                        {mode === "signup" && (
+                        {accountType === "standard" && (
                             <p className="text-[10px] text-center text-charcoal/50 leading-relaxed max-w-sm mx-auto">
-                                By clicking Initialize Account, you confirm that you have read and agreed to the <a href="/policies" target="_blank" rel="noopener noreferrer" className="underline hover:text-moss transition-colors">Data Contributor Policies</a>.
+                                By clicking {mode === "login" ? "Sign In Securely" : "Initialize Account"} or Continue with Google, you confirm that you have read and agreed to the <a href="/policies" target="_blank" rel="noopener noreferrer" className="underline hover:text-moss transition-colors">Data Contributor Policies</a>.
                             </p>
                         )}
                     </div>
