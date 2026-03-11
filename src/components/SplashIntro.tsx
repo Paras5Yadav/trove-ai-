@@ -62,9 +62,9 @@ export function SplashIntro() {
           {/* Center Animation Group */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full pointer-events-none flex items-center justify-center">
             
-            {/* Center Dot */}
+            {/* Center Block (Replaced round dot with sharp square) */}
             <motion.div 
-              className="absolute w-1.5 h-1.5 bg-[#85d7ff] rounded-full z-10"
+              className="absolute w-2 h-2 bg-[#85d7ff] z-10"
               initial={{ scale: 0, opacity: 0 }}
               animate={{ 
                 scale: [0, 1, 1, 0.5], 
@@ -93,15 +93,27 @@ export function SplashIntro() {
                 ease: "easeInOut" 
               }}
             >
-              <motion.circle 
-                cx="50" cy="50" r="40" 
+              <defs>
+                <mask id="sweep-mask">
+                  <motion.circle 
+                    cx="50" cy="50" r="35" 
+                    fill="none" 
+                    stroke="white" 
+                    strokeWidth="16"
+                    initial={{ pathLength: 0 }}
+                    animate={{ pathLength: 0.8 }} 
+                    transition={{ duration: 2, ease: "easeInOut" }}
+                  />
+                </mask>
+              </defs>
+              
+              <circle 
+                cx="50" cy="50" r="35" 
                 fill="none" 
                 stroke="#85d7ff" 
-                strokeWidth="1.5" 
-                strokeLinecap="round"
-                initial={{ pathLength: 0 }}
-                animate={{ pathLength: 1 }}
-                transition={{ duration: 2, ease: "easeInOut" }}
+                strokeWidth="8" 
+                strokeDasharray="1 3"
+                mask="url(#sweep-mask)"
               />
             </motion.svg>
 
