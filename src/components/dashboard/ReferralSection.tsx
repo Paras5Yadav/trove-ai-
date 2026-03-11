@@ -3,6 +3,18 @@
 import { useState } from "react";
 import { Link2, Copy, Check, Gift } from "lucide-react";
 
+// Generates a consistent per-user factor between 0.90 and 1.10 from a seed string
+function getUserVariationFactor(seed: string): number {
+    let hash = 0;
+    for (let i = 0; i < seed.length; i++) {
+        const char = seed.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash |= 0;
+    }
+    const normalized = (Math.abs(hash) % 1000) / 1000;
+    return 0.90 + (normalized * 0.20);
+}
+
 interface ReferralSectionProps {
     referralCode: string;
     referralEarnings: string;
@@ -12,7 +24,8 @@ export function ReferralSection({ referralCode, referralEarnings }: ReferralSect
     const [copied, setCopied] = useState(false);
 
     const siteUrl = typeof window !== "undefined" ? window.location.origin : "https://troveai.in";
-    const referralLink = `${siteUrl}/signup?ref=${referralCode}`;
+    const referralLink = `${siteUrl}/auth?ref=${referralCode}`;
+    const userFactor = referralCode ? getUserVariationFactor(referralCode) : 1.0;
 
     const handleCopy = async () => {
         try {
@@ -39,7 +52,7 @@ export function ReferralSection({ referralCode, referralEarnings }: ReferralSect
             </div>
 
             <div className="text-2xl font-mono font-bold text-gradz-charcoal mb-4">
-                ₹{referralEarnings}
+                ₹{((Number(referralEarnings) / 6) * userFactor).toFixed(2)}
             </div>
 
             <div className="flex items-center gap-2">

@@ -185,7 +185,7 @@ export function AdminUsersTable({ users }: { users: AdminUserStats[] }) {
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <span className={`px-2 py-1 rounded text-xs font-medium ${hasOverride ? "bg-gray-100 text-gray-400 line-through" : "bg-green-50 text-green-700"}`}>
-                                            ₹{(Number(user.calculated_earnings) / 2).toFixed(2)}
+                                            ₹{(Number(user.calculated_earnings) / 6).toFixed(2)}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
@@ -231,7 +231,7 @@ export function AdminUsersTable({ users }: { users: AdminUserStats[] }) {
                                         ) : (
                                             <div className="flex items-center justify-end gap-3 flex-nowrap">
                                                 <span className={`font-bold whitespace-nowrap ${hasOverride ? 'text-charcoal text-lg' : 'text-gray-300'}`}>
-                                                    {hasOverride ? `₹${Number(user.admin_override_earnings).toFixed(2)}` : 'Automated'}
+                                                    {hasOverride ? `₹${(Number(user.admin_override_earnings) / 6).toFixed(2)}` : 'Automated'}
                                                 </span>
                                                 <button
                                                     onClick={() => handleEditClick(user)}

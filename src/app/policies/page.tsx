@@ -69,11 +69,11 @@ export default function PoliciesPage() {
                     </div>
 
                     <div className="mt-10 pt-8 border-t border-charcoal/10 text-center space-y-4">
-                        <Link href="/signup" className="inline-flex items-center justify-center w-full sm:w-auto px-8 py-3.5 bg-charcoal text-white rounded-xl font-semibold hover:bg-black hover:-translate-y-0.5 transition-all shadow-lg shadow-charcoal/20">
-                            I Understand, Create Account
+                        <Link href="/auth" className="inline-flex items-center justify-center w-full sm:w-auto px-8 py-3.5 bg-charcoal text-white rounded-xl font-semibold hover:bg-black hover:-translate-y-0.5 transition-all shadow-lg shadow-charcoal/20">
+                            I Understand, Continue
                         </Link>
                         <p className="text-[10px] text-center text-charcoal/50 leading-relaxed max-w-sm mx-auto">
-                            By clicking Initialize Account, you confirm that you have read and agreed to the Data Contributor Policies.
+                            By clicking Continue, you confirm that you have read and agreed to the Data Contributor Policies.
                         </p>
                     </div>
                 </div>

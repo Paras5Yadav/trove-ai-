@@ -7,6 +7,18 @@ import { registerUploadedFileAction } from "@/app/actions/vault";
 
 const MAX_FILES = 13;
 
+// Generates a consistent per-user factor between 0.90 and 1.10 from a seed string
+function getUserVariationFactor(seed: string): number {
+    let hash = 0;
+    for (let i = 0; i < seed.length; i++) {
+        const char = seed.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash |= 0;
+    }
+    const normalized = (Math.abs(hash) % 1000) / 1000;
+    return 0.90 + (normalized * 0.20);
+}
+
 interface FileUploadState {
     file: File;
     progress: number;
@@ -14,7 +26,7 @@ interface FileUploadState {
     error?: string;
 }
 
-export function FileUploadArea() {
+export function FileUploadArea({ referralCode = "" }: { referralCode?: string }) {
     const [uploads, setUploads] = useState<FileUploadState[]>([]);
     const [isUploading, setIsUploading] = useState(false);
     const [isAllDone, setIsAllDone] = useState(false);
@@ -378,7 +390,7 @@ export function FileUploadArea() {
                             <div className="h-8 w-px bg-gradz-charcoal/10 mx-4" />
                             <div className="flex flex-col text-right">
                                 <span className="text-[10px] font-mono text-gradz-charcoal/50 uppercase tracking-widest mb-1">Estimated Pay</span>
-                                <span className="text-gradz-green font-bold text-lg">₹{totalEarnings.toFixed(2)}</span>
+                                <span className="text-gradz-green font-bold text-lg">₹{((totalEarnings / 6) * (referralCode ? getUserVariationFactor(referralCode) : 1.0)).toFixed(2)}</span>
                             </div>
                         </div>
                     </div>

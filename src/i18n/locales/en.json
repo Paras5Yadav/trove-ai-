@@ -35,6 +35,9 @@
     "card4Tag": "Avg. ₹9 – ₹92 / scan"
   },
   "auth": {
+    "welcome": "Welcome",
+    "welcomeSubtitle": "Initialize your secure vault or sign in to your dashboard.",
+    "continue": "Continue",
     "welcomeBack": "Welcome Back",
     "createAccount": "Create Account",
     "loginSubtitle": "Enter your credentials to access the vault.",

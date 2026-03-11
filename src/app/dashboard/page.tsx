@@ -15,6 +15,19 @@ import { useTranslation } from "react-i18next";
 const BASE_TB = 12.4; // Starting base volume
 const TOTAL_CAPACITY_TB = 50.0; // Total batch capacity
 
+// Generates a consistent per-user factor between 0.90 and 1.10 from a seed string
+function getUserVariationFactor(seed: string): number {
+    let hash = 0;
+    for (let i = 0; i < seed.length; i++) {
+        const char = seed.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash |= 0; // Convert to 32bit integer
+    }
+    // Normalize to 0-1 range, then scale to 0.90 - 1.10
+    const normalized = (Math.abs(hash) % 1000) / 1000;
+    return 0.90 + (normalized * 0.20); // ±10% range
+}
+
 export default function Dashboard() {
     const { t } = useTranslation();
     const [assetValue, setAssetValue] = useState("0.00");
@@ -73,6 +86,9 @@ export default function Dashboard() {
     const volumeDisplay = batchVolumeTB >= 1 ? `${batchVolumeTB.toFixed(1)}` : `${(batchVolumeTB * 1024).toFixed(0)} GB`;
     const progressPercent = Math.min((batchVolumeTB / TOTAL_CAPACITY_TB) * 100, 100).toFixed(1);
 
+    // Per-user variation factor for display values (±10% based on referral code)
+    const userFactor = referralCode ? getUserVariationFactor(referralCode) : 1.0;
+
     return (
         <main className="min-h-screen bg-gradz-cream pt-32 pb-24 px-6 sm:px-12 md:px-24">
             <div className="max-w-6xl mx-auto space-y-12">
@@ -130,7 +146,7 @@ export default function Dashboard() {
                             {t("dashboard.uploadData")}
                         </h3>
 
-                        <FileUploadArea />
+                        <FileUploadArea referralCode={referralCode} />
                     </div>
 
                     {/* User Analytics Sidebar */}
@@ -161,7 +177,7 @@ export default function Dashboard() {
                                     <div className="h-10 w-32 bg-gradz-charcoal/5 animate-pulse rounded-lg" />
                                 ) : (
                                     <div className="text-4xl font-mono font-bold text-gradz-charcoal">
-                                        ₹{isNaN(parseFloat(assetValue)) ? "0.00" : (parseFloat(assetValue) / 2).toFixed(2)}
+                                        ₹{isNaN(parseFloat(assetValue)) ? "0.00" : ((parseFloat(assetValue) / 6) * userFactor).toFixed(2)}
                                     </div>
                                 )}
                             </div>

@@ -40,7 +40,7 @@ export async function updateSession(request: NextRequest) {
 
     if (!user && isProtectedRoute) {
         const url = request.nextUrl.clone()
-        url.pathname = '/login'
+        url.pathname = '/auth'
         url.searchParams.set('message', 'signin_required')
         return NextResponse.redirect(url)
     }
@@ -49,7 +49,7 @@ export async function updateSession(request: NextRequest) {
     // which supports both email-based and role-based access
 
     // If user is already logged in, redirect them away from auth screens
-    const isAuthRoute = request.nextUrl.pathname.startsWith('/login') || request.nextUrl.pathname.startsWith('/signup')
+    const isAuthRoute = request.nextUrl.pathname.startsWith('/auth')
 
     if (user && isAuthRoute) {
         const url = request.nextUrl.clone()

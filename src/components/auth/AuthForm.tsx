@@ -71,7 +71,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
         }
     };
 
-    const actionLabel = mode === "login" ? t("auth.signInSecurely") : t("auth.initializeAccount");
+    const actionLabel = t("auth.continue");
 
     return (
         <div className="w-full max-w-md min-w-0 mx-auto">
@@ -83,12 +83,10 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
             >
                 <div className="mb-6 sm:mb-8 text-center">
                     <h2 className="text-2xl sm:text-3xl font-bold font-jakarta text-charcoal tracking-tight">
-                        {mode === "login" ? t("auth.welcomeBack") : t("auth.createAccount")}
+                        {t("auth.welcome")}
                     </h2>
                     <p className="text-charcoal/60 mt-2">
-                        {mode === "login"
-                            ? t("auth.loginSubtitle")
-                            : t("auth.signupSubtitle")}
+                        {t("auth.welcomeSubtitle")}
                     </p>
                 </div>
 
@@ -149,7 +147,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
                     {accountType === "standard" ? (
                         <>
                             {/* Google Auth Button */}
-                            <div className="mb-6">
+                            <div className="mb-6 mt-2">
                                 <button
                                     type="button"
                                     onClick={async () => {
@@ -174,167 +172,104 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
                                 </button>
                             </div>
 
-                            <div className="flex items-center gap-4 mb-6">
-                                <div className="h-px bg-charcoal/10 flex-1"></div>
-                                <span className="text-xs font-semibold text-charcoal/40 uppercase tracking-widest">{t("auth.orEmail")}</span>
-                                <div className="h-px bg-charcoal/10 flex-1"></div>
+                            <div className="pt-2 pb-2">
+                                <label className="flex items-start gap-3 cursor-pointer group">
+                                    <input
+                                        type="checkbox"
+                                        checked={consentChecked}
+                                        onChange={(e) => setConsentChecked(e.target.checked)}
+                                        className="mt-1 w-4 h-4 rounded border-charcoal/30 text-moss focus:ring-moss cursor-pointer"
+                                    />
+                                    <span className="text-xs text-charcoal/70 leading-relaxed" dangerouslySetInnerHTML={{ __html: t("auth.consentText") }} />
+                                </label>
+                            </div>
+
+                            <div className="pt-4 space-y-3">
+                                <p className="text-[10px] text-center text-charcoal/50 leading-relaxed max-w-sm mx-auto">
+                                    {t("auth.policyNote", { action: actionLabel })}{" "}
+                                    <a href="/policies" target="_blank" rel="noopener noreferrer" className="underline hover:text-moss transition-colors">{t("auth.dataPolicies")}</a>.
+                                </p>
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                            <div className="space-y-1">
+                                <label className="text-xs font-semibold text-charcoal/80 uppercase tracking-widest pl-1">{t("auth.ghostUsername")}</label>
+                                <div className="relative group">
+                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-charcoal/40 group-focus-within:text-moss transition-colors">
+                                        <Ghost className="h-5 w-5" />
+                                    </div>
+                                    <input
+                                        name="username"
+                                        type="text"
+                                        required={accountType === "ghost"}
+                                        placeholder="CryptoKing99"
+                                        className="w-full pl-11 pr-4 py-3 bg-charcoal/5 border border-charcoal/10 rounded-xl focus:ring-2 focus:ring-moss focus:border-transparent outline-none transition-all placeholder:text-charcoal/30 font-medium text-charcoal"
+                                    />
+                                </div>
+                                <div className="flex items-start gap-2 mt-3 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5">
+                                    <ShieldAlert className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                                    <p className="text-xs text-amber-800 font-medium leading-relaxed">
+                                        {t("auth.anonWarning")}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-1 mt-4">
+                                <label className="text-xs font-semibold text-charcoal/80 uppercase tracking-widest pl-1">{t("auth.password")}</label>
+                                <div className="relative group">
+                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-charcoal/40 group-focus-within:text-moss transition-colors">
+                                    <Lock className="h-5 w-5" />
+                                    </div>
+                                    <input
+                                        name="password"
+                                        type="password"
+                                        required
+                                        placeholder="••••••••"
+                                        className="w-full pl-11 pr-4 py-3 bg-charcoal/5 border border-charcoal/10 rounded-xl focus:ring-2 focus:ring-moss focus:border-transparent outline-none transition-all placeholder:text-charcoal/30 font-medium text-charcoal"
+                                    />
+                                </div>
                             </div>
 
                             {mode === "signup" && (
-                                <div className="space-y-1">
-                                    <label className="text-xs font-semibold text-charcoal/80 uppercase tracking-widest pl-1">{t("auth.displayName")}</label>
+                                <div className="space-y-1 mt-4">
+                                    <label className="text-xs font-semibold text-charcoal/80 uppercase tracking-widest pl-1">{t("auth.confirmPassword")}</label>
                                     <div className="relative group">
                                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-charcoal/40 group-focus-within:text-moss transition-colors">
-                                            <User className="h-5 w-5" />
+                                            <Lock className="h-5 w-5" />
                                         </div>
                                         <input
-                                            name="displayName"
-                                            type="text"
-                                            required={accountType === "standard" && mode === "signup"}
-                                            placeholder="John Doe"
+                                            name="confirmPassword"
+                                            type="password"
+                                            required
+                                            placeholder="••••••••"
                                             className="w-full pl-11 pr-4 py-3 bg-charcoal/5 border border-charcoal/10 rounded-xl focus:ring-2 focus:ring-moss focus:border-transparent outline-none transition-all placeholder:text-charcoal/30 font-medium text-charcoal"
                                         />
                                     </div>
                                 </div>
                             )}
-                            <div className="space-y-1">
-                                <label className="text-xs font-semibold text-charcoal/80 uppercase tracking-widest pl-1">{t("auth.emailAddress")}</label>
-                                <div className="relative group">
-                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-charcoal/40 group-focus-within:text-moss transition-colors">
-                                        <Mail className="h-5 w-5" />
-                                    </div>
-                                    <input
-                                        name="email"
-                                        type="email"
-                                        required={accountType === "standard"}
-                                        placeholder="name@example.com"
-                                        className="w-full pl-11 pr-4 py-3 bg-charcoal/5 border border-charcoal/10 rounded-xl focus:ring-2 focus:ring-moss focus:border-transparent outline-none transition-all placeholder:text-charcoal/30 font-medium text-charcoal"
-                                    />
-                                </div>
+
+                            <div className="pt-6 space-y-3">
+                                <button
+                                    type="submit"
+                                    disabled={isLoading}
+                                    className="w-full font-semibold py-3.5 rounded-xl hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:pointer-events-none"
+                                    style={{ backgroundColor: '#2E4036', color: '#ffffff', boxShadow: '0 8px 16px rgba(46,64,54,0.2)' }}
+                                >
+                                    {isLoading ? (
+                                        <Loader2 className="h-5 w-5 animate-spin" />
+                                    ) : (
+                                        <>
+                                            {actionLabel}
+                                            <ArrowRight className="h-4 w-4" />
+                                        </>
+                                    )}
+                                </button>
                             </div>
                         </>
-                    ) : (
-                        <div className="space-y-1">
-                            <label className="text-xs font-semibold text-charcoal/80 uppercase tracking-widest pl-1">{t("auth.ghostUsername")}</label>
-                            <div className="relative group">
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-charcoal/40 group-focus-within:text-moss transition-colors">
-                                    <Ghost className="h-5 w-5" />
-                                </div>
-                                <input
-                                    name="username"
-                                    type="text"
-                                    required={accountType === "ghost"}
-                                    placeholder="CryptoKing99"
-                                    className="w-full pl-11 pr-4 py-3 bg-charcoal/5 border border-charcoal/10 rounded-xl focus:ring-2 focus:ring-moss focus:border-transparent outline-none transition-all placeholder:text-charcoal/30 font-medium text-charcoal"
-                                />
-                            </div>
-                            <div className="flex items-start gap-2 mt-3 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5">
-                                <ShieldAlert className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                                <p className="text-xs text-amber-800 font-medium leading-relaxed">
-                                    {t("auth.anonWarning")}
-                                </p>
-                            </div>
-                        </div>
                     )}
 
-                    <div className="space-y-1">
-                        <label className="text-xs font-semibold text-charcoal/80 uppercase tracking-widest pl-1">{t("auth.password")}</label>
-                        <div className="relative group">
-                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-charcoal/40 group-focus-within:text-moss transition-colors">
-                            <Lock className="h-5 w-5" />
-                            </div>
-                            <input
-                                name="password"
-                                type="password"
-                                required
-                                placeholder="••••••••"
-                                className="w-full pl-11 pr-4 py-3 bg-charcoal/5 border border-charcoal/10 rounded-xl focus:ring-2 focus:ring-moss focus:border-transparent outline-none transition-all placeholder:text-charcoal/30 font-medium text-charcoal"
-                            />
-                        </div>
-                    </div>
-
-                    {mode === "signup" && (
-                        <div className="space-y-1">
-                            <label className="text-xs font-semibold text-charcoal/80 uppercase tracking-widest pl-1">{t("auth.confirmPassword")}</label>
-                            <div className="relative group">
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-charcoal/40 group-focus-within:text-moss transition-colors">
-                                    <Lock className="h-5 w-5" />
-                                </div>
-                                <input
-                                    name="confirmPassword"
-                                    type="password"
-                                    required
-                                    placeholder="••••••••"
-                                    className="w-full pl-11 pr-4 py-3 bg-charcoal/5 border border-charcoal/10 rounded-xl focus:ring-2 focus:ring-moss focus:border-transparent outline-none transition-all placeholder:text-charcoal/30 font-medium text-charcoal"
-                                />
-                            </div>
-                            
-                            {accountType === "standard" && (
-                                <div className="flex items-start gap-2 mt-3 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5">
-                                    <ShieldAlert className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                                    <p className="text-xs text-amber-800 font-medium leading-relaxed">
-                                        {t("auth.passwordWarning")}
-                                    </p>
-                                </div>
-                            )}
-                        </div>
-                    )}
-                    {accountType === "standard" && (
-                        <div className="pt-2">
-                            <label className="flex items-start gap-3 cursor-pointer group">
-                                <input
-                                    type="checkbox"
-                                    checked={consentChecked}
-                                    onChange={(e) => setConsentChecked(e.target.checked)}
-                                    className="mt-1 w-4 h-4 rounded border-charcoal/30 text-moss focus:ring-moss cursor-pointer"
-                                />
-                                <span className="text-xs text-charcoal/70 leading-relaxed" dangerouslySetInnerHTML={{ __html: t("auth.consentText") }} />
-                            </label>
-                        </div>
-                    )}
-
-                    <div className="pt-4 space-y-3">
-                        <button
-                            type="submit"
-                            disabled={isLoading}
-                            className="w-full font-semibold py-3.5 rounded-xl hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:pointer-events-none"
-                            style={{ backgroundColor: '#2E4036', color: '#ffffff', boxShadow: '0 8px 16px rgba(46,64,54,0.2)' }}
-                        >
-                            {isLoading ? (
-                                <Loader2 className="h-5 w-5 animate-spin" />
-                            ) : (
-                                <>
-                                    {actionLabel}
-                                    <ArrowRight className="h-4 w-4" />
-                                </>
-                            )}
-                        </button>
-
-                        {accountType === "standard" && (
-                            <p className="text-[10px] text-center text-charcoal/50 leading-relaxed max-w-sm mx-auto">
-                                {t("auth.policyNote", { action: actionLabel })}{" "}
-                                <a href="/policies" target="_blank" rel="noopener noreferrer" className="underline hover:text-moss transition-colors">{t("auth.dataPolicies")}</a>.
-                            </p>
-                        )}
-                    </div>
-
-                    <div className="text-center pt-6 text-sm text-charcoal/60">
-                        {mode === "login" ? (
-                            <p>
-                                {t("auth.noAccount")}{" "}
-                                <Link href="/signup" className="text-moss font-semibold hover:underline">
-                                    {t("auth.signUpNow")}
-                                </Link>
-                            </p>
-                        ) : (
-                            <p>
-                                {t("auth.alreadyJoined")}{" "}
-                                <Link href="/login" className="text-moss font-semibold hover:underline">
-                                    {t("auth.signInLink")}
-                                </Link>
-                            </p>
-                        )}
-                    </div>
+                    {/* The encryption note that was here was a duplicate of the one in auth/page.tsx, so it was removed. */}
                 </form>
             </motion.div>
         </div>

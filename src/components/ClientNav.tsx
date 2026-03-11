@@ -99,7 +99,7 @@ export function ClientNav({ isLoggedIn }: { isLoggedIn: boolean }) {
                     )
                 ) : (
                     <Link
-                        href="/login"
+                        href="/auth"
                         className="hover:opacity-100 transition-opacity bg-gradz-charcoal text-gradz-cream px-4 py-2 rounded-full text-xs"
                     >
                         {t("nav.signIn")}
