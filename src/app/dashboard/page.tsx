@@ -160,7 +160,9 @@ export default function Dashboard() {
                                 {isLoading ? (
                                     <div className="h-10 w-32 bg-gradz-charcoal/5 animate-pulse rounded-lg" />
                                 ) : (
-                                    <div className="text-4xl font-mono font-bold text-gradz-charcoal">₹{assetValue}</div>
+                                    <div className="text-4xl font-mono font-bold text-gradz-charcoal">
+                                        ₹{isNaN(parseFloat(assetValue)) ? "0.00" : (parseFloat(assetValue) / 2).toFixed(2)}
+                                    </div>
                                 )}
                             </div>
 

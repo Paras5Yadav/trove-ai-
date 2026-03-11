@@ -185,7 +185,7 @@ export function AdminUsersTable({ users }: { users: AdminUserStats[] }) {
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <span className={`px-2 py-1 rounded text-xs font-medium ${hasOverride ? "bg-gray-100 text-gray-400 line-through" : "bg-green-50 text-green-700"}`}>
-                                            ₹{Number(user.calculated_earnings).toFixed(2)}
+                                            ₹{(Number(user.calculated_earnings) / 2).toFixed(2)}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
