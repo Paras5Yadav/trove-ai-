@@ -154,7 +154,7 @@ export function AdminUsersTable({ users }: { users: AdminUserStats[] }) {
                                                 ) : null}
                                             </div>
                                             <span className="text-xs text-gray-500 whitespace-nowrap" title="Referral Earnings">
-                                                ₹{user.referral_earnings || '0.00'}
+                                                ₹{(Number(user.referral_earnings || 0) / 6).toFixed(2)}
                                             </span>
                                         </div>
                                     </td>
@@ -286,7 +286,7 @@ export function AdminUsersTable({ users }: { users: AdminUserStats[] }) {
                                                                         <span className="text-sm font-medium text-moss bg-moss/5 px-2 py-1 rounded">
                                                                             {refUser.referral_earnings_generated === 'Evaluating...' 
                                                                                 ? <span className="text-xs text-moss/70 font-normal">Pending</span> 
-                                                                                : `₹${refUser.referral_earnings_generated}`
+                                                                                : `₹${(Number(refUser.referral_earnings_generated) / 6).toFixed(2)}`
                                                                             }
                                                                         </span>
                                                                     </td>
