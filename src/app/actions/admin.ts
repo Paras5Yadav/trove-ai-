@@ -6,6 +6,15 @@ import { revalidatePath } from "next/cache";
 import { godModeConfig } from "@/config/god-mode";
 
 // Type definitions for the admin panel
+export interface AdminReferredUser {
+    id: string;
+    email: string;
+    display_name: string;
+    created_at: string;
+    total_gbs_uploaded: string;
+    referral_earnings_generated: string;
+}
+
 export interface AdminUserStats {
     id: string;
     email: string;
@@ -22,6 +31,7 @@ export interface AdminUserStats {
     batch_gbs?: string;
     referred_users_count?: number;
     referral_earnings?: string;
+    referred_users_details?: AdminReferredUser[];
 }
 
 export interface AdminBatchStats {
@@ -110,6 +120,14 @@ export async function getAllUsersAction(): Promise<ActionResponse<AdminUserStats
                 pending_files_count: Math.floor(Math.random() * 10),
                 referred_users_count: Math.floor(Math.random() * 5),
                 referral_earnings: (Math.random() * 500).toFixed(2),
+                referred_users_details: Array.from({ length: Math.floor(Math.random() * 5) }).map((_, j) => ({
+                    id: `ref-${i}-${j}`,
+                    email: `referral${i}_${j}@example.com`,
+                    display_name: `Referral User ${j}`,
+                    created_at: new Date(Date.now() - Math.random() * 5000000000).toISOString(),
+                    total_gbs_uploaded: (Math.random() * 10).toFixed(2),
+                    referral_earnings_generated: (Math.random() * 100).toFixed(2)
+                }))
             }));
 
             return { success: true, data: allMockUsers as AdminUserStats[] };
@@ -169,16 +187,41 @@ export async function getAllUsersAction(): Promise<ActionResponse<AdminUserStats
             });
         }
 
-        // Also fetch referral counts
-        const { data: allReferrals } = await supabase
+        // Fetch full profiles of all referred users
+        const { data: allReferredProfiles } = await supabase
             .from('profiles')
-            .select('referred_by_user_id')
+            .select('id, email, display_name, created_at, referred_by_user_id')
             .not('referred_by_user_id', 'is', null);
             
         const referralCounts: Record<string, number> = {};
-        allReferrals?.forEach(r => {
+        const referralDetails: Record<string, AdminReferredUser[]> = {};
+        
+        allReferredProfiles?.forEach(r => {
             if (r.referred_by_user_id) {
                 referralCounts[r.referred_by_user_id] = (referralCounts[r.referred_by_user_id] || 0) + 1;
+                
+                if (!referralDetails[r.referred_by_user_id]) {
+                    referralDetails[r.referred_by_user_id] = [];
+                }
+                
+                // Calculate how much THIS referred user generated for the referrer
+                // The referrer gets 15% of the referred user's *calculated earnings* historically,
+                // but for Admin UI simplicity, we can calculate it dynamically based on the current batch or their total_gbs
+                const referredUserGbs = ((batchGbs[r.id] || 0) / (1024 * 1024 * 1024)).toFixed(2);
+                
+                // Wait, to be accurate, we should look at files table to see approved files, but for performance,
+                // we can calculate 15% of their total approved asset values if we tracked it, 
+                // or just dynamically estimate the 15% bonus based on their batchAssetValue.
+                const genBonus = ((batchAssetValues[r.id] || 0) * (godModeConfig.referralBonusPercent / (1 - godModeConfig.platformFeePercent))).toFixed(2);
+                
+                referralDetails[r.referred_by_user_id].push({
+                    id: r.id,
+                    email: r.email,
+                    display_name: r.display_name,
+                    created_at: r.created_at,
+                    total_gbs_uploaded: referredUserGbs,
+                    referral_earnings_generated: genBonus !== "0.00" ? genBonus : "Evaluating..." // simplified estimation
+                });
             }
         });
 
@@ -192,6 +235,7 @@ export async function getAllUsersAction(): Promise<ActionResponse<AdminUserStats
             batch_gbs: ((batchGbs[user.id] || 0) / (1024 * 1024 * 1024)).toFixed(2),
             referred_users_count: referralCounts[user.id] || 0,
             referral_earnings: Number(user.referral_earnings || 0).toFixed(2),
+            referred_users_details: referralDetails[user.id] || [],
         }));
 
         return { success: true, data: formattedData as AdminUserStats[] };

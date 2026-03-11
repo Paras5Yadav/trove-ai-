@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { AdminUserStats, setAdminOverrideEarningsAction, toggleUserApprovalAction } from "@/app/actions/admin";
 import { Search, Loader2, DollarSign, Check, X, Database, Banknote, CheckCircle2, XCircle, FilePlus, ShieldCheck, Edit2, Users } from "lucide-react";
 
@@ -11,6 +11,7 @@ export function AdminUsersTable({ users }: { users: AdminUserStats[] }) {
     const [isSaving, setIsSaving] = useState(false);
     const [actionError, setActionError] = useState<string | null>(null);
     const [localUsers, setLocalUsers] = useState<AdminUserStats[]>(users);
+    const [expandedRefsUserId, setExpandedRefsUserId] = useState<string | null>(null);
 
     const handleEditClick = (user: AdminUserStats) => {
         setEditingUserId(user.id);
@@ -59,7 +60,9 @@ export function AdminUsersTable({ users }: { users: AdminUserStats[] }) {
         }
     };
 
-
+    const toggleRefsExpand = (userId: string) => {
+        setExpandedRefsUserId(prev => prev === userId ? null : userId);
+    };
 
     const filteredUsers = localUsers.filter(user =>
         user.display_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -110,7 +113,8 @@ export function AdminUsersTable({ users }: { users: AdminUserStats[] }) {
                             const hasOverride = user.admin_override_earnings !== null;
 
                             return (
-                                <tr key={user.id} className="hover:bg-gray-50/50 transition-colors group">
+                                <React.Fragment key={user.id}>
+                                <tr className="hover:bg-gray-50/50 transition-colors group">
                                     <td className="px-6 py-4 font-medium text-gray-900 border-l-4 border-transparent group-hover:border-moss transition-all">
                                         <div className="flex flex-col">
                                             <div className="flex items-center gap-2">
@@ -135,11 +139,21 @@ export function AdminUsersTable({ users }: { users: AdminUserStats[] }) {
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <div className="flex flex-col">
-                                            <span className="text-gray-900 font-medium whitespace-nowrap">
-                                                {user.referred_users_count || 0} user{user.referred_users_count === 1 ? '' : 's'}
-                                            </span>
-                                            <span className="text-xs text-gray-500 whitespace-nowrap mt-0.5" title="Referral Earnings">
+                                        <div className="flex flex-col items-start gap-1">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-gray-900 font-medium whitespace-nowrap">
+                                                    {user.referred_users_count || 0} user{user.referred_users_count === 1 ? '' : 's'}
+                                                </span>
+                                                {user.referred_users_count && user.referred_users_count > 0 ? (
+                                                    <button 
+                                                        onClick={() => toggleRefsExpand(user.id)}
+                                                        className="text-[10px] font-bold uppercase tracking-wider text-moss bg-moss/10 hover:bg-moss/20 px-2 py-0.5 rounded transition-colors"
+                                                    >
+                                                        {expandedRefsUserId === user.id ? 'Hide' : 'View'}
+                                                    </button>
+                                                ) : null}
+                                            </div>
+                                            <span className="text-xs text-gray-500 whitespace-nowrap" title="Referral Earnings">
                                                 ₹{user.referral_earnings || '0.00'}
                                             </span>
                                         </div>
@@ -230,6 +244,62 @@ export function AdminUsersTable({ users }: { users: AdminUserStats[] }) {
                                         )}
                                     </td>
                                 </tr>
+                                {expandedRefsUserId === user.id && user.referred_users_details && user.referred_users_details.length > 0 && (
+                                    <tr className="bg-gray-50/80 border-b border-gray-100">
+                                        <td colSpan={8} className="px-6 py-4">
+                                            <div className="pl-6 border-l-2 border-moss/30 overflow-hidden relative">
+                                                <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-3 flex items-center gap-2">
+                                                    Users Referred by {user.display_name}
+                                                    <span className="bg-white border border-gray-200 text-gray-600 px-2 py-0.5 rounded-full text-[10px]">
+                                                        {user.referred_users_details.length}
+                                                    </span>
+                                                </h4>
+                                                
+                                                <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+                                                    <table className="w-full text-sm text-left">
+                                                        <thead className="bg-gray-50 text-xs text-gray-500 uppercase">
+                                                            <tr>
+                                                                <th className="px-4 py-2.5 font-medium">Referred User</th>
+                                                                <th className="px-4 py-2.5 font-medium">Joined Date</th>
+                                                                <th className="px-4 py-2.5 font-medium text-right">Data Contributed</th>
+                                                                <th className="px-4 py-2.5 font-medium text-right">Bonus Generated</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody className="divide-y divide-gray-100">
+                                                            {user.referred_users_details.map((refUser) => (
+                                                                <tr key={refUser.id} className="hover:bg-gray-50/50">
+                                                                    <td className="px-4 py-3">
+                                                                        <div className="flex flex-col">
+                                                                            <span className="font-semibold text-charcoal">{refUser.display_name}</span>
+                                                                            <span className="text-xs text-gray-500 font-mono">{refUser.email}</span>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td className="px-4 py-3 text-gray-600 whitespace-nowrap text-xs">
+                                                                        {new Date(refUser.created_at).toLocaleDateString(undefined, {
+                                                                            year: 'numeric', month: 'short', day: 'numeric'
+                                                                        })}
+                                                                    </td>
+                                                                    <td className="px-4 py-3 text-right">
+                                                                        <span className="text-sm font-medium text-charcoal">{refUser.total_gbs_uploaded} GB</span>
+                                                                    </td>
+                                                                    <td className="px-4 py-3 text-right">
+                                                                        <span className="text-sm font-medium text-moss bg-moss/5 px-2 py-1 rounded">
+                                                                            {refUser.referral_earnings_generated === 'Evaluating...' 
+                                                                                ? <span className="text-xs text-moss/70 font-normal">Pending</span> 
+                                                                                : `₹${refUser.referral_earnings_generated}`
+                                                                            }
+                                                                        </span>
+                                                                    </td>
+                                                                </tr>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                )}
+                            </React.Fragment>
                             );
                         })}
                     </tbody>

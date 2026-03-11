@@ -8,6 +8,7 @@ import { DataGravityWell } from "@/components/cards/DiagnosticShuffler";
 import { LiveAuctionBoard } from "@/components/cards/TelemetryTypewriter";
 import { RevenueWaterfall } from "@/components/cards/EarningsTracker";
 import { SmartUploadButton } from "@/components/SmartUploadButton";
+import { SplashIntro } from "@/components/SplashIntro";
 import { useTranslation } from "react-i18next";
 
 export default function Home() {
@@ -27,6 +28,8 @@ export default function Home() {
   };
 
   return (
+    <>
+    <SplashIntro />
     <main className="relative min-h-screen bg-gradz-cream overflow-hidden selection:bg-gradz-green/30 px-6 sm:px-12 md:px-24">
       {/* Background Blobs */}
       <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-gradz-matcha/20 blur-[100px] animate-pulse pointer-events-none" />
@@ -180,5 +183,6 @@ export default function Home() {
 
       </motion.div>
     </main>
+    </>
   );
 }
