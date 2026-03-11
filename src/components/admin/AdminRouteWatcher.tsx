@@ -1,11 +1,9 @@
 "use client";
 
 import { useEffect } from "react";
-import { usePathname } from "next/navigation";
 import { lockAdminTerminalAction } from "@/app/actions/admin-auth";
 
 export function AdminRouteWatcher() {
-    const pathname = usePathname();
 
     useEffect(() => {
         // We set up a strict effect. 

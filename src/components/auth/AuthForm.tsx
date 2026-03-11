@@ -6,6 +6,7 @@ import { loginAction, signupAction, oAuthSignInAction } from "@/app/actions/auth
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSearchParams } from "next/navigation";
+import { useTranslation } from "react-i18next";
 
 type AuthMode = "login" | "signup";
 
@@ -20,6 +21,7 @@ const GoogleIcon = () => (
 );
 
 export function AuthForm({ mode }: { mode: AuthMode }) {
+    const { t } = useTranslation();
     const [isLoading, setIsLoading] = useState(false);
     const [isGoogleLoading, setIsGoogleLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -42,7 +44,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
             const pwd = formData.get("password") as string;
             const confirmPwd = formData.get("confirmPassword") as string;
             if (pwd !== confirmPwd) {
-                setError("Passwords do not match");
+                setError(t("auth.passwordMismatch"));
                 setIsLoading(false);
                 return;
             }
@@ -50,7 +52,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
         
         // Consent validation applies to both login and signup (for standard accounts)
         if (accountType === "standard" && !consentChecked) {
-            setError("You must agree to the data contribution terms to proceed.");
+            setError(t("auth.consentRequired"));
             setIsLoading(false);
             return;
         }
@@ -63,11 +65,13 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
         } else if (result && result.success) {
             const resData = (result as { data?: { emailConfirmation?: boolean } }).data;
             if (resData?.emailConfirmation) {
-                setSuccessMessage("Account created! Please check your email to verify your account.");
+                setSuccessMessage(t("auth.emailConfirmation"));
             }
             setIsLoading(false);
         }
     };
+
+    const actionLabel = mode === "login" ? t("auth.signInSecurely") : t("auth.initializeAccount");
 
     return (
         <div className="w-full max-w-md min-w-0 mx-auto">
@@ -79,12 +83,12 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
             >
                 <div className="mb-6 sm:mb-8 text-center">
                     <h2 className="text-2xl sm:text-3xl font-bold font-jakarta text-charcoal tracking-tight">
-                        {mode === "login" ? "Welcome Back" : "Create Account"}
+                        {mode === "login" ? t("auth.welcomeBack") : t("auth.createAccount")}
                     </h2>
                     <p className="text-charcoal/60 mt-2">
                         {mode === "login"
-                            ? "Enter your credentials to access the vault."
-                            : "Join the network and start earning passive income."}
+                            ? t("auth.loginSubtitle")
+                            : t("auth.signupSubtitle")}
                     </p>
                 </div>
 
@@ -95,7 +99,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
                         className="flex-1 py-2 px-4 rounded-lg text-sm font-semibold transition-all duration-300"
                         style={accountType === "standard" ? { backgroundColor: '#fff', color: '#1C1C1A', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' } : { color: '#999' }}
                     >
-                        Standard
+                        {t("auth.standard")}
                     </button>
                     <button
                         type="button"
@@ -103,7 +107,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
                         className="flex-1 py-2 px-4 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center justify-center gap-2"
                         style={accountType === "ghost" ? { backgroundColor: '#1C1C1A', color: '#ffffff', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' } : { color: '#999' }}
                     >
-                        Ghost
+                        {t("auth.ghost")}
                     </button>
                 </div>
 
@@ -133,7 +137,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
                                 <CheckCircle className="w-6 h-6 text-emerald-600" />
                             </div>
                             <p className="font-semibold text-base">{successMessage}</p>
-                            <p className="text-emerald-600/70 text-xs">Click the link in your email to activate your account, then come back and sign in.</p>
+                            <p className="text-emerald-600/70 text-xs">{t("auth.emailConfirmationSub")}</p>
                         </motion.div>
                     )}
                 </AnimatePresence>
@@ -150,11 +154,10 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
                                     type="button"
                                     onClick={async () => {
                                         if (accountType === "standard" && !consentChecked) {
-                                            setError("You must agree to the data contribution terms to proceed.");
+                                            setError(t("auth.consentRequired"));
                                             return;
                                         }
                                         setIsGoogleLoading(true);
-                                        // Pass the referral code through the OAuth state or URL
                                         await oAuthSignInAction("google", referralCode);
                                     }}
                                     disabled={isLoading || isGoogleLoading}
@@ -165,7 +168,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
                                     ) : (
                                         <>
                                             <GoogleIcon />
-                                            <span className="text-charcoal/80">Continue with Google</span>
+                                            <span className="text-charcoal/80">{t("auth.continueWithGoogle")}</span>
                                         </>
                                     )}
                                 </button>
@@ -173,13 +176,13 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
 
                             <div className="flex items-center gap-4 mb-6">
                                 <div className="h-px bg-charcoal/10 flex-1"></div>
-                                <span className="text-xs font-semibold text-charcoal/40 uppercase tracking-widest">or email</span>
+                                <span className="text-xs font-semibold text-charcoal/40 uppercase tracking-widest">{t("auth.orEmail")}</span>
                                 <div className="h-px bg-charcoal/10 flex-1"></div>
                             </div>
 
                             {mode === "signup" && (
                                 <div className="space-y-1">
-                                    <label className="text-xs font-semibold text-charcoal/80 uppercase tracking-widest pl-1">Display Name</label>
+                                    <label className="text-xs font-semibold text-charcoal/80 uppercase tracking-widest pl-1">{t("auth.displayName")}</label>
                                     <div className="relative group">
                                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-charcoal/40 group-focus-within:text-moss transition-colors">
                                             <User className="h-5 w-5" />
@@ -195,7 +198,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
                                 </div>
                             )}
                             <div className="space-y-1">
-                                <label className="text-xs font-semibold text-charcoal/80 uppercase tracking-widest pl-1">Email Address</label>
+                                <label className="text-xs font-semibold text-charcoal/80 uppercase tracking-widest pl-1">{t("auth.emailAddress")}</label>
                                 <div className="relative group">
                                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-charcoal/40 group-focus-within:text-moss transition-colors">
                                         <Mail className="h-5 w-5" />
@@ -212,7 +215,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
                         </>
                     ) : (
                         <div className="space-y-1">
-                            <label className="text-xs font-semibold text-charcoal/80 uppercase tracking-widest pl-1">Ghost Username</label>
+                            <label className="text-xs font-semibold text-charcoal/80 uppercase tracking-widest pl-1">{t("auth.ghostUsername")}</label>
                             <div className="relative group">
                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-charcoal/40 group-focus-within:text-moss transition-colors">
                                     <Ghost className="h-5 w-5" />
@@ -228,14 +231,14 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
                             <div className="flex items-start gap-2 mt-3 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5">
                                 <ShieldAlert className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                                 <p className="text-xs text-amber-800 font-medium leading-relaxed">
-                                    Anonymous mode. Withdrawals disabled.
+                                    {t("auth.anonWarning")}
                                 </p>
                             </div>
                         </div>
                     )}
 
                     <div className="space-y-1">
-                        <label className="text-xs font-semibold text-charcoal/80 uppercase tracking-widest pl-1">Password</label>
+                        <label className="text-xs font-semibold text-charcoal/80 uppercase tracking-widest pl-1">{t("auth.password")}</label>
                         <div className="relative group">
                             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-charcoal/40 group-focus-within:text-moss transition-colors">
                             <Lock className="h-5 w-5" />
@@ -252,7 +255,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
 
                     {mode === "signup" && (
                         <div className="space-y-1">
-                            <label className="text-xs font-semibold text-charcoal/80 uppercase tracking-widest pl-1">Confirm Password</label>
+                            <label className="text-xs font-semibold text-charcoal/80 uppercase tracking-widest pl-1">{t("auth.confirmPassword")}</label>
                             <div className="relative group">
                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-charcoal/40 group-focus-within:text-moss transition-colors">
                                     <Lock className="h-5 w-5" />
@@ -270,7 +273,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
                                 <div className="flex items-start gap-2 mt-3 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5">
                                     <ShieldAlert className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                                     <p className="text-xs text-amber-800 font-medium leading-relaxed">
-                                        Your password can&apos;t be reset. If you lose your password, you will permanently lose access to your account and all accumulated earnings. Keep it safe.
+                                        {t("auth.passwordWarning")}
                                     </p>
                                 </div>
                             )}
@@ -285,9 +288,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
                                     onChange={(e) => setConsentChecked(e.target.checked)}
                                     className="mt-1 w-4 h-4 rounded border-charcoal/30 text-moss focus:ring-moss cursor-pointer"
                                 />
-                                <span className="text-xs text-charcoal/70 leading-relaxed">
-                                    I understand and agree that files I upload to Trove AI <strong className="text-charcoal">will be sold to verified research partners and AI companies</strong>. I will earn money for every file sold. I also understand that while I can delete my account at any time, data that has already been purchased by partners cannot be retracted.
-                                </span>
+                                <span className="text-xs text-charcoal/70 leading-relaxed" dangerouslySetInnerHTML={{ __html: t("auth.consentText") }} />
                             </label>
                         </div>
                     )}
@@ -303,7 +304,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
                                 <Loader2 className="h-5 w-5 animate-spin" />
                             ) : (
                                 <>
-                                    {mode === "login" ? "Sign In Securely" : "Initialize Account"}
+                                    {actionLabel}
                                     <ArrowRight className="h-4 w-4" />
                                 </>
                             )}
@@ -311,7 +312,8 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
 
                         {accountType === "standard" && (
                             <p className="text-[10px] text-center text-charcoal/50 leading-relaxed max-w-sm mx-auto">
-                                By clicking {mode === "login" ? "Sign In Securely" : "Initialize Account"} or Continue with Google, you confirm that you have read and agreed to the <a href="/policies" target="_blank" rel="noopener noreferrer" className="underline hover:text-moss transition-colors">Data Contributor Policies</a>.
+                                {t("auth.policyNote", { action: actionLabel })}{" "}
+                                <a href="/policies" target="_blank" rel="noopener noreferrer" className="underline hover:text-moss transition-colors">{t("auth.dataPolicies")}</a>.
                             </p>
                         )}
                     </div>
@@ -319,16 +321,16 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
                     <div className="text-center pt-6 text-sm text-charcoal/60">
                         {mode === "login" ? (
                             <p>
-                                Don&apos;t have an account?{" "}
+                                {t("auth.noAccount")}{" "}
                                 <Link href="/signup" className="text-moss font-semibold hover:underline">
-                                    Sign up now
+                                    {t("auth.signUpNow")}
                                 </Link>
                             </p>
                         ) : (
                             <p>
-                                Already joined the network?{" "}
+                                {t("auth.alreadyJoined")}{" "}
                                 <Link href="/login" className="text-moss font-semibold hover:underline">
-                                    Sign in
+                                    {t("auth.signInLink")}
                                 </Link>
                             </p>
                         )}

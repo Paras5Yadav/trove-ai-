@@ -52,7 +52,7 @@ export default function PoliciesPage() {
                                 2. Irrevocability & Retraction
                             </h2>
                             <p className="text-sm text-amber-800/80 leading-relaxed font-medium">
-                                Once data has been validated and sold to a third-party partner, it cannot be retracted. While you retain the right to delete your Trove AI account at any time, doing so will not remove previously sold datasets from our partners' servers or AI training pipelines. Upload carefully.
+                                Once data has been validated and sold to a third-party partner, it cannot be retracted. While you retain the right to delete your Trove AI account at any time, doing so will not remove previously sold datasets from our partners&apos; servers or AI training pipelines. Upload carefully.
                             </p>
                         </section>
 

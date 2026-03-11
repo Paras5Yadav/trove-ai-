@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { AdminUserStats, setAdminOverrideEarningsAction, toggleUserApprovalAction } from "@/app/actions/admin";
-import { Search, Loader2, DollarSign, Check, X, ShieldAlert, Database, Banknote, CheckCircle2, XCircle, FilePlus, ShieldCheck, Edit2 } from "lucide-react";
+import { Search, Loader2, DollarSign, Check, X, Database, Banknote, CheckCircle2, XCircle, FilePlus, ShieldCheck, Edit2, Users } from "lucide-react";
 
 export function AdminUsersTable({ users }: { users: AdminUserStats[] }) {
     const [searchQuery, setSearchQuery] = useState("");
@@ -96,6 +96,7 @@ export function AdminUsersTable({ users }: { users: AdminUserStats[] }) {
                         <tr>
                             <th className="px-6 py-4 font-medium">Contributor</th>
                             <th className="px-6 py-4 font-medium"><div className="flex items-center gap-1.5"><Database className="w-3.5 h-3.5" />Lifetime Uploads</div></th>
+                            <th className="px-6 py-4 font-medium"><div className="flex items-center gap-1.5"><Users className="w-3.5 h-3.5" />Referrals</div></th>
                             <th className="px-6 py-4 font-medium"><div className="flex items-center gap-1.5"><FilePlus className="w-3.5 h-3.5" />Batch Files</div></th>
                             <th className="px-6 py-4 font-medium text-center"><div className="flex justify-center" title="Approved for Payout"><ShieldCheck className="w-3.5 h-3.5" /></div></th>
                             <th className="px-6 py-4 font-medium"><div className="flex items-center gap-1.5">Earnings</div></th>
@@ -130,6 +131,16 @@ export function AdminUsersTable({ users }: { users: AdminUserStats[] }) {
                                             </span>
                                             <span className="text-xs text-gray-500 whitespace-nowrap mt-0.5" title="Lifetime GBs">
                                                 {Number(user.total_gbs_uploaded).toFixed(2)} GB
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="flex flex-col">
+                                            <span className="text-gray-900 font-medium whitespace-nowrap">
+                                                {user.referred_users_count || 0} user{user.referred_users_count === 1 ? '' : 's'}
+                                            </span>
+                                            <span className="text-xs text-gray-500 whitespace-nowrap mt-0.5" title="Referral Earnings">
+                                                ₹{user.referral_earnings || '0.00'}
                                             </span>
                                         </div>
                                     </td>

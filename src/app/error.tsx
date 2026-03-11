@@ -28,7 +28,7 @@ export default function GlobalError({
                 </h1>
                 
                 <p className="text-charcoal/60 mb-8 font-medium">
-                    We're sorry, but an unexpected error occurred while loading this page. 
+                    We&apos;re sorry, but an unexpected error occurred while loading this page. 
                     Our team has been notified.
                 </p>
                 

@@ -20,6 +20,8 @@ export interface AdminUserStats {
     pending_files_count?: number;
     batch_files_count?: number;
     batch_gbs?: string;
+    referred_users_count?: number;
+    referral_earnings?: string;
 }
 
 export interface AdminBatchStats {
@@ -105,7 +107,9 @@ export async function getAllUsersAction(): Promise<ActionResponse<AdminUserStats
                 approved_for_payment: i % 3 === 0,
                 created_at: new Date(Date.now() - Math.random() * 10000000000).toISOString(),
                 files_count: Math.floor(Math.random() * 50),
-                pending_files_count: Math.floor(Math.random() * 10)
+                pending_files_count: Math.floor(Math.random() * 10),
+                referred_users_count: Math.floor(Math.random() * 5),
+                referral_earnings: (Math.random() * 500).toFixed(2),
             }));
 
             return { success: true, data: allMockUsers as AdminUserStats[] };
@@ -115,7 +119,7 @@ export async function getAllUsersAction(): Promise<ActionResponse<AdminUserStats
 
         const { data, error } = await supabase
             .from('profiles')
-            .select('id, email, display_name, account_type, total_gbs_uploaded, calculated_earnings, admin_override_earnings, withdrawable_balance, approved_for_payment, created_at, files(count)')
+            .select('id, email, display_name, account_type, total_gbs_uploaded, calculated_earnings, admin_override_earnings, withdrawable_balance, approved_for_payment, created_at, referral_earnings, files(count)')
             .order('created_at', { ascending: false })
             .limit(10000); // Fetch all users up to 10k
 
@@ -134,9 +138,9 @@ export async function getAllUsersAction(): Promise<ActionResponse<AdminUserStats
 
         // Fetch ALL batch files for the current batch
         const batchName = godModeConfig.currentBatch.id;
-        let batchCounts: Record<string, number> = {};
-        let batchGbs: Record<string, number> = {};
-        let batchAssetValues: Record<string, number> = {};
+        const batchCounts: Record<string, number> = {};
+        const batchGbs: Record<string, number> = {};
+        const batchAssetValues: Record<string, number> = {};
         
         const { data: batchData } = await supabase
             .from('batches')
@@ -165,6 +169,19 @@ export async function getAllUsersAction(): Promise<ActionResponse<AdminUserStats
             });
         }
 
+        // Also fetch referral counts
+        const { data: allReferrals } = await supabase
+            .from('profiles')
+            .select('referred_by_user_id')
+            .not('referred_by_user_id', 'is', null);
+            
+        const referralCounts: Record<string, number> = {};
+        allReferrals?.forEach(r => {
+            if (r.referred_by_user_id) {
+                referralCounts[r.referred_by_user_id] = (referralCounts[r.referred_by_user_id] || 0) + 1;
+            }
+        });
+
         // Extract the count from the nested relation array
         const formattedData = data?.map(user => ({
             ...user,
@@ -172,7 +189,9 @@ export async function getAllUsersAction(): Promise<ActionResponse<AdminUserStats
             files_count: user.files?.[0]?.count || 0,
             pending_files_count: pendingCounts[user.id] || 0,
             batch_files_count: batchCounts[user.id] || 0,
-            batch_gbs: ((batchGbs[user.id] || 0) / (1024 * 1024 * 1024)).toFixed(2)
+            batch_gbs: ((batchGbs[user.id] || 0) / (1024 * 1024 * 1024)).toFixed(2),
+            referred_users_count: referralCounts[user.id] || 0,
+            referral_earnings: Number(user.referral_earnings || 0).toFixed(2),
         }));
 
         return { success: true, data: formattedData as AdminUserStats[] };

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { UploadCloud, Database, Wallet, Activity, CheckCircle2, Banknote, Clock, XCircle, ChevronRight } from "lucide-react";
+import { UploadCloud, Database, Wallet, Activity, CheckCircle2, Banknote, Clock, XCircle } from "lucide-react";
 import { FileUploadArea } from "@/components/dashboard/FileUploadArea";
 import { getUserDashboardStatsAction, getBatchVolumeAction } from "@/app/actions/vault";
 
@@ -10,11 +10,13 @@ import { useEffect, useState } from "react";
 import { ReferralSection } from "@/components/dashboard/ReferralSection";
 import { WithdrawModal } from "@/components/dashboard/WithdrawModal";
 import { HelpCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const BASE_TB = 12.4; // Starting base volume
 const TOTAL_CAPACITY_TB = 50.0; // Total batch capacity
 
 export default function Dashboard() {
+    const { t } = useTranslation();
     const [assetValue, setAssetValue] = useState("0.00");
     const [referralEarnings, setReferralEarnings] = useState("0.00");
     const [totalGbs, setTotalGbs] = useState("0.00");
@@ -77,8 +79,8 @@ export default function Dashboard() {
 
                 {/* Header Section */}
                 <div>
-                    <h1 className="text-4xl md:text-5xl font-serif text-gradz-charcoal mb-2">Welcome back, Contributor.</h1>
-                    <p className="text-gradz-charcoal/60">Your data is powering the next generation of AI.</p>
+                    <h1 className="text-4xl md:text-5xl font-serif text-gradz-charcoal mb-2">{t("dashboard.welcomeBack")}</h1>
+                    <p className="text-gradz-charcoal/60">{t("dashboard.subtitle")}</p>
                 </div>
 
                 {/* Global Batch Status */}
@@ -94,15 +96,15 @@ export default function Dashboard() {
                         <div>
                             <div className="flex items-center gap-2 mb-2">
                                 <div className="w-2 h-2 rounded-full bg-gradz-green animate-pulse" />
-                                <span className="text-xs font-mono font-medium text-gradz-green uppercase tracking-wider">Platform Status</span>
+                                <span className="text-xs font-mono font-medium text-gradz-green uppercase tracking-wider">{t("dashboard.platformStatus")}</span>
                             </div>
-                            <h2 className="text-2xl font-bold mb-1">Current Training Batch</h2>
-                            <p className="text-gradz-cream/60 text-sm">We are actively sourcing everyday mobility data.</p>
+                            <h2 className="text-2xl font-bold mb-1">{t("dashboard.currentBatch")}</h2>
+                            <p className="text-gradz-cream/60 text-sm">{t("dashboard.batchDesc")}</p>
                         </div>
 
                         <div className="w-full md:w-1/2 bg-white/5 rounded-2xl p-6 border border-white/10">
                             <div className="flex justify-between items-end mb-4">
-                                <div className="text-sm text-gradz-cream/60 font-mono">Volume Collected</div>
+                                <div className="text-sm text-gradz-cream/60 font-mono">{t("dashboard.volumeCollected")}</div>
                                 <div className="text-xl font-bold">{volumeDisplay} <span className="text-sm font-normal text-gradz-cream/60">/ {TOTAL_CAPACITY_TB.toFixed(1)} TB</span></div>
                             </div>
                             <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
@@ -125,7 +127,7 @@ export default function Dashboard() {
                     <div className="w-full space-y-6">
                         <h3 className="text-xl font-bold text-gradz-charcoal flex items-center gap-2">
                             <UploadCloud className="w-5 h-5" />
-                            Upload Data
+                            {t("dashboard.uploadData")}
                         </h3>
 
                         <FileUploadArea />
@@ -135,7 +137,7 @@ export default function Dashboard() {
                     <div className="space-y-6">
                         <h3 className="text-xl font-bold text-gradz-charcoal flex items-center gap-2">
                             <Activity className="w-5 h-5" />
-                            Your Analytics
+                            {t("dashboard.yourAnalytics")}
                         </h3>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -146,12 +148,12 @@ export default function Dashboard() {
                                         <div className="p-3 bg-gradz-butter/30 rounded-xl">
                                             <Wallet className="w-5 h-5 text-gradz-charcoal" />
                                         </div>
-                                        <div className="text-sm font-medium text-gradz-charcoal/60">Asset Value</div>
+                                        <div className="text-sm font-medium text-gradz-charcoal/60">{t("dashboard.assetValue")}</div>
                                     </div>
                                     <div className="group relative cursor-help outline-none" tabIndex={0}>
                                         <HelpCircle className="w-4 h-4 text-gradz-charcoal/25 mt-1" />
                                         <div className="absolute right-0 w-48 p-3 bg-gray-900 text-white text-[11px] leading-relaxed rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible focus-within:opacity-100 focus-within:visible group-focus:opacity-100 group-focus:visible active:opacity-100 active:visible transition-all z-10 bottom-full mb-2 shadow-xl whitespace-normal break-words pointer-events-none group-focus:pointer-events-auto">
-                                            This reflects the estimated value of your uploaded assets. These funds will become available for withdrawal once the system verifies your files for authenticity and quality. The final value may increase or decrease depending on the overall assessment of your submitted assets.
+                                            {t("dashboard.assetTooltip")}
                                         </div>
                                     </div>
                                 </div>
@@ -168,7 +170,7 @@ export default function Dashboard() {
                                     <div className="p-3 bg-gradz-blue/30 rounded-xl">
                                         <Database className="w-5 h-5 text-gradz-charcoal" />
                                     </div>
-                                    <div className="text-sm font-medium text-gradz-charcoal/60">Data Contributed</div>
+                                    <div className="text-sm font-medium text-gradz-charcoal/60">{t("dashboard.dataContributed")}</div>
                                 </div>
                                 {isLoading ? (
                                     <div className="h-10 w-32 bg-gradz-cream animate-pulse rounded-lg" />
@@ -176,12 +178,12 @@ export default function Dashboard() {
                                     <>
                                         <div className="text-4xl font-mono font-bold text-gradz-charcoal">{totalGbs} <span className="text-xl">GB</span></div>
                                         <div className="mt-2 text-sm text-gradz-charcoal/60 font-medium">
-                                            Batch Files: <span className="text-gradz-charcoal font-bold">{totalFiles}</span>
+                                            {t("dashboard.batchFiles")}: <span className="text-gradz-charcoal font-bold">{totalFiles}</span>
                                         </div>
                                         
                                         <div className="mt-4 w-full">
                                             <div className="flex justify-between text-[10px] font-mono text-gradz-charcoal/50 uppercase tracking-widest mb-1">
-                                                <span>Your Limit</span>
+                                                <span>{t("dashboard.yourLimit")}</span>
                                                 <span>{totalGbs} / 10 GB</span>
                                             </div>
                                             <div className="h-1.5 w-full bg-gradz-charcoal/10 rounded-full overflow-hidden">
@@ -202,7 +204,7 @@ export default function Dashboard() {
                                         <div className="p-3 bg-gradz-charcoal/10 rounded-xl">
                                             <Banknote className="w-5 h-5 text-gradz-charcoal" />
                                         </div>
-                                        <div className="text-sm font-medium text-gradz-charcoal/60">Available to Withdraw</div>
+                                        <div className="text-sm font-medium text-gradz-charcoal/60">{t("dashboard.availableToWithdraw")}</div>
                                     </div>
                                 </div>
                                 {isLoading ? (
@@ -221,7 +223,7 @@ export default function Dashboard() {
                                             className="mt-4 w-full py-2.5 bg-gradz-charcoal hover:bg-gradz-charcoal/90 text-white font-semibold rounded-xl transition-colors text-sm disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                         >
                                             <Banknote className="w-4 h-4" />
-                                            Withdraw via UPI
+                                            {t("dashboard.withdrawViaUPI")}
                                         </button>
                                         
                                         {/* Withdrawal Status Banner */}
@@ -230,7 +232,7 @@ export default function Dashboard() {
                                                 <div className="flex items-center justify-between">
                                                     <div className="flex items-center gap-2">
                                                         <Clock className="w-4 h-4 text-yellow-500" />
-                                                        <span className="text-sm font-semibold text-yellow-800">Withdrawal Pending</span>
+                                                        <span className="text-sm font-semibold text-yellow-800">{t("dashboard.withdrawalPending")}</span>
                                                     </div>
                                                     <span className="text-sm font-bold text-yellow-800">
                                                         ₹{Number(recentWithdrawals[0].amount).toFixed(2)}
@@ -246,7 +248,7 @@ export default function Dashboard() {
                                                 <div className="flex items-center justify-between">
                                                     <div className="flex items-center gap-2">
                                                         <CheckCircle2 className="w-4 h-4 text-green-600" />
-                                                        <span className="text-sm font-semibold text-green-800">Withdrawal Paid</span>
+                                                        <span className="text-sm font-semibold text-green-800">{t("dashboard.withdrawalPaid")}</span>
                                                     </div>
                                                     <span className="text-sm font-bold text-green-800">
                                                         ₹{Number(recentWithdrawals[0].amount).toFixed(2)}
@@ -262,7 +264,7 @@ export default function Dashboard() {
                                                 <div className="flex items-center justify-between">
                                                     <div className="flex items-center gap-2">
                                                         <XCircle className="w-4 h-4 text-red-500" />
-                                                        <span className="text-sm font-semibold text-red-800">Withdrawal Denied</span>
+                                                        <span className="text-sm font-semibold text-red-800">{t("dashboard.withdrawalDenied")}</span>
                                                     </div>
                                                     <span className="text-sm font-bold text-red-800">
                                                         ₹{Number(recentWithdrawals[0].amount).toFixed(2)}
@@ -271,7 +273,7 @@ export default function Dashboard() {
                                                 {recentWithdrawals[0].admin_note && (
                                                     <div className="text-xs text-red-600 mt-1.5">{recentWithdrawals[0].admin_note}</div>
                                                 )}
-                                                <div className="text-[11px] text-red-400 mt-1">Your funds have been refunded to your balance.</div>
+                                                <div className="text-[11px] text-red-400 mt-1">{t("dashboard.fundsRefunded")}</div>
                                             </div>
                                         )}
                                     </>

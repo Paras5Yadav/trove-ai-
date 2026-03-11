@@ -87,7 +87,7 @@ export function WithdrawModal({ isOpen, onClose, maxAmount, savedUpiId, onSucces
                             <Banknote className="w-8 h-8 text-gradz-charcoal" />
                         </div>
                         <h3 className="text-xl font-bold text-gray-900 mb-2">Withdrawal Requested!</h3>
-                        <p className="text-gray-500 text-sm">We'll process your payment shortly.</p>
+                        <p className="text-gray-500 text-sm">We&apos;ll process your payment shortly.</p>
                     </div>
                 ) : (
                     <>

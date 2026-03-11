@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ShieldAlert, ArrowRight, Lock } from "lucide-react";
+import { ArrowRight, Lock } from "lucide-react";
 import { verifyAdminPasswordAction } from "@/app/actions/admin-auth";
 import { useRouter } from "next/navigation";
 
@@ -25,7 +25,7 @@ export function AdminPasswordGate() {
                 setError(res.error || "Authentication failed");
                 setPassword("");
             }
-        } catch (err) {
+        } catch {
             setError("Something went wrong");
         } finally {
             setIsLoading(false);

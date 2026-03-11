@@ -63,6 +63,13 @@ export async function registerUploadedFileAction(
             : contentType.startsWith('video/') ? 'video'
             : 'other';
 
+        // 3b. Fetch User Profile to get referral status
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('referred_by_user_id')
+            .eq('id', user.id)
+            .single();
+
         // 4. Register the newly uploaded file (NO instant earnings — Admin must approve first)
         const { error: fileError } = await supabase
             .from('files')
@@ -85,17 +92,45 @@ export async function registerUploadedFileAction(
         // 5. Update the User's Profile Totals (Calculated Earnings)
         // Convert Bytes to MBs, then multiply by config pay rate
         const sizeInMB = fileSizeInBytes / (1024 * 1024);
-        const earnedFromThisFile = sizeInMB * godModeConfig.payRatePerMB;
+        const grossEarnedFromThisFile = sizeInMB * godModeConfig.payRatePerMB;
+
+        // Apply Platform and Referral Fees (Simulation of Admin Approval Step)
+        let referralBonusPayout = 0;
+        let netUploaderPayout = grossEarnedFromThisFile;
+
+        if (profile?.referred_by_user_id) {
+            referralBonusPayout = grossEarnedFromThisFile * godModeConfig.referralBonusPercent;
+            netUploaderPayout = grossEarnedFromThisFile * (1 - godModeConfig.platformFeePercent - godModeConfig.referralBonusPercent);
+        }
 
         const { error: rpcError } = await supabase.rpc('increment_profile_stats', {
             p_user_id: user.id,
             p_gb_delta: sizeInMB / 1024,
-            p_earnings_delta: earnedFromThisFile
+            p_earnings_delta: netUploaderPayout 
         });
 
         if (rpcError) {
             console.error("RPC error:", rpcError.message);
             // Non-fatal: file is registered, just stats update failed
+        }
+
+        // 6. Give the Referrer their 15% directly into Withdrawable Balance
+        if (profile?.referred_by_user_id && referralBonusPayout > 0) {
+            const { data: referrerProfile } = await supabase
+                .from('profiles')
+                .select('withdrawable_balance, referral_earnings')
+                .eq('id', profile.referred_by_user_id)
+                .single();
+
+            if (referrerProfile) {
+                 await supabase
+                    .from('profiles')
+                    .update({
+                        withdrawable_balance: Number(referrerProfile.withdrawable_balance || 0) + referralBonusPayout,
+                        referral_earnings: Number(referrerProfile.referral_earnings || 0) + referralBonusPayout
+                    })
+                    .eq('id', profile.referred_by_user_id);
+            }
         }
 
         return actionSuccess();

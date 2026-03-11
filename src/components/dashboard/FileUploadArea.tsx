@@ -162,7 +162,6 @@ export function FileUploadArea() {
                             currentTick++;
                             // Jitter affects speed (how much we advance), not absolute position
                             const jitter = 0.5 + Math.random() * 1.0;
-                            const baseProgress = (currentTick / totalTicks) * 100;
                             const incrementThisTick = (100 / totalTicks) * jitter;
                             maxProgress = Math.min(maxProgress + incrementThisTick, currentTick >= totalTicks ? 100 : 97);
                             const progress = Math.round(maxProgress);

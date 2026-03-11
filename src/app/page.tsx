@@ -8,8 +8,11 @@ import { DataGravityWell } from "@/components/cards/DiagnosticShuffler";
 import { LiveAuctionBoard } from "@/components/cards/TelemetryTypewriter";
 import { RevenueWaterfall } from "@/components/cards/EarningsTracker";
 import { SmartUploadButton } from "@/components/SmartUploadButton";
+import { useTranslation } from "react-i18next";
 
 export default function Home() {
+  const { t } = useTranslation();
+
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
@@ -43,25 +46,25 @@ export default function Home() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#85d7ff] opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-[#85d7ff]"></span>
             </span>
-            Monetize Reality
+            {t("landing.badge")}
           </div>
 
           <h1 className="text-6xl md:text-8xl font-serif tracking-tight leading-[0.9] text-[#85d7ff] mb-8">
-            <span className="text-gradz-charcoal block">Your Data</span>
+            <span className="text-gradz-charcoal block">{t("landing.heroLine1")}</span>
             <span className="italic block pl-8 md:pl-16 relative">
-              Is The
+              {t("landing.heroLine2")}
             </span>
-            <span className="text-gradz-charcoal block">Algorithm.</span>
+            <span className="text-gradz-charcoal block">{t("landing.heroLine3")}</span>
           </h1>
 
           <p className="text-xl md:text-2xl text-gradz-charcoal/60 font-serif leading-relaxed max-w-xl mb-12">
-            Upload your photos and videos. We sell them to AI companies and research labs training the next wave of intelligent systems — and you earn passive income every time they&apos;re used.
+            {t("landing.subtitle")}
           </p>
 
           <div className="flex items-center gap-4 text-sm font-bold uppercase tracking-widest text-gradz-charcoal">
             <SmartUploadButton />
             <Link href="/policies" className="group flex items-center gap-2 opacity-50 hover:opacity-100 transition-opacity ml-4 hidden sm:flex">
-                <span>Review Data Policies</span>
+                <span>{t("landing.reviewPolicies")}</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
@@ -75,13 +78,13 @@ export default function Home() {
             <div className="mb-16">
               <div className="flex items-center gap-2 mb-6">
                 <span className="text-[#CC5833] font-mono text-sm tracking-wider font-semibold uppercase">
-                  &gt; THE DATA REVOLUTION // YOUR DATA. YOUR PROFIT.
+                  {t("landing.sectionTag1")}
                 </span>
               </div>
               <h2 className="text-5xl md:text-7xl lg:text-8xl font-serif text-gradz-cream tracking-tight leading-[0.9]">
-                THEY TAKE IT FREE.<br />
+                {t("landing.sectionHeading1a")}<br />
                 <span className="text-[#CC5833] italic">
-                  *We Pay You.*
+                  {t("landing.sectionHeading1b")}
                 </span>
               </h2>
             </div>
@@ -99,18 +102,18 @@ export default function Home() {
           <div className="mb-16">
             <div className="flex items-center gap-2 mb-6">
               <span className="text-[#85d7ff] font-mono text-sm tracking-wider font-semibold uppercase">
-                &gt; THE CONTRIBUTOR ARCHIVE
+                {t("landing.sectionTag2")}
               </span>
             </div>
             <h2 className="text-5xl md:text-7xl lg:text-8xl font-serif text-gradz-charcoal tracking-tight leading-[0.9]">
-              IN-DEMAND
+              {t("landing.sectionHeading2a")}
               <br />
               <span className="text-gradz-charcoal italic">
-                *Assets.*
+                {t("landing.sectionHeading2b")}
               </span>
             </h2>
             <p className="mt-8 text-xl md:text-2xl text-gradz-charcoal/60 font-serif leading-relaxed max-w-xl">
-              From breakup texts to pothole geometry. If you generate it, we want it. See what the network is actively acquiring.
+              {t("landing.sectionSubtitle2")}
             </p>
           </div>
         </div>
@@ -121,13 +124,13 @@ export default function Home() {
           <motion.div variants={itemVariants} className="group relative bg-white rounded-3xl p-6 shadow-xl shadow-gradz-charcoal/5 transform hover:-translate-y-2 transition-all duration-500">
             <div className="absolute top-0 left-0 w-full h-3 bg-gradz-butter/60 rounded-t-3xl" />
             <div className="aspect-[4/3] bg-gradz-cream border border-gradz-charcoal/5 rounded-2xl mb-8 flex items-center justify-center overflow-hidden relative group-hover:bg-gradz-butter/10 transition-colors duration-500">
-              <Image src="/images/physical-world.png" alt="The Physical World" width={280} height={280} className="object-contain group-hover:scale-105 transition-transform duration-500" />
+              <Image src="/images/physical-world.png" alt={t("landing.card1Title")} width={280} height={280} className="object-contain group-hover:scale-105 transition-transform duration-500" />
             </div>
-            <h3 className="text-3xl font-serif text-gradz-charcoal leading-tight mb-3">The Physical World</h3>
-            <p className="text-gradz-charcoal/60 mb-6">High-definition environmental capture. Dashcam footage of potholes, 4K street walks, and 3D room scans.</p>
+            <h3 className="text-3xl font-serif text-gradz-charcoal leading-tight mb-3">{t("landing.card1Title")}</h3>
+            <p className="text-gradz-charcoal/60 mb-6">{t("landing.card1Desc")}</p>
             <div className="flex items-center gap-2 bg-gradz-green/10 w-fit px-3 py-1.5 rounded-full mt-auto">
               <div className="w-2 h-2 rounded-full bg-gradz-green animate-pulse" />
-              <span className="text-xs font-mono font-medium text-gradz-charcoal/80">Avg. ₹5 – ₹184 / upload</span>
+              <span className="text-xs font-mono font-medium text-gradz-charcoal/80">{t("landing.card1Tag")}</span>
             </div>
           </motion.div>
 
@@ -135,13 +138,13 @@ export default function Home() {
           <motion.div variants={itemVariants} className="group relative bg-white rounded-3xl p-6 shadow-xl shadow-gradz-charcoal/5 md:mt-24 transform hover:-translate-y-2 transition-all duration-500 flex flex-col">
             <div className="absolute top-0 left-0 w-full h-3 bg-gradz-lilac/60 rounded-t-3xl" />
             <div className="aspect-[4/3] bg-gradz-cream border border-gradz-charcoal/5 rounded-2xl mb-8 flex items-center justify-center overflow-hidden relative group-hover:bg-gradz-lilac/10 transition-colors duration-500">
-              <Image src="/images/human-context.png" alt="Human Context" width={280} height={280} className="object-contain group-hover:scale-105 transition-transform duration-500" />
+              <Image src="/images/human-context.png" alt={t("landing.card2Title")} width={280} height={280} className="object-contain group-hover:scale-105 transition-transform duration-500" />
             </div>
-            <h3 className="text-3xl font-serif text-gradz-charcoal leading-tight mb-3">Human Context</h3>
-            <p className="text-gradz-charcoal/60 mb-6">Authentic human interaction is the rarest asset on the internet. From search histories to breakup texts.</p>
+            <h3 className="text-3xl font-serif text-gradz-charcoal leading-tight mb-3">{t("landing.card2Title")}</h3>
+            <p className="text-gradz-charcoal/60 mb-6">{t("landing.card2Desc")}</p>
             <div className="flex items-center gap-2 bg-gradz-green/10 w-fit px-3 py-1.5 rounded-full mt-auto">
               <div className="w-2 h-2 rounded-full bg-gradz-green animate-pulse" />
-              <span className="text-xs font-mono font-medium text-gradz-charcoal/80">Avg. ₹46 – ₹460 / log</span>
+              <span className="text-xs font-mono font-medium text-gradz-charcoal/80">{t("landing.card2Tag")}</span>
             </div>
           </motion.div>
 
@@ -149,13 +152,13 @@ export default function Home() {
           <motion.div variants={itemVariants} className="group relative bg-white rounded-3xl p-6 shadow-xl shadow-gradz-charcoal/5 transform hover:-translate-y-2 transition-all duration-500 flex flex-col">
             <div className="absolute top-0 left-0 w-full h-3 bg-gradz-blue/60 rounded-t-3xl" />
             <div className="aspect-[4/3] bg-gradz-cream border border-gradz-charcoal/5 rounded-2xl mb-8 flex items-center justify-center overflow-hidden relative group-hover:bg-gradz-blue/10 transition-colors duration-500">
-              <Image src="/images/acoustic-signatures.png" alt="Acoustic Signatures" width={280} height={280} className="object-contain group-hover:scale-105 transition-transform duration-500" />
+              <Image src="/images/acoustic-signatures.png" alt={t("landing.card3Title")} width={280} height={280} className="object-contain group-hover:scale-105 transition-transform duration-500" />
             </div>
-            <h3 className="text-3xl font-serif text-gradz-charcoal leading-tight mb-3">Acoustic Signatures</h3>
-            <p className="text-gradz-charcoal/60 mb-6">Uncompressed field recordings, crowded cafes, mechanical hums, and localized soundscapes.</p>
+            <h3 className="text-3xl font-serif text-gradz-charcoal leading-tight mb-3">{t("landing.card3Title")}</h3>
+            <p className="text-gradz-charcoal/60 mb-6">{t("landing.card3Desc")}</p>
             <div className="flex items-center gap-2 bg-gradz-green/10 w-fit px-3 py-1.5 rounded-full mt-auto">
               <div className="w-2 h-2 rounded-full bg-gradz-green animate-pulse" />
-              <span className="text-xs font-mono font-medium text-gradz-charcoal/80">Avg. ₹18 – ₹276 / min</span>
+              <span className="text-xs font-mono font-medium text-gradz-charcoal/80">{t("landing.card3Tag")}</span>
             </div>
           </motion.div>
 
@@ -163,13 +166,13 @@ export default function Home() {
           <motion.div variants={itemVariants} className="group relative bg-white rounded-3xl p-6 shadow-xl shadow-gradz-charcoal/5 md:mt-24 transform hover:-translate-y-2 transition-all duration-500 flex flex-col">
             <div className="absolute top-0 left-0 w-full h-3 bg-gradz-peach/60 rounded-t-3xl" />
             <div className="aspect-[4/3] bg-gradz-cream border border-gradz-charcoal/5 rounded-2xl mb-8 flex items-center justify-center overflow-hidden relative group-hover:bg-gradz-peach/10 transition-colors duration-500">
-              <Image src="/images/transactional-data.png" alt="Transactional Data" width={280} height={280} className="object-contain group-hover:scale-105 transition-transform duration-500" />
+              <Image src="/images/transactional-data.png" alt={t("landing.card4Title")} width={280} height={280} className="object-contain group-hover:scale-105 transition-transform duration-500" />
             </div>
-            <h3 className="text-3xl font-serif text-gradz-charcoal leading-tight mb-3">Transactional Data</h3>
-            <p className="text-gradz-charcoal/60 mb-6">Bills, menus, retail receipts, handwritten notes—structured commercial data from the real world.</p>
+            <h3 className="text-3xl font-serif text-gradz-charcoal leading-tight mb-3">{t("landing.card4Title")}</h3>
+            <p className="text-gradz-charcoal/60 mb-6">{t("landing.card4Desc")}</p>
             <div className="flex items-center gap-2 bg-gradz-green/10 w-fit px-3 py-1.5 rounded-full mt-auto">
               <div className="w-2 h-2 rounded-full bg-gradz-green animate-pulse" />
-              <span className="text-xs font-mono font-medium text-gradz-charcoal/80">Avg. ₹9 – ₹92 / scan</span>
+              <span className="text-xs font-mono font-medium text-gradz-charcoal/80">{t("landing.card4Tag")}</span>
             </div>
           </motion.div>
 
