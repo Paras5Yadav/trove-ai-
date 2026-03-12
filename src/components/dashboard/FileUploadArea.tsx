@@ -232,9 +232,9 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
                                     How it works:
                                 </p>
                                 <ul className="list-disc list-inside text-[11px] text-moss/80 font-medium space-y-0.5">
-                                    <li>Files you upload enter our quality review queue.</li>
+                                    <li>Assets you capture enter our quality review queue.</li>
                                     <li>Once verified, your data is matched to buyers (AI companies/researchers).</li>
-                                    <li>Funds are added to your withdrawable balance <strong>only after</strong> your file is successfully sold.</li>
+                                    <li>Funds are added to your withdrawable balance <strong>only after</strong> your asset is successfully sold.</li>
                                 </ul>
                             </div>
                         </div>
@@ -251,8 +251,7 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
                             onClick={(e) => e.stopPropagation()}
                             className="bg-white border border-gradz-charcoal/10 rounded-lg text-sm px-3 py-1.5 outline-none focus:ring-2 focus:ring-gradz-green/50 w-full max-w-[200px]"
                         >
-                            <option value="photos">Photos, Videos & Audio</option>
-                            <option value="notes">Notes & Documents</option>
+                            <option value="photos">Photos & Videos</option>
                         </select>
                     </div>
                 </div>
@@ -267,9 +266,9 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
                         <div className="w-20 h-20 bg-gradz-cream/50 group-hover:bg-gradz-cream rounded-full flex items-center justify-center mb-6 shadow-sm transition-colors duration-300">
                             <CloudUpload className="w-10 h-10 text-gradz-charcoal/40 group-hover:text-gradz-charcoal transition-colors duration-300" />
                         </div>
-                        <h4 className="text-2xl font-bold text-gradz-charcoal mb-2">Drag & drop files here</h4>
+                        <h4 className="text-2xl font-bold text-gradz-charcoal mb-2">Add Your Data</h4>
                         <p className="text-gradz-charcoal/60 max-w-sm mb-2">
-                            Photos, Videos, Audio, and PDFs supported. Up to {MAX_FILES} files at once.
+                            Photos and Videos supported.
                         </p>
                         <p className="text-gradz-charcoal/40 text-xs mb-8">
                             Max 2 GB per upload
