@@ -5,6 +5,14 @@ import { godModeConfig } from "@/config/god-mode";
 import { ActionResponse, actionError, actionSuccess } from "@/types/actions";
 
 /**
+ * Check if security verification bypass is active (Server-Side Only).
+ * Called by the frontend before starting uploads.
+ */
+export async function getBypassStatusAction(): Promise<boolean> {
+    return godModeConfig.bypassSecurityVerification;
+}
+
+/**
  * Call this action after a file is successfully uploaded to R2
  * It will write the metadata to Supabase so you can pay them!
  */

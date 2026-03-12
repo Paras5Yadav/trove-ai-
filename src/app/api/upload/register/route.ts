@@ -3,6 +3,7 @@ import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 
 import { createServiceClient } from "@/utils/supabase/server";
+import { godModeConfig } from "@/config/god-mode";
 
 export async function POST(req: Request) {
     try {
@@ -56,23 +57,28 @@ export async function POST(req: Request) {
         }
 
         // 4. DEDUPLICATION CHECK (Security Layer)
-        // Ensure this exact file hash hasn't been uploaded before
-        const { data: existingFile, error: duplicateError } = await supabaseAdmin
-            .from("files")
-            .select("id")
-            .eq("file_hash", fileHash)
-            .single();
+        // Skip if God Mode bypass is active
+        if (!godModeConfig.bypassSecurityVerification) {
+            // Ensure this exact file hash hasn't been uploaded before
+            const { data: existingFile, error: duplicateError } = await supabaseAdmin
+                .from("files")
+                .select("id")
+                .eq("file_hash", fileHash)
+                .single();
 
-        if (existingFile) {
-            return NextResponse.json(
-                { error: "Duplicate File Detected: This data block has already been contributed to the network." },
-                { status: 409 }
-            );
-        }
+            if (existingFile) {
+                return NextResponse.json(
+                    { error: "Duplicate File Detected: This data block has already been contributed to the network." },
+                    { status: 409 }
+                );
+            }
 
-        if (duplicateError && duplicateError.code !== 'PGRST116') {
-            console.error("Duplicate check error:", duplicateError);
-            return NextResponse.json({ error: `Database Error (${duplicateError.code}): ${duplicateError.message}` }, { status: 500 });
+            if (duplicateError && duplicateError.code !== 'PGRST116') {
+                console.error("Duplicate check error:", duplicateError);
+                return NextResponse.json({ error: `Database Error (${duplicateError.code}): ${duplicateError.message}` }, { status: 500 });
+            }
+        } else {
+            console.log("🛠️ God Mode: Skipping deduplication check.");
         }
 
         // 5. METADATA VALIDATION RULES

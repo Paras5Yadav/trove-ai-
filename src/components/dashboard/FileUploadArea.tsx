@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import { CloudUpload, CheckCircle2, Loader2, AlertCircle, FileIcon, X, Info } from "lucide-react";
 import { godModeConfig } from "@/config/god-mode";
-import { registerUploadedFileAction } from "@/app/actions/vault";
+import { registerUploadedFileAction, getBypassStatusAction } from "@/app/actions/vault";
 
 // Removed direct computeSHA256, handling all heavy processing in Web Worker
 
@@ -119,28 +119,42 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
             });
 
             try {
-                // 1. Offload processing to Web Worker (Zero UI Lag)
-                const workerResult = await new Promise<any>((resolve, reject) => {
-                    const worker = new Worker(new URL('@/workers/verification.worker.ts', import.meta.url));
-                    
-                    worker.onmessage = (event) => {
-                        if (event.data.error) reject(new Error(event.data.error));
-                        else resolve(event.data);
-                        worker.terminate();
-                    };
-                    
-                    worker.onerror = (err) => {
-                        reject(new Error("Worker failed: " + err.message));
-                        worker.terminate();
-                    };
+                // Check bypass status from server (reads BYPASS_SECURITY env var)
+                const isBypassed = await getBypassStatusAction();
 
-                    worker.postMessage({ file, category: uploadCategory });
-                });
+                let fileHash: string;
+                let metadata: any = null;
 
-                const { fileHash, isAuthenticFormat, metadata } = workerResult;
+                if (isBypassed) {
+                    // SANDBOX MODE: Skip all verification
+                    console.log("🛠️ Sandbox Mode: Skipping verification for", file.name);
+                    fileHash = `sandbox_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+                    metadata = { sandbox: true };
+                } else {
+                    // PRODUCTION MODE: Full verification via Web Worker
+                    const workerResult = await new Promise<any>((resolve, reject) => {
+                        const worker = new Worker(new URL('@/workers/verification.worker.ts', import.meta.url));
+                        
+                        worker.onmessage = (event) => {
+                            if (event.data.error) reject(new Error(event.data.error));
+                            else resolve(event.data);
+                            worker.terminate();
+                        };
+                        
+                        worker.onerror = (err) => {
+                            reject(new Error("Worker failed: " + err.message));
+                            worker.terminate();
+                        };
 
-                if (!isAuthenticFormat) {
-                    throw new Error("File format is invalid or potentially malicious.");
+                        worker.postMessage({ file, category: uploadCategory });
+                    });
+
+                    fileHash = workerResult.fileHash;
+                    metadata = workerResult.metadata;
+
+                    if (!workerResult.isAuthenticFormat) {
+                        throw new Error("File format is invalid or potentially malicious.");
+                    }
                 }
                 
                 // Update UI: Verifying -> Registering
