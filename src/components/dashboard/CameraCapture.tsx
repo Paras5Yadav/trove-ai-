@@ -299,7 +299,7 @@ export function CameraCapture({ onCapture, onClose, maxPhotos = 13 }: CameraCapt
                         </button>
                         <button 
                             onClick={() => setMode("video")}
-                            className={`text-sm font-medium transition-colors ${mode === "video" ? "text-gradz-green" : "text-white/50"}`}
+                            className={`text-sm font-medium transition-colors ${mode === "video" ? "text-red-500" : "text-white/50"}`}
                         >
                             VIDEO
                         </button>
