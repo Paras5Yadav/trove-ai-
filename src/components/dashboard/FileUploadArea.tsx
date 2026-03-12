@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { CloudUpload, CheckCircle2, Loader2, AlertCircle, FileIcon, X, Info } from "lucide-react";
+import { CloudUpload, CheckCircle2, Loader2, AlertCircle, FileIcon, X, Info, Camera } from "lucide-react";
 import { godModeConfig } from "@/config/god-mode";
 import { registerUploadedFileAction } from "@/app/actions/vault";
 import { VoiceRecorder } from "./VoiceRecorder";
@@ -281,8 +281,11 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
                         <p className="text-gradz-charcoal/40 text-xs mb-8">
                             Max 2 GB per upload
                         </p>
-                        <div className="flex items-center gap-4">
-                            <button className="bg-gradz-charcoal text-gradz-cream px-8 py-4 rounded-full font-medium group-hover:bg-black transition-colors transform duration-200">
+                        <div className="flex flex-wrap items-center justify-center gap-4">
+                            <button
+                                onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
+                                className="bg-gradz-charcoal text-gradz-cream px-8 py-4 rounded-full font-medium hover:bg-black transition-colors transform duration-200 flex items-center gap-2"
+                            >
                                 Browse Files
                             </button>
                             <VoiceRecorder onRecordingComplete={handleVoiceNote} maxDurationMinutes={2} />
