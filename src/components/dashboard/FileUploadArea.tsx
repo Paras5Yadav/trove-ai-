@@ -3,9 +3,7 @@
 import { useState, useRef } from "react";
 import { CloudUpload, CheckCircle2, Loader2, AlertCircle, FileIcon, X, Info } from "lucide-react";
 import { godModeConfig } from "@/config/god-mode";
-import { registerUploadedFileAction, getBypassStatusAction } from "@/app/actions/vault";
-
-// Removed direct computeSHA256, handling all heavy processing in Web Worker
+import { registerUploadedFileAction } from "@/app/actions/vault";
 
 const MAX_FILES = 13;
 
@@ -114,45 +112,13 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
 
             setUploads((prev) => {
                 const next = [...prev];
-                next[i] = { ...next[i], status: "verifying", progress: 20 };
+                next[i] = { ...next[i], status: "registering", progress: 30 };
                 return next;
             });
 
             try {
-                // Check bypass status from server (reads BYPASS_SECURITY env var)
-                const isBypassed = await getBypassStatusAction();
-
-                // ALWAYS run the worker — it blocks screenshots & downloads regardless of bypass.
-                // The bypass flag only skips strict checks (Camera Model, deduplication).
-                const workerResult = await new Promise<any>((resolve, reject) => {
-                    const worker = new Worker(new URL('@/workers/verification.worker.ts', import.meta.url));
-                    
-                    worker.onmessage = (event) => {
-                        if (event.data.error) reject(new Error(event.data.error));
-                        else resolve(event.data);
-                        worker.terminate();
-                    };
-                    
-                    worker.onerror = (err) => {
-                        reject(new Error("Worker failed: " + err.message));
-                        worker.terminate();
-                    };
-
-                    worker.postMessage({ file, category: uploadCategory, bypassStrict: isBypassed });
-                });
-
-                const { fileHash, metadata } = workerResult;
-
-                if (!workerResult.isAuthenticFormat) {
-                    throw new Error("File format is invalid or potentially malicious.");
-                }
-                
-                // Update UI: Verifying -> Registering
-                setUploads((prev) => {
-                    const next = [...prev];
-                    next[i] = { ...next[i], status: "registering", progress: 80 };
-                    return next;
-                });
+                // Generate a simple unique identifier for this file
+                const fileHash = `${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
 
                 // 2. Register upload directly (No R2 Upload)
                 // We send the verified metadata and hash to the backend registry
@@ -165,7 +131,7 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
                         fileSize: file.size,
                         fileHash: fileHash,
                         category: uploadCategory,
-                        metadata: metadata
+                        metadata: null
                     }),
                 });
 
@@ -185,7 +151,7 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
                     uniqueFileName,
                     fileHash,
                     uploadCategory,
-                    metadata
+                    null
                 );
 
                 if (!registerVaultRes.success) {
@@ -343,12 +309,10 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
                                                     <CheckCircle2 className="w-4 h-4 text-gradz-green inline" />
                                                 ) : u.status === "error" ? (
                                                     <X className="w-4 h-4 text-red-500 inline" />
-                                                ) : u.status === "verifying" ? (
+                                                ) : u.status === "registering" ? (
                                                     <span className="text-gradz-green/70 flex items-center gap-1">
                                                         <Loader2 className="w-3 h-3 animate-spin"/> Processing...
                                                     </span>
-                                                ) : u.status === "registering" ? (
-                                                    <span className="text-gradz-green">Registering...</span>
                                                 ) : (
                                                     `${u.progress}%`
                                                 )}

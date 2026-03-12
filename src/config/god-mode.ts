@@ -61,13 +61,4 @@ export const godModeConfig = {
 
     // Referral bonus paid to the referrer from every approved file (15%)
     referralBonusPercent: 0.15,
-
-    // ---------------------------------------------------------
-    // TESTING & DEBUGGING
-    // ---------------------------------------------------------
-
-    // If true, metadata verification (EXIF) and deduplication checks are skipped.
-    // Use this for rapid UI/UX testing without needing fresh unique photos.
-    // Server-only variable (no NEXT_PUBLIC_ prefix) — consistent with ENABLE_BACKEND.
-    bypassSecurityVerification: process.env.BYPASS_SECURITY === 'true',
 };
