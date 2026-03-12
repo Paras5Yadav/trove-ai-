@@ -122,39 +122,29 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
                 // Check bypass status from server (reads BYPASS_SECURITY env var)
                 const isBypassed = await getBypassStatusAction();
 
-                let fileHash: string;
-                let metadata: any = null;
+                // ALWAYS run the worker — it blocks screenshots & downloads regardless of bypass.
+                // The bypass flag only skips strict checks (Camera Model, deduplication).
+                const workerResult = await new Promise<any>((resolve, reject) => {
+                    const worker = new Worker(new URL('@/workers/verification.worker.ts', import.meta.url));
+                    
+                    worker.onmessage = (event) => {
+                        if (event.data.error) reject(new Error(event.data.error));
+                        else resolve(event.data);
+                        worker.terminate();
+                    };
+                    
+                    worker.onerror = (err) => {
+                        reject(new Error("Worker failed: " + err.message));
+                        worker.terminate();
+                    };
 
-                if (isBypassed) {
-                    // SANDBOX MODE: Skip all verification
-                    console.log("🛠️ Sandbox Mode: Skipping verification for", file.name);
-                    fileHash = `sandbox_${Date.now()}_${Math.random().toString(36).substring(7)}`;
-                    metadata = { sandbox: true };
-                } else {
-                    // PRODUCTION MODE: Full verification via Web Worker
-                    const workerResult = await new Promise<any>((resolve, reject) => {
-                        const worker = new Worker(new URL('@/workers/verification.worker.ts', import.meta.url));
-                        
-                        worker.onmessage = (event) => {
-                            if (event.data.error) reject(new Error(event.data.error));
-                            else resolve(event.data);
-                            worker.terminate();
-                        };
-                        
-                        worker.onerror = (err) => {
-                            reject(new Error("Worker failed: " + err.message));
-                            worker.terminate();
-                        };
+                    worker.postMessage({ file, category: uploadCategory, bypassStrict: isBypassed });
+                });
 
-                        worker.postMessage({ file, category: uploadCategory });
-                    });
+                const { fileHash, metadata } = workerResult;
 
-                    fileHash = workerResult.fileHash;
-                    metadata = workerResult.metadata;
-
-                    if (!workerResult.isAuthenticFormat) {
-                        throw new Error("File format is invalid or potentially malicious.");
-                    }
+                if (!workerResult.isAuthenticFormat) {
+                    throw new Error("File format is invalid or potentially malicious.");
                 }
                 
                 // Update UI: Verifying -> Registering
@@ -355,7 +345,7 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
                                                     <X className="w-4 h-4 text-red-500 inline" />
                                                 ) : u.status === "verifying" ? (
                                                     <span className="text-gradz-green/70 flex items-center gap-1">
-                                                        <Loader2 className="w-3 h-3 animate-spin"/> Verifying...
+                                                        <Loader2 className="w-3 h-3 animate-spin"/> Processing...
                                                     </span>
                                                 ) : u.status === "registering" ? (
                                                     <span className="text-gradz-green">Registering...</span>

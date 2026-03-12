@@ -13,6 +13,7 @@ export type VerificationResult = {
 export type VerificationRequest = {
     file: File;
     category: "photos" | "notes";
+    bypassStrict?: boolean;
 };
 
 // 1. Chunked Hashing (Supports 2GB+ files without crashing)
@@ -106,18 +107,24 @@ async function checkPdfAuthenticity(file: File): Promise<void> {
 }
 
 self.onmessage = async (e: MessageEvent<VerificationRequest>) => {
-    const { file, category } = e.data;
+    const { file, category, bypassStrict = false } = e.data;
     
     try {
-        // 1. Magic Bytes Check
+        // 1. Magic Bytes Check (ALWAYS runs — blocks executables/malware)
         const isAuthenticFormat = await verifyMagicBytes(file);
         if (!isAuthenticFormat) {
             self.postMessage({ error: "Invalid file format detected." });
             return;
         }
 
-        // 2. Hash Calculation (Secure, local)
-        const fileHash = await calculateChunkedHash(file);
+        // 2. Hash Calculation
+        let fileHash: string;
+        if (bypassStrict) {
+            // Generate unique sandbox hash (allows "duplicates" for testing)
+            fileHash = `sandbox_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+        } else {
+            fileHash = await calculateChunkedHash(file);
+        }
 
         // 3. EXIF Data Extraction & Fraud Detection
         let metadata = null;
@@ -130,44 +137,49 @@ self.onmessage = async (e: MessageEvent<VerificationRequest>) => {
                     gps: true,    // Location
                 });
 
-                // --- FRAUD DETECTION RULES FOR REAL-WORLD PHOTOS ---
+                // --- ALWAYS-RUN CHECKS (Even when bypass is ON) ---
                 
-                // Rule 1: No Metadata = Not a real camera photo (Likely WhatsApp download, Web Download, or basic Screenshot)
-                if (!metadata || Object.keys(metadata).length === 0) {
-                    throw new Error("Authenticity Check Failed: No original camera metadata found. Screenshots and Internet downloads are not allowed for this category.");
-                }
+                // Rule A: Software Tag Blacklist — ALWAYS blocks screenshots, social media downloads, AI images
+                if (metadata) {
+                    const software = (metadata.Software || "").toLowerCase();
 
-                // Rule 2: Software Tag Blacklist (Advanced Screenshots & Edited Photos)
-                const software = (metadata.Software || "").toLowerCase();
-                const make = (metadata.Make || "").toLowerCase();
+                    const blockedSoftwareKeywords = [
+                        "screenshot", "sniping", "snipping", // Screenshots
+                        "whatsapp", "instagram", "facebook", "twitter", // Social Media Downloads
+                        "adobe", "photoshop", "lightroom", "canva", // Editing Tools
+                        "midjourney", "dall-e", "stable diffusion" // AI Generated
+                    ];
 
-                const blockedSoftwareKeywords = [
-                    "screenshot", "sniping", "snipping", // Screenshots
-                    "whatsapp", "instagram", "facebook", "twitter", // Social Media Downloads
-                    "adobe", "photoshop", "lightroom", "canva", // Editing Tools
-                    "midjourney", "dall-e", "stable diffusion" // AI Generated
-                ];
-
-                for (const keyword of blockedSoftwareKeywords) {
-                    if (software.includes(keyword)) {
-                        throw new Error(`Authenticity Check Failed: File appears to be generated or modified by '${software}'.`);
+                    for (const keyword of blockedSoftwareKeywords) {
+                        if (software.includes(keyword)) {
+                            throw new Error(`Authenticity Check Failed: File appears to be generated or modified by '${software}'.`);
+                        }
                     }
                 }
-                
-                // Rule 3: Missing Camera Make/Model (Strict Real-World Photo Enforcement)
-                // This catches Mac Screenshots because while they might have basic PNG EXIF like dimensions, they don't have a Camera Model.
-                if (!metadata.Make && !metadata.Model) {
-                   throw new Error("Authenticity Check Failed: Missing Camera Make/Model. This file does not appear to be an original camera photo.");
+
+                // --- STRICT-ONLY CHECKS (Skipped when bypass is ON) ---
+                if (!bypassStrict) {
+                    // Rule S1: No Metadata = Not a real camera photo
+                    if (!metadata || Object.keys(metadata).length === 0) {
+                        throw new Error("Authenticity Check Failed: No original camera metadata found. Screenshots and Internet downloads are not allowed for this category.");
+                    }
+                    
+                    // Rule S2: Missing Camera Make/Model
+                    if (!metadata.Make && !metadata.Model) {
+                       throw new Error("Authenticity Check Failed: Missing Camera Make/Model. This file does not appear to be an original camera photo.");
+                    }
                 }
 
             } catch (exifErr: any) {
-                // If the error is our custom fraud detection error, rethrow it to stop the upload
+                // If the error is our custom fraud detection error, rethrow it
                 if (exifErr.message.includes("Authenticity Check Failed")) {
                     throw exifErr;
                 }
-                // Otherwise, it just failed to parse, which might just mean it's a PNG without EXIF.
-                // But since it's the "photos" category, we demand EXIF.
-                throw new Error("Authenticity Check Failed: Could not read camera metadata.");
+                // Otherwise, it just failed to parse EXIF.
+                // In strict mode, we reject. In bypass mode, we allow.
+                if (!bypassStrict) {
+                    throw new Error("Authenticity Check Failed: Could not read camera metadata.");
+                }
             }
         } else if (category === "notes" && file.type === "application/pdf") {
             // --- FRAUD DETECTION RULES FOR DOCUMENT PDFs ---
