@@ -87,7 +87,7 @@ export async function registerUploadedFileAction(
 
         if (fileError) {
             console.error("Database Insert Error:", fileError.message);
-            return actionError("Failed to save file metadata.");
+            return actionError("Failed to save file information.");
         }
 
         // 5. Update the User's Profile Totals (Calculated Earnings)

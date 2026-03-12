@@ -117,11 +117,7 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
             });
 
             try {
-                // Generate a simple unique identifier for this file
-                const fileHash = `${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
-
-                // 2. Register upload directly (No R2 Upload)
-                // We send the verified metadata and hash to the backend registry
+                // Register upload directly
                 const res = await fetch("/api/upload/register", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -129,15 +125,13 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
                         fileName: file.name,
                         contentType: file.type || "application/octet-stream",
                         fileSize: file.size,
-                        fileHash: fileHash,
                         category: uploadCategory,
-                        metadata: null
                     }),
                 });
 
                 if (!res.ok) {
                     const errorData = await res.json();
-                    throw new Error(errorData.error || "Failed to register file");
+                    throw new Error(errorData.error || "Upload connection failed");
                 }
 
                 const registerData = await res.json();
@@ -153,7 +147,7 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
                 );
 
                 if (!registerVaultRes.success) {
-                    throw new Error(registerVaultRes.error || "Failed to finalize vault ledger");
+                    throw new Error(registerVaultRes.error || "Failed to save upload details");
                 }
 
                 const fileSizeMB = file.size / (1024 * 1024);

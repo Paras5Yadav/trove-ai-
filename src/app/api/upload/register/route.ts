@@ -44,7 +44,7 @@ export async function POST(req: Request) {
         // Basic validation
         if (!fileName || !fileSize || !category) {
             return NextResponse.json(
-                { error: "Missing required file metadata (fileName, fileSize, category)" },
+                { error: "Missing required file information (fileName, fileSize, category)" },
                 { status: 400 }
             );
         }
@@ -58,7 +58,7 @@ export async function POST(req: Request) {
         return NextResponse.json({ 
             success: true, 
             uniqueFileName,
-            message: "Metadata verified successfully."
+            message: "File accepted successfully."
         });
 
     } catch (error: any) {
