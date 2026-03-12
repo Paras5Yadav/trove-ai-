@@ -275,7 +275,7 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
                             Max 2 GB per upload
                         </p>
                         <button className="bg-gradz-charcoal text-gradz-cream px-8 py-4 rounded-full font-medium group-hover:bg-black transition-colors transform duration-200">
-                            Browse Files
+                            Capture Asset
                         </button>
                     </div>
                 )}
