@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { CloudUpload, CheckCircle2, Loader2, AlertCircle, FileIcon, X, Info } from "lucide-react";
 import { godModeConfig } from "@/config/god-mode";
 import { registerUploadedFileAction } from "@/app/actions/vault";
+import { VoiceRecorder } from "./VoiceRecorder";
 
 const MAX_FILES = 13;
 
@@ -43,6 +44,12 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
         if (e.target.files && e.target.files.length > 0) {
             startUpload(e.target.files);
         }
+    };
+
+    const handleVoiceNote = (file: File) => {
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        startUpload(dt.files);
     };
 
     const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
@@ -217,8 +224,8 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
                 onChange={handleFileSelect}
                 onClick={(e) => e.stopPropagation()}
                 className="hidden"
-                accept="image/*,video/*"
-                capture="environment"
+                accept="image/*,video/*,audio/*,application/pdf"
+                multiple
             />
 
             {/* Data Consent Reminder */}
@@ -251,7 +258,8 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
                             onClick={(e) => e.stopPropagation()}
                             className="bg-white border border-gradz-charcoal/10 rounded-lg text-sm px-3 py-1.5 outline-none focus:ring-2 focus:ring-gradz-green/50 w-full max-w-[200px]"
                         >
-                            <option value="photos">Photos & Videos</option>
+                            <option value="photos">Photos, Videos & Audio</option>
+                            <option value="notes">Notes & Documents</option>
                         </select>
                     </div>
                 </div>
@@ -266,16 +274,19 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
                         <div className="w-20 h-20 bg-gradz-cream/50 group-hover:bg-gradz-cream rounded-full flex items-center justify-center mb-6 shadow-sm transition-colors duration-300">
                             <CloudUpload className="w-10 h-10 text-gradz-charcoal/40 group-hover:text-gradz-charcoal transition-colors duration-300" />
                         </div>
-                        <h4 className="text-2xl font-bold text-gradz-charcoal mb-2">Add Your Data</h4>
+                        <h4 className="text-2xl font-bold text-gradz-charcoal mb-2">Drag & drop files here</h4>
                         <p className="text-gradz-charcoal/60 max-w-sm mb-2">
-                            Photos and Videos supported.
+                            Photos, Videos, Audio, and PDFs supported. Up to {MAX_FILES} files at once.
                         </p>
                         <p className="text-gradz-charcoal/40 text-xs mb-8">
                             Max 2 GB per upload
                         </p>
-                        <button className="bg-gradz-charcoal text-gradz-cream px-8 py-4 rounded-full font-medium group-hover:bg-black transition-colors transform duration-200">
-                            Capture Asset
-                        </button>
+                        <div className="flex items-center gap-4">
+                            <button className="bg-gradz-charcoal text-gradz-cream px-8 py-4 rounded-full font-medium group-hover:bg-black transition-colors transform duration-200">
+                                Browse Files
+                            </button>
+                            <VoiceRecorder onRecordingComplete={handleVoiceNote} maxDurationMinutes={2} />
+                        </div>
                     </div>
                 )}
 
