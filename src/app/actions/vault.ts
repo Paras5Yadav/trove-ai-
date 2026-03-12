@@ -13,9 +13,7 @@ export async function registerUploadedFileAction(
     fileSizeInBytes: number,
     contentType: string,
     r2UrlOrKey: string,
-    fileHash?: string,
-    category?: "photos" | "notes" | "other",
-    metadata?: any
+    category?: "photos" | "notes" | "other"
 ): Promise<ActionResponse<{ message: string } | void>> {
     try {
         // GOD MODE: If backend is disabled, returning success so the UI animations work
@@ -84,8 +82,6 @@ export async function registerUploadedFileAction(
                 r2_url: r2UrlOrKey,
                 content_type: contentType,
                 file_category: fileCategory,
-                file_hash: fileHash,
-                metadata: metadata || null,
                 status: 'pending_review' // Awaiting Admin Approval
             });
 

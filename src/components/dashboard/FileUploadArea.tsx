@@ -149,9 +149,7 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
                     file.size,
                     file.type || "application/octet-stream",
                     uniqueFileName,
-                    fileHash,
-                    uploadCategory,
-                    null
+                    uploadCategory
                 );
 
                 if (!registerVaultRes.success) {
