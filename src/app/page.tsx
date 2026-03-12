@@ -131,10 +131,6 @@ export default function Home() {
             </div>
             <h3 className="text-3xl font-serif text-gradz-charcoal leading-tight mb-3">{t("landing.card1Title")}</h3>
             <p className="text-gradz-charcoal/60 mb-6">{t("landing.card1Desc")}</p>
-            <div className="flex items-center gap-2 bg-gradz-green/10 w-fit px-3 py-1.5 rounded-full mt-auto">
-              <div className="w-2 h-2 rounded-full bg-gradz-green animate-pulse" />
-              <span className="text-xs font-mono font-medium text-gradz-charcoal/80">{t("landing.card1Tag")}</span>
-            </div>
           </motion.div>
 
           {/* Card 2 */}
@@ -145,10 +141,6 @@ export default function Home() {
             </div>
             <h3 className="text-3xl font-serif text-gradz-charcoal leading-tight mb-3">{t("landing.card2Title")}</h3>
             <p className="text-gradz-charcoal/60 mb-6">{t("landing.card2Desc")}</p>
-            <div className="flex items-center gap-2 bg-gradz-green/10 w-fit px-3 py-1.5 rounded-full mt-auto">
-              <div className="w-2 h-2 rounded-full bg-gradz-green animate-pulse" />
-              <span className="text-xs font-mono font-medium text-gradz-charcoal/80">{t("landing.card2Tag")}</span>
-            </div>
           </motion.div>
 
           {/* Card 3 */}
@@ -159,10 +151,6 @@ export default function Home() {
             </div>
             <h3 className="text-3xl font-serif text-gradz-charcoal leading-tight mb-3">{t("landing.card3Title")}</h3>
             <p className="text-gradz-charcoal/60 mb-6">{t("landing.card3Desc")}</p>
-            <div className="flex items-center gap-2 bg-gradz-green/10 w-fit px-3 py-1.5 rounded-full mt-auto">
-              <div className="w-2 h-2 rounded-full bg-gradz-green animate-pulse" />
-              <span className="text-xs font-mono font-medium text-gradz-charcoal/80">{t("landing.card3Tag")}</span>
-            </div>
           </motion.div>
 
           {/* Card 4 */}
@@ -173,10 +161,6 @@ export default function Home() {
             </div>
             <h3 className="text-3xl font-serif text-gradz-charcoal leading-tight mb-3">{t("landing.card4Title")}</h3>
             <p className="text-gradz-charcoal/60 mb-6">{t("landing.card4Desc")}</p>
-            <div className="flex items-center gap-2 bg-gradz-green/10 w-fit px-3 py-1.5 rounded-full mt-auto">
-              <div className="w-2 h-2 rounded-full bg-gradz-green animate-pulse" />
-              <span className="text-xs font-mono font-medium text-gradz-charcoal/80">{t("landing.card4Tag")}</span>
-            </div>
           </motion.div>
 
         </div>

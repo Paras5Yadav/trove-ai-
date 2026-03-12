@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { AdminUserStats, setAdminOverrideEarningsAction, toggleUserApprovalAction } from "@/app/actions/admin";
-import { Search, Loader2, DollarSign, Check, X, Database, Banknote, CheckCircle2, XCircle, FilePlus, ShieldCheck, Edit2, Users } from "lucide-react";
+import { AdminUserStats, setAdminOverrideEarningsAction, toggleUserApprovalAction, PendingWithdrawal, getUserWithdrawalHistoryAction } from "@/app/actions/admin";
+import { Search, Loader2, DollarSign, Check, X, Database, Banknote, CheckCircle2, XCircle, FilePlus, ShieldCheck, Edit2, Users, History, Clock } from "lucide-react";
 
 export function AdminUsersTable({ users }: { users: AdminUserStats[] }) {
     const [searchQuery, setSearchQuery] = useState("");
@@ -12,6 +12,9 @@ export function AdminUsersTable({ users }: { users: AdminUserStats[] }) {
     const [actionError, setActionError] = useState<string | null>(null);
     const [localUsers, setLocalUsers] = useState<AdminUserStats[]>(users);
     const [expandedRefsUserId, setExpandedRefsUserId] = useState<string | null>(null);
+    const [expandedHistoryUserId, setExpandedHistoryUserId] = useState<string | null>(null);
+    const [userHistory, setUserHistory] = useState<PendingWithdrawal[]>([]);
+    const [loadingHistory, setLoadingHistory] = useState(false);
 
     const handleEditClick = (user: AdminUserStats) => {
         setEditingUserId(user.id);
@@ -61,7 +64,50 @@ export function AdminUsersTable({ users }: { users: AdminUserStats[] }) {
     };
 
     const toggleRefsExpand = (userId: string) => {
+        if (expandedHistoryUserId === userId) setExpandedHistoryUserId(null); // Close history if open
         setExpandedRefsUserId(prev => prev === userId ? null : userId);
+    };
+
+    const toggleHistoryExpand = async (userId: string) => {
+        if (expandedRefsUserId === userId) setExpandedRefsUserId(null); // Close refs if open
+
+        if (expandedHistoryUserId === userId) {
+            setExpandedHistoryUserId(null);
+            setUserHistory([]);
+            return;
+        }
+
+        setExpandedHistoryUserId(userId);
+        setLoadingHistory(true);
+        try {
+            const res = await getUserWithdrawalHistoryAction(userId);
+            if (res.success && res.data) {
+                setUserHistory(res.data.withdrawals);
+            }
+        } catch (error) {
+            console.error("Failed to fetch history:", error);
+        } finally {
+            setLoadingHistory(false);
+        }
+    };
+
+    const formatDate = (dateStr: string) => {
+        return new Date(dateStr).toLocaleString("en-US", {
+            month: "short", day: "numeric", hour: "2-digit", minute: "2-digit"
+        });
+    };
+
+    const getStatusBadge = (status: string) => {
+        switch (status) {
+            case 'paid':
+                return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-200"><CheckCircle2 className="w-3 h-3" /> Paid</span>;
+            case 'denied':
+                return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-red-50 text-red-600 border border-red-200"><XCircle className="w-3 h-3" /> Denied</span>;
+            case 'pending':
+                return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-yellow-50 text-yellow-700 border border-yellow-200"><Clock className="w-3 h-3" /> Pending</span>;
+            default:
+                return <span className="text-xs text-gray-500">{status}</span>;
+        }
     };
 
     const filteredUsers = localUsers.filter(user =>
@@ -189,9 +235,22 @@ export function AdminUsersTable({ users }: { users: AdminUserStats[] }) {
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className={`px-2.5 py-1 rounded-lg text-xs font-bold ${Number(user.withdrawable_balance || 0) > 0 ? "bg-green-50 text-green-700" : "text-gray-300"}`}>
-                                            ₹{Number(user.withdrawable_balance || 0).toFixed(2)}
-                                        </span>
+                                        <div className="flex flex-col items-start gap-1">
+                                            <span className={`px-2.5 py-1 rounded-lg text-xs font-bold ${Number(user.withdrawable_balance || 0) > 0 ? "bg-green-50 text-green-700" : "text-gray-300"}`}>
+                                                ₹{Number(user.withdrawable_balance || 0).toFixed(2)}
+                                            </span>
+                                            <button 
+                                                onClick={() => toggleHistoryExpand(user.id)}
+                                                className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded transition-colors flex items-center gap-1 mt-1 ${
+                                                    expandedHistoryUserId === user.id 
+                                                        ? 'bg-charcoal text-white' 
+                                                        : 'text-gray-400 bg-gray-100 hover:bg-gray-200 hover:text-gray-700'
+                                                }`}
+                                            >
+                                                <History className="w-3 h-3" />
+                                                {expandedHistoryUserId === user.id ? 'Close' : 'Ledger'}
+                                            </button>
+                                        </div>
                                     </td>
                                     <td className="px-6 py-4 text-right min-w-[200px]">
                                         {isEditing ? (
@@ -295,6 +354,62 @@ export function AdminUsersTable({ users }: { users: AdminUserStats[] }) {
                                                         </tbody>
                                                     </table>
                                                 </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                )}
+                                {expandedHistoryUserId === user.id && (
+                                    <tr className="bg-gray-50/80 border-b border-gray-100 shadow-inner">
+                                        <td colSpan={8} className="px-6 py-5">
+                                            <div className="pl-6 border-l-2 border-charcoal/20 mx-4 max-w-3xl">
+                                                <h4 className="text-xs font-bold uppercase tracking-wider text-charcoal mb-4 flex items-center gap-2">
+                                                    <History className="w-4 h-4" />
+                                                    Payout Ledger: {user.display_name}
+                                                </h4>
+                                                
+                                                {loadingHistory ? (
+                                                    <div className="flex items-center gap-2 text-sm text-gray-400 py-3">
+                                                        <Loader2 className="w-4 h-4 animate-spin" /> Loading history...
+                                                    </div>
+                                                ) : userHistory.length === 0 ? (
+                                                    <div className="text-sm text-gray-500 bg-white p-4 rounded-xl border border-gray-200 text-center">
+                                                        This contributor has no withdrawal history yet.
+                                                    </div>
+                                                ) : (
+                                                    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+                                                        <table className="w-full text-sm text-left">
+                                                            <thead className="bg-gray-50 text-xs text-gray-500 uppercase">
+                                                                <tr>
+                                                                    <th className="px-4 py-3 font-medium">Status / Amount</th>
+                                                                    <th className="px-4 py-3 font-medium">UPI ID</th>
+                                                                    <th className="px-4 py-3 font-medium text-right">Date Details</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody className="divide-y divide-gray-100">
+                                                                {userHistory.map((h) => (
+                                                                    <tr key={h.id} className="hover:bg-gray-50/30">
+                                                                        <td className="px-4 py-3">
+                                                                            <div className="flex items-center gap-3">
+                                                                                {getStatusBadge(h.status)}
+                                                                                <span className="font-bold text-charcoal text-base">₹{Number(h.amount).toFixed(2)}</span>
+                                                                            </div>
+                                                                        </td>
+                                                                        <td className="px-4 py-3 font-mono text-xs text-gray-600">
+                                                                            {h.upi_id}
+                                                                        </td>
+                                                                        <td className="px-4 py-3 text-right">
+                                                                            <div className="flex flex-col items-end gap-1">
+                                                                                <span className="text-xs text-gray-500">Requested: {formatDate(h.created_at)}</span>
+                                                                                {h.paid_at && <span className="text-[10px] text-green-600 font-semibold bg-green-50 px-2 py-0.5 rounded">Paid: {formatDate(h.paid_at)}</span>}
+                                                                                {h.admin_note && <span className="text-[10px] text-red-500 italic max-w-[200px] truncate" title={h.admin_note}>&quot;{h.admin_note}&quot;</span>}
+                                                                            </div>
+                                                                        </td>
+                                                                    </tr>
+                                                                ))}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                )}
                                             </div>
                                         </td>
                                     </tr>

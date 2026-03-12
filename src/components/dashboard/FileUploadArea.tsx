@@ -5,6 +5,8 @@ import { CloudUpload, CheckCircle2, Loader2, AlertCircle, FileIcon, X, Info } fr
 import { godModeConfig } from "@/config/god-mode";
 import { registerUploadedFileAction } from "@/app/actions/vault";
 
+// Removed direct computeSHA256, handling all heavy processing in Web Worker
+
 const MAX_FILES = 13;
 
 // Generates a consistent per-user factor between 0.90 and 1.10 from a seed string
@@ -22,7 +24,7 @@ function getUserVariationFactor(seed: string): number {
 interface FileUploadState {
     file: File;
     progress: number;
-    status: "pending" | "uploading" | "done" | "error";
+    status: "pending" | "verifying" | "registering" | "done" | "error";
     error?: string;
 }
 
@@ -35,6 +37,7 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
 
     const [totalSizeMB, setTotalSizeMB] = useState(0);
     const [totalEarnings, setTotalEarnings] = useState(0);
+    const [uploadCategory, setUploadCategory] = useState<"photos" | "notes">("photos");
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -76,6 +79,15 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
             return;
         }
 
+        // Strict UI Type Validation
+        const hasInvalidTypes = files.some(
+            (f) => !f.type.startsWith("image/") && !f.type.startsWith("video/") && !f.type.startsWith("audio/") && f.type !== "application/pdf"
+        );
+        if (hasInvalidTypes) {
+            setGlobalError("Unsupported file type detected. Only Photos, Videos, Audio, and PDFs are allowed.");
+            return;
+        }
+
         const states: FileUploadState[] = files.map((f) => ({
             file: f,
             progress: 0,
@@ -102,112 +114,78 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
 
             setUploads((prev) => {
                 const next = [...prev];
-                next[i] = { ...next[i], status: "uploading" };
+                next[i] = { ...next[i], status: "verifying", progress: 20 };
                 return next;
             });
 
             try {
-                // 1. Get Presigned URL
-                const res = await fetch("/api/upload/presign", {
+                // 1. Offload processing to Web Worker (Zero UI Lag)
+                const workerResult = await new Promise<any>((resolve, reject) => {
+                    const worker = new Worker(new URL('@/workers/verification.worker.ts', import.meta.url));
+                    
+                    worker.onmessage = (event) => {
+                        if (event.data.error) reject(new Error(event.data.error));
+                        else resolve(event.data);
+                        worker.terminate();
+                    };
+                    
+                    worker.onerror = (err) => {
+                        reject(new Error("Worker failed: " + err.message));
+                        worker.terminate();
+                    };
+
+                    worker.postMessage({ file, category: uploadCategory });
+                });
+
+                const { fileHash, isAuthenticFormat, metadata } = workerResult;
+
+                if (!isAuthenticFormat) {
+                    throw new Error("File format is invalid or potentially malicious.");
+                }
+                
+                // Update UI: Verifying -> Registering
+                setUploads((prev) => {
+                    const next = [...prev];
+                    next[i] = { ...next[i], status: "registering", progress: 80 };
+                    return next;
+                });
+
+                // 2. Register upload directly (No R2 Upload)
+                // We send the verified metadata and hash to the backend registry
+                const res = await fetch("/api/upload/register", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         fileName: file.name,
                         contentType: file.type || "application/octet-stream",
                         fileSize: file.size,
+                        fileHash: fileHash,
+                        category: uploadCategory,
+                        metadata: metadata
                     }),
                 });
 
                 if (!res.ok) {
                     const errorData = await res.json();
-                    throw new Error(errorData.error || "Failed to get upload URL");
+                    throw new Error(errorData.error || "Failed to register file");
                 }
 
-                const { url, uniqueFileName, isValidationMock } = await res.json();
+                const registerData = await res.json();
+                const uniqueFileName = registerData.uniqueFileName;
 
-                // 2. Upload to Cloudflare R2
-                if (!isValidationMock) {
-                    await new Promise<void>((resolve, reject) => {
-                        const xhr = new XMLHttpRequest();
-                        xhr.upload.onprogress = (e) => {
-                            if (e.lengthComputable) {
-                                const pct = Math.round((e.loaded / e.total) * 100);
-                                setUploads((prev) => {
-                                    const next = [...prev];
-                                    next[i] = { ...next[i], progress: pct };
-                                    return next;
-                                });
-                            }
-                        };
-                        xhr.onload = () => {
-                            if (xhr.status >= 200 && xhr.status < 300) {
-                                resolve();
-                            } else {
-                                reject(new Error(`Upload failed (Status: ${xhr.status})`));
-                            }
-                        };
-                        xhr.onerror = () => reject(new Error("Network error during file transfer"));
-                        xhr.open("PUT", url);
-                        xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
-                        xhr.send(file);
-                    });
-                } else {
-                    // ============================================================
-                    // DYNAMIC FAKE UPLOAD — scales based on actual file size
-                    // Simulates a ~50 MB/s connection with realistic speed jitter
-                    // 2 MB photo ≈ 1s, 500 MB video ≈ 10s, 2 GB file ≈ 40s
-                    // ============================================================
-                    const SIMULATED_SPEED_BYTES_PER_SEC = 50 * 1024 * 1024; // 50 MB/s
-                    const TICK_INTERVAL_MS = 100; // Update progress every 100ms
-                    const MIN_DURATION_MS = 800; // Even tiny files take at least 0.8s
-
-                    const estimatedDurationMs = Math.max(
-                        (file.size / SIMULATED_SPEED_BYTES_PER_SEC) * 1000,
-                        MIN_DURATION_MS
-                    );
-                    const totalTicks = Math.ceil(estimatedDurationMs / TICK_INTERVAL_MS);
-
-                    await new Promise<void>((resolve) => {
-                        let currentTick = 0;
-                        let maxProgress = 0; // Never allow progress to go backwards
-                        const interval = setInterval(() => {
-                            currentTick++;
-                            // Jitter affects speed (how much we advance), not absolute position
-                            const jitter = 0.5 + Math.random() * 1.0;
-                            const incrementThisTick = (100 / totalTicks) * jitter;
-                            maxProgress = Math.min(maxProgress + incrementThisTick, currentTick >= totalTicks ? 100 : 97);
-                            const progress = Math.round(maxProgress);
-
-                            setUploads((prev) => {
-                                const next = [...prev];
-                                next[i] = { ...next[i], progress };
-                                return next;
-                            });
-
-                            if (currentTick >= totalTicks) {
-                                clearInterval(interval);
-                                // Final snap to 100%
-                                setUploads((prev) => {
-                                    const next = [...prev];
-                                    next[i] = { ...next[i], progress: 100 };
-                                    return next;
-                                });
-                                resolve();
-                            }
-                        }, TICK_INTERVAL_MS);
-                    });
-                }
-
-                // 3. Register upload
-                const registerRes = await registerUploadedFileAction(
+                // 3. Complete Vault Ledger
+                const registerVaultRes = await registerUploadedFileAction(
                     uniqueFileName,
                     file.size,
                     file.type || "application/octet-stream",
-                    uniqueFileName
+                    uniqueFileName,
+                    fileHash,
+                    uploadCategory,
+                    metadata
                 );
 
-                if (!registerRes.success) {
-                    throw new Error(registerRes.error || "Failed to register upload");
+                if (!registerVaultRes.success) {
+                    throw new Error(registerVaultRes.error || "Failed to finalize vault ledger");
                 }
 
                 const fileSizeMB = file.size / (1024 * 1024);
@@ -277,16 +255,44 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
                 onChange={handleFileSelect}
                 onClick={(e) => e.stopPropagation()}
                 className="hidden"
+                accept="image/*,video/*,audio/*,application/pdf"
                 multiple
             />
 
             {/* Data Consent Reminder */}
             {isIdle && (
-                <div className="flex items-center gap-2.5 px-4 py-2.5 mb-3 rounded-xl bg-moss/5 border border-moss/15">
-                    <Info className="w-3.5 h-3.5 text-moss flex-shrink-0" />
-                    <p className="text-[11px] text-moss/80 font-medium">
-                        Files you upload will be sold to verified research partners and AI companies. You earn money for every file sold.
-                    </p>
+                <div className="flex flex-col gap-3 mb-4">
+                    <div className="flex flex-col gap-2 px-5 py-3.5 rounded-xl bg-moss/5 border border-moss/15">
+                        <div className="flex items-start gap-2.5">
+                            <Info className="w-4 h-4 text-moss flex-shrink-0 mt-0.5" />
+                            <div className="space-y-1">
+                                <p className="text-[12px] text-moss/90 font-bold">
+                                    How it works:
+                                </p>
+                                <ul className="list-disc list-inside text-[11px] text-moss/80 font-medium space-y-0.5">
+                                    <li>Files you upload enter our quality review queue.</li>
+                                    <li>Once verified, your data is matched to buyers (AI companies/researchers).</li>
+                                    <li>Funds are added to your withdrawable balance <strong>only after</strong> your file is successfully sold.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                        <label htmlFor="category" className="text-[11px] font-semibold text-gradz-charcoal uppercase tracking-widest">
+                            Dataset Category:
+                        </label>
+                        <select
+                            id="category"
+                            value={uploadCategory}
+                            onChange={(e) => setUploadCategory(e.target.value as any)}
+                            onClick={(e) => e.stopPropagation()}
+                            className="bg-white border border-gradz-charcoal/10 rounded-lg text-sm px-3 py-1.5 outline-none focus:ring-2 focus:ring-gradz-green/50 w-full max-w-[200px]"
+                        >
+                            <option value="photos">Photos, Videos & Audio</option>
+                            <option value="notes">Notes & Documents</option>
+                        </select>
+                    </div>
                 </div>
             )}
 
@@ -301,7 +307,7 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
                         </div>
                         <h4 className="text-2xl font-bold text-gradz-charcoal mb-2">Drag & drop files here</h4>
                         <p className="text-gradz-charcoal/60 max-w-sm mb-2">
-                            All file formats supported. Up to {MAX_FILES} files at once.
+                            Photos, Videos, Audio, and PDFs supported. Up to {MAX_FILES} files at once.
                         </p>
                         <p className="text-gradz-charcoal/40 text-xs mb-8">
                             Max 2 GB per upload
@@ -318,36 +324,45 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
                         <div className="flex items-center gap-2 mb-4">
                             <Loader2 className="w-5 h-5 text-gradz-green animate-spin" />
                             <span className="text-sm font-mono text-gradz-charcoal/60 uppercase tracking-widest">
-                                Uploading {uploads.length} file{uploads.length > 1 ? "s" : ""}
+                                Processing {uploads.length} file{uploads.length > 1 ? "s" : ""}
                             </span>
                         </div>
                         {uploads.map((u, i) => (
-                            <div key={i} className="flex items-center gap-3 bg-gradz-cream/50 rounded-xl px-4 py-3">
-                                <FileIcon className="w-4 h-4 text-gradz-charcoal/40 flex-shrink-0" />
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex justify-between text-xs text-gradz-charcoal/60 mb-1">
-                                        <span className="truncate max-w-[200px]">{u.file.name}</span>
-                                        <span className="flex-shrink-0 ml-2">
-                                            {u.status === "done" ? (
-                                                <CheckCircle2 className="w-4 h-4 text-gradz-green inline" />
-                                            ) : u.status === "error" ? (
-                                                <X className="w-4 h-4 text-red-500 inline" />
-                                            ) : (
-                                                `${u.progress}%`
-                                            )}
-                                        </span>
+                            <div key={i} className="flex flex-col gap-1 bg-gradz-cream/50 rounded-xl px-4 py-3">
+                                <div className="flex items-center gap-3">
+                                    <FileIcon className="w-4 h-4 text-gradz-charcoal/40 flex-shrink-0" />
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex justify-between text-xs text-gradz-charcoal/60 mb-1">
+                                            <span className="truncate max-w-[200px]">{u.file.name}</span>
+                                            <span className="flex-shrink-0 ml-2">
+                                                {u.status === "done" ? (
+                                                    <CheckCircle2 className="w-4 h-4 text-gradz-green inline" />
+                                                ) : u.status === "error" ? (
+                                                    <X className="w-4 h-4 text-red-500 inline" />
+                                                ) : u.status === "verifying" ? (
+                                                    <span className="text-gradz-green/70 flex items-center gap-1">
+                                                        <Loader2 className="w-3 h-3 animate-spin"/> Verifying...
+                                                    </span>
+                                                ) : u.status === "registering" ? (
+                                                    <span className="text-gradz-green">Registering...</span>
+                                                ) : (
+                                                    `${u.progress}%`
+                                                )}
+                                            </span>
+                                        </div>
+                                        <div className="w-full h-1.5 bg-gradz-charcoal/10 rounded-full overflow-hidden">
+                                            <div
+                                                className={`h-full rounded-full transition-all duration-300 ${u.status === "error" ? "bg-red-400" :
+                                                    u.status === "done" ? "bg-gradz-green" :
+                                                        "bg-gradz-green/70"
+                                                    }`}
+                                                style={{ width: `${u.progress}%` }}
+                                            />
+                                        </div>
                                     </div>
-                                    <div className="w-full h-1.5 bg-gradz-charcoal/10 rounded-full overflow-hidden">
-                                        <div
-                                            className={`h-full rounded-full transition-all duration-300 ${u.status === "error" ? "bg-red-400" :
-                                                u.status === "done" ? "bg-gradz-green" :
-                                                    "bg-gradz-green/70"
-                                                }`}
-                                            style={{ width: `${u.progress}%` }}
-                                        />
-                                    </div>
+                                    <span className="text-[10px] text-gradz-charcoal/40 flex-shrink-0">{formatFileSize(u.file.size)}</span>
                                 </div>
-                                <span className="text-[10px] text-gradz-charcoal/40 flex-shrink-0">{formatFileSize(u.file.size)}</span>
+                                {u.error && <span className="text-[10px] text-red-500 ml-7">{u.error}</span>}
                             </div>
                         ))}
                     </div>

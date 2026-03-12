@@ -219,11 +219,12 @@ export default function Dashboard() {
                             <div className="bg-white rounded-3xl p-6 shadow-sm border border-gradz-charcoal/5">
                                 <div className="flex items-start justify-between mb-4">
                                     <div className="flex items-center gap-3">
-                                        <div className="p-3 bg-gradz-charcoal/10 rounded-xl">
+                                        <div className="p-3 bg-gradz-charcoal/10 rounded-xl shrink-0">
                                             <Banknote className="w-5 h-5 text-gradz-charcoal" />
                                         </div>
                                         <div className="text-sm font-medium text-gradz-charcoal/60">{t("dashboard.availableToWithdraw")}</div>
                                     </div>
+
                                 </div>
                                 {isLoading ? (
                                     <div className="h-10 w-32 bg-gradz-charcoal/5 animate-pulse rounded-lg" />
@@ -243,6 +244,9 @@ export default function Dashboard() {
                                             <Banknote className="w-4 h-4" />
                                             {t("dashboard.withdrawViaUPI")}
                                         </button>
+                                        <div className="text-center mt-3 text-[10px] text-gray-400 font-medium">
+                                            (This is the value of your data that has been successfully sold.)
+                                        </div>
                                         
                                         {/* Withdrawal Status Banner */}
                                         {recentWithdrawals.length > 0 && recentWithdrawals[0].status === 'pending' && (

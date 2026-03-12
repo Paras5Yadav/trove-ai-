@@ -60,10 +60,10 @@ export default function PoliciesPage() {
                         <section className="bg-charcoal/5 rounded-2xl p-6 border border-charcoal/5">
                             <h2 className="flex items-center gap-3 text-lg font-bold text-charcoal mb-4">
                                 <Lock className="w-5 h-5 text-moss" />
-                                3. Anonymization & Privacy
+                                3. Content Review & Privacy
                             </h2>
                             <p className="text-sm text-charcoal/70 leading-relaxed">
-                                We take privacy seriously. Before any dataset is sold, our automated systems attempt to strip standard metadata (like EXIF GPS coordinates) from your files. However, we <strong className="text-charcoal">do not</strong> manually review the visual or audio content of your files for personal identifiable information (PII). If you upload a photo of your ID, it will be sold. It is your responsibility to ensure you are comfortable sharing the literal contents of your uploads.
+                                We take data integrity and privacy seriously. All uploaded datasets are subject to our proprietary quality assurance and verification processes before entering the marketplace. By uploading, you acknowledge it is your sole responsibility to ensure you have the necessary rights to the content, and that you are fully comfortable sharing the visual, audio, and contextual details of your uploads with our verified research partners and buyers.
                             </p>
                         </section>
                     </div>
