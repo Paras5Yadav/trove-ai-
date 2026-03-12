@@ -44,10 +44,16 @@ export function VoiceRecorder({ onRecordingComplete, maxDurationMinutes = 2 }: V
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             streamRef.current = stream;
 
-            const mediaRecorder = new MediaRecorder(stream, {
-                // Try to get the highest quality supported codec
-                mimeType: "audio/webm;codecs=opus",
-            });
+            let options: MediaRecorderOptions | undefined = undefined;
+            if (MediaRecorder.isTypeSupported("audio/webm;codecs=opus")) {
+                options = { mimeType: "audio/webm;codecs=opus" };
+            } else if (MediaRecorder.isTypeSupported("audio/mp4")) {
+                options = { mimeType: "audio/mp4" };
+            } else if (MediaRecorder.isTypeSupported("audio/webm")) {
+                options = { mimeType: "audio/webm" };
+            } // Otherwise fallback to browser default
+
+            const mediaRecorder = new MediaRecorder(stream, options);
 
             mediaRecorderRef.current = mediaRecorder;
             chunksRef.current = [];
@@ -59,9 +65,11 @@ export function VoiceRecorder({ onRecordingComplete, maxDurationMinutes = 2 }: V
             };
 
             mediaRecorder.onstop = () => {
-                const blob = new Blob(chunksRef.current, { type: "audio/webm" });
+                const finalMimeType = options?.mimeType || mediaRecorder.mimeType || "audio/mp4";
+                const ext = finalMimeType.includes("webm") ? "webm" : "m4a";
+                const blob = new Blob(chunksRef.current, { type: finalMimeType });
                 const timestamp = Date.now();
-                const file = new File([blob], `voice_note_${timestamp}.webm`, { type: "audio/webm" });
+                const file = new File([blob], `voice_note_${timestamp}.${ext}`, { type: finalMimeType });
                 
                 onRecordingComplete(file);
                 cleanup();

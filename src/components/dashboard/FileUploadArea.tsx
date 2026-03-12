@@ -5,6 +5,7 @@ import { CloudUpload, CheckCircle2, Loader2, AlertCircle, FileIcon, X, Info, Cam
 import { godModeConfig } from "@/config/god-mode";
 import { registerUploadedFileAction } from "@/app/actions/vault";
 import { VoiceRecorder } from "./VoiceRecorder";
+import { CameraCapture } from "./CameraCapture";
 
 const MAX_FILES = 13;
 
@@ -39,10 +40,20 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
     const [uploadCategory, setUploadCategory] = useState<"photos" | "notes">("photos");
 
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [showCamera, setShowCamera] = useState(false);
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
             startUpload(e.target.files);
+        }
+    };
+
+    const handleCameraCapture = (files: File[]) => {
+        setShowCamera(false);
+        if (files.length > 0) {
+            const dt = new DataTransfer();
+            files.forEach((f) => dt.items.add(f));
+            startUpload(dt.files);
         }
     };
 
@@ -284,9 +295,16 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
                         <div className="flex flex-wrap items-center justify-center gap-4">
                             <button
                                 onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
-                                className="bg-gradz-charcoal text-gradz-cream px-8 py-4 rounded-full font-medium hover:bg-black transition-colors transform duration-200 flex items-center gap-2"
+                                className="bg-gradz-charcoal text-gradz-cream px-8 py-4 rounded-full font-medium hover:bg-black transition-colors transform duration-200 flex items-center gap-2 flex-shrink-0"
                             >
                                 Browse Files
+                            </button>
+                            <button
+                                onClick={(e) => { e.stopPropagation(); setShowCamera(true); }}
+                                className="bg-gradz-green text-gradz-charcoal px-8 py-4 rounded-full font-semibold hover:brightness-95 transition-all duration-200 flex items-center gap-2 flex-shrink-0"
+                            >
+                                <Camera className="w-5 h-5" />
+                                4K Camera
                             </button>
                             <VoiceRecorder onRecordingComplete={handleVoiceNote} maxDurationMinutes={2} />
                         </div>
@@ -384,6 +402,15 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
                     </div>
                 )}
             </div>
+
+            {/* Camera Overlay */}
+            {showCamera && (
+                <CameraCapture
+                    onCapture={handleCameraCapture}
+                    onClose={() => setShowCamera(false)}
+                    maxPhotos={MAX_FILES}
+                />
+            )}
         </div>
     );
 }
