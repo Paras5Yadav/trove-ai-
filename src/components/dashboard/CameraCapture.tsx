@@ -299,7 +299,7 @@ export function CameraCapture({ onCapture, onClose, maxPhotos = 13 }: CameraCapt
                         </button>
                         <button 
                             onClick={() => setMode("video")}
-                            className={`text-sm font-medium transition-colors ${mode === "video" ? "text-red-500" : "text-white/50"}`}
+                            className={`text-sm font-medium transition-colors ${mode === "video" ? "text-gradz-green" : "text-white/50"}`}
                         >
                             VIDEO
                         </button>
@@ -316,8 +316,10 @@ export function CameraCapture({ onCapture, onClose, maxPhotos = 13 }: CameraCapt
                                          <img src={file.url} alt={`Capture ${i + 1}`} className="w-14 h-14 rounded-lg object-cover border-2 border-white/20" />
                                     ) : (
                                          <div className="w-14 h-14 rounded-lg bg-gray-800 border-2 border-white/20 flex items-center justify-center relative overflow-hidden">
-                                             <video src={file.url} className="absolute inset-0 w-full h-full object-cover opacity-50" />
-                                             <Video className="w-5 h-5 text-white z-10 drop-shadow-md" />
+                                             <video src={file.url} preload="metadata" playsInline muted className="absolute inset-0 w-full h-full object-cover" />
+                                             <div className="absolute bottom-0.5 right-0.5 bg-black/60 rounded px-1">
+                                                 <Video className="w-3 h-3 text-white" />
+                                             </div>
                                          </div>
                                     )}
                                    
