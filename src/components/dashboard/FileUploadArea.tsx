@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { CloudUpload, CheckCircle2, Loader2, AlertCircle, FileIcon, X, Info, Camera } from "lucide-react";
+import { CloudUpload, CheckCircle2, Loader2, AlertCircle, FileIcon, X, Info } from "lucide-react";
 import { godModeConfig } from "@/config/god-mode";
 import { registerUploadedFileAction } from "@/app/actions/vault";
-import { CameraCapture } from "./CameraCapture";
 
 const MAX_FILES = 13;
 
@@ -39,21 +38,10 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
     const [uploadCategory, setUploadCategory] = useState<"photos" | "notes">("photos");
 
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [showCamera, setShowCamera] = useState(false);
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
             startUpload(e.target.files);
-        }
-    };
-
-    const handleCameraCapture = (files: File[]) => {
-        setShowCamera(false);
-        if (files.length > 0) {
-            // Convert File[] to FileList-like for startUpload
-            const dt = new DataTransfer();
-            files.forEach((f) => dt.items.add(f));
-            startUpload(dt.files);
         }
     };
 
@@ -289,13 +277,6 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
                         <button className="bg-gradz-charcoal text-gradz-cream px-8 py-4 rounded-full font-medium group-hover:bg-black transition-colors transform duration-200">
                             Browse Files
                         </button>
-                        <button
-                            onClick={(e) => { e.stopPropagation(); setShowCamera(true); }}
-                            className="bg-gradz-green text-gradz-charcoal px-8 py-4 rounded-full font-semibold hover:brightness-95 transition-all duration-200 flex items-center gap-2"
-                        >
-                            <Camera className="w-5 h-5" />
-                            Take Photos
-                        </button>
                     </div>
                 )}
 
@@ -390,15 +371,6 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
                     </div>
                 )}
             </div>
-
-            {/* Camera Overlay */}
-            {showCamera && (
-                <CameraCapture
-                    onCapture={handleCameraCapture}
-                    onClose={() => setShowCamera(false)}
-                    maxPhotos={MAX_FILES}
-                />
-            )}
         </div>
     );
 }
