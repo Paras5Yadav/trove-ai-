@@ -220,7 +220,10 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
         <div
             className="w-full relative group cursor-pointer"
             onClick={(e) => {
-                if ((e.target as HTMLElement).tagName.toLowerCase() === "input") return;
+                // Don't trigger file picker if click came from a button, select, or other interactive element
+                const target = e.target as HTMLElement;
+                if (target.tagName.toLowerCase() === "input") return;
+                if (target.closest("button") || target.closest("select")) return;
                 if (isIdle && fileInputRef.current) {
                     fileInputRef.current.click();
                 }

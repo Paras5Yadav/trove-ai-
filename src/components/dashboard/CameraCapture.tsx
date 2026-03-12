@@ -139,9 +139,19 @@ export function CameraCapture({ onCapture, onClose, maxPhotos = 13 }: CameraCapt
     const startRecording = useCallback(() => {
         if (!streamRef.current || files.length >= maxPhotos) return;
 
-        const mediaRecorder = new MediaRecorder(streamRef.current, {
-            mimeType: "video/webm;codecs=vp9,opus" // High quality codec
-        });
+        // Detect best supported video codec (Safari doesn't support webm/vp9)
+        let recorderOptions: MediaRecorderOptions | undefined = undefined;
+        if (MediaRecorder.isTypeSupported("video/webm;codecs=vp9,opus")) {
+            recorderOptions = { mimeType: "video/webm;codecs=vp9,opus" };
+        } else if (MediaRecorder.isTypeSupported("video/webm;codecs=vp8,opus")) {
+            recorderOptions = { mimeType: "video/webm;codecs=vp8,opus" };
+        } else if (MediaRecorder.isTypeSupported("video/webm")) {
+            recorderOptions = { mimeType: "video/webm" };
+        } else if (MediaRecorder.isTypeSupported("video/mp4")) {
+            recorderOptions = { mimeType: "video/mp4" };
+        } // Otherwise fallback to browser default
+
+        const mediaRecorder = new MediaRecorder(streamRef.current, recorderOptions);
 
         mediaRecorderRef.current = mediaRecorder;
         videoChunksRef.current = [];
@@ -151,7 +161,9 @@ export function CameraCapture({ onCapture, onClose, maxPhotos = 13 }: CameraCapt
         };
 
         mediaRecorder.onstop = () => {
-            const blob = new Blob(videoChunksRef.current, { type: "video/webm" });
+            const finalMimeType = recorderOptions?.mimeType || mediaRecorder.mimeType || "video/mp4";
+            const ext = finalMimeType.includes("webm") ? "webm" : "mp4";
+            const blob = new Blob(videoChunksRef.current, { type: finalMimeType });
             const url = URL.createObjectURL(blob);
             setFiles((prev) => [...prev, { blob, url, type: "video" }]);
             
@@ -189,8 +201,8 @@ export function CameraCapture({ onCapture, onClose, maxPhotos = 13 }: CameraCapt
     const handleUploadAll = useCallback(() => {
         const outFiles = files.map((f, i) => {
             const timestamp = Date.now();
-            const ext = f.type === "photo" ? "jpg" : "webm";
-            const mime = f.type === "photo" ? "image/jpeg" : "video/webm";
+            const ext = f.type === "photo" ? "jpg" : (f.blob.type.includes("webm") ? "webm" : "mp4");
+            const mime = f.type === "photo" ? "image/jpeg" : f.blob.type;
             return new File([f.blob], `capture_${timestamp}_${i + 1}.${ext}`, { type: mime });
         });
 
