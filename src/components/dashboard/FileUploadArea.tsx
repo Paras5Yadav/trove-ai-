@@ -217,8 +217,8 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
                 onChange={handleFileSelect}
                 onClick={(e) => e.stopPropagation()}
                 className="hidden"
-                accept="image/*,video/*,audio/*,application/pdf"
-                multiple
+                accept="image/*,video/*"
+                capture="environment"
             />
 
             {/* Data Consent Reminder */}
