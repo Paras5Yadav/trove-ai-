@@ -274,7 +274,7 @@ export function CameraCapture({ onCapture, onClose, maxPhotos = 13 }: CameraCapt
             </div>
 
             {/* Bottom controls */}
-            <div className="bg-black/95 backdrop-blur-sm pb-8">
+            <div className="bg-black/95 backdrop-blur-sm pb-4">
                 
                 {/* Video mode label */}
                 {!isRecording && (
@@ -306,7 +306,7 @@ export function CameraCapture({ onCapture, onClose, maxPhotos = 13 }: CameraCapt
                 )}
 
                 {/* Shutter Controls */}
-                <div className="flex items-center justify-between px-10 pt-4 pb-12">
+                <div className="flex items-center justify-between px-10 pt-2 pb-6">
                     {/* Cancel button — works during recording too */}
                     <button
                         onClick={() => {
