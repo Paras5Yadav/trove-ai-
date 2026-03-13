@@ -308,7 +308,7 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
                                 </div>
                                 <div className="bg-gradz-cream/60 rounded-xl px-3 py-2.5 border border-gradz-charcoal/5">
                                     <span className="text-xs font-semibold text-gradz-charcoal">🗣️ Regional Languages</span>
-                                    <p className="text-[10px] text-gradz-charcoal/50 mt-0.5">Speak in Hindi, Tamil, etc.</p>
+                                    <p className="text-[10px] text-gradz-charcoal/50 mt-0.5">Speak in Rajasthani, Hindi, Tamil, etc.</p>
                                 </div>
                                 <div className="bg-gradz-cream/60 rounded-xl px-3 py-2.5 border border-gradz-charcoal/5">
                                     <span className="text-xs font-semibold text-gradz-charcoal">🚗 Busy Intersections</span>
