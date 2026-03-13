@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import { Camera, Video, X, RotateCcw, SwitchCamera, Upload, Square } from "lucide-react";
+import { Camera, Video, X, RotateCcw, SwitchCamera, Upload, Square, Zap, ZapOff, RefreshCcw } from "lucide-react";
 
 interface CameraCaptureProps {
     onCapture: (files: File[]) => void;
@@ -19,7 +19,9 @@ export function CameraCapture({ onCapture, onClose, maxPhotos = 13 }: CameraCapt
     const [files, setFiles] = useState<{ blob: Blob; url: string; type: "photo" | "video" }[]>([]);
     const [isReady, setIsReady] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [flashMode, setFlashMode] = useState<"off" | "on" | "auto">("off");
     const [flashActive, setFlashActive] = useState(false);
+    const [zoom, setZoom] = useState(1);
     
     // Camera settings
     const [facingMode, setFacingMode] = useState<"environment" | "user">("environment");
@@ -220,9 +222,10 @@ export function CameraCapture({ onCapture, onClose, maxPhotos = 13 }: CameraCapt
     }, [files, onClose]);
 
     const formatTime = (s: number) => {
-        const m = Math.floor(s / 60);
+        const h = Math.floor(s / 3600);
+        const m = Math.floor((s % 3600) / 60);
         const sec = s % 60;
-        return `${m.toString().padStart(2, "0")}:${sec.toString().padStart(2, "0")}`;
+        return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}:${sec.toString().padStart(2, "0")}`;
     };
 
     return (
@@ -233,34 +236,28 @@ export function CameraCapture({ onCapture, onClose, maxPhotos = 13 }: CameraCapt
                 <div className="absolute inset-0 z-40 bg-white pointer-events-none animate-pulse" />
             )}
 
-            {/* Top bar */}
-            <div className="absolute top-0 left-0 right-0 z-30 flex items-center justify-between px-4 py-3 bg-gradient-to-b from-black/60 to-transparent">
+            {/* Top Bar - Flash and Timer */}
+            <div className="absolute top-0 left-0 right-0 z-30 flex items-center justify-between px-6 pt-12 pb-4">
                 <button
-                    onClick={handleClose}
-                    disabled={isRecording}
-                    className="w-10 h-10 flex items-center justify-center rounded-full bg-white/15 backdrop-blur-sm disabled:opacity-50"
+                    onClick={() => setFlashMode(prev => prev === "off" ? "on" : prev === "on" ? "auto" : "off")}
+                    className="w-10 h-10 flex items-center justify-center rounded-full text-white"
                 >
-                    <X className="w-5 h-5 text-white" />
+                    {flashMode === "off" ? <ZapOff className="w-6 h-6" /> : <Zap className={`w-6 h-6 ${flashMode === "on" ? "text-yellow-400 fill-yellow-400" : "text-white"}`} />}
+                    {flashMode === "auto" && <span className="absolute -bottom-1 text-[8px] font-bold">AUTO</span>}
                 </button>
 
-                {isRecording ? (
-                    <div className="flex items-center gap-2 bg-red-500/20 px-3 py-1 rounded-full backdrop-blur-sm border border-red-500/50">
-                        <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                        <span className="text-white font-mono tabular-nums">{formatTime(recordingTime)}</span>
-                    </div>
-                ) : (
-                    <div className="text-white/80 text-sm font-medium">
-                        {files.length} / {maxPhotos} captures
+                {isRecording && (
+                    <div className="flex items-center gap-2">
+                        <span className="text-white font-medium text-lg tracking-tighter tabular-nums drop-shadow-md">
+                            {formatTime(recordingTime)}
+                        </span>
                     </div>
                 )}
 
-                <button
-                    onClick={switchCamera}
-                    disabled={isRecording}
-                    className="w-10 h-10 flex items-center justify-center rounded-full bg-white/15 backdrop-blur-sm disabled:opacity-50"
-                >
-                    <SwitchCamera className="w-5 h-5 text-white" />
-                </button>
+                {/* Empty spacer for alignment if not recording */}
+                {!isRecording && <div className="w-10" />}
+                
+                <div className="w-10" /> {/* Symmetry spacer */}
             </div>
 
             {/* Viewfinder */}
@@ -275,33 +272,54 @@ export function CameraCapture({ onCapture, onClose, maxPhotos = 13 }: CameraCapt
                         </button>
                     </div>
                 ) : (
-                    <video
-                        ref={videoRef}
-                        autoPlay
-                        playsInline
-                        muted
-                        className={`w-full h-full object-cover ${facingMode === "user" ? "scale-x-[-1]" : ""}`}
-                    />
+                    <>
+                        {/* Camera Feed */}
+                        <video
+                            ref={videoRef}
+                            autoPlay
+                            playsInline
+                            muted
+                            className={`w-full h-full object-cover ${facingMode === "user" ? "scale-x-[-1]" : ""}`}
+                        />
+
+                        {/* Zoom Controls Overlay */}
+                        {!isRecording && isReady && (
+                            <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-4 z-30">
+                                <button 
+                                    onClick={() => setZoom(0.5)}
+                                    className={`w-9 h-9 rounded-full flex items-center justify-center text-[10px] font-bold transition-all ${zoom === 0.5 ? 'bg-white/20 text-yellow-400 border border-yellow-400' : 'bg-black/40 text-white'}`}
+                                >
+                                    0.5
+                                </button>
+                                <button 
+                                    onClick={() => setZoom(1)}
+                                    className={`w-9 h-9 rounded-full flex items-center justify-center text-[10px] font-bold transition-all ${zoom === 1 ? 'bg-white/20 text-yellow-400 border border-yellow-400' : 'bg-black/40 text-white'}`}
+                                >
+                                    1×
+                                </button>
+                            </div>
+                        )}
+                    </>
                 )}
             </div>
 
             {/* Bottom controls */}
             <div className="bg-black/95 backdrop-blur-sm pb-8">
                 
-                {/* Mode Selector */}
+                {/* Mode Selector - iOS Yellow Style */}
                 {!isRecording && (
-                    <div className="flex justify-center gap-6 py-4">
-                         <button 
-                            onClick={() => setMode("photo")}
-                            className={`text-sm font-medium transition-colors ${mode === "photo" ? "text-gradz-green" : "text-white/50"}`}
-                        >
-                            PHOTO
-                        </button>
+                    <div className="flex justify-center gap-8 py-3 relative">
                         <button 
                             onClick={() => setMode("video")}
-                            className={`text-sm font-medium transition-colors ${mode === "video" ? "text-red-500" : "text-white/50"}`}
+                            className={`text-xs font-bold tracking-wider transition-colors uppercase ${mode === "video" ? "text-yellow-400" : "text-white"}`}
                         >
                             VIDEO
+                        </button>
+                        <button 
+                            onClick={() => setMode("photo")}
+                            className={`text-xs font-bold tracking-wider transition-colors uppercase ${mode === "photo" ? "text-yellow-400" : "text-white"}`}
+                        >
+                            PHOTO
                         </button>
                     </div>
                 )}
@@ -332,54 +350,63 @@ export function CameraCapture({ onCapture, onClose, maxPhotos = 13 }: CameraCapt
                     </div>
                 )}
 
-                {/* Actions */}
-                <div className="flex items-center justify-between px-8 py-2">
-                    {/* Clear Button */}
+                {/* Shutter Controls */}
+                <div className="flex items-center justify-between px-10 pt-4 pb-12">
+                    {/* Cancel button */}
                     <button
-                        onClick={() => {
-                            files.forEach((p) => URL.revokeObjectURL(p.url));
-                            setFiles([]);
-                        }}
-                        disabled={files.length === 0 || isRecording}
-                        className={`w-12 h-12 flex items-center justify-center rounded-full bg-white/10 ${files.length === 0 || isRecording ? 'opacity-30' : ''}`}
+                        onClick={handleClose}
+                        disabled={isRecording}
+                        className="text-white text-lg font-normal active:opacity-50 min-w-[60px] text-left"
                     >
-                        <RotateCcw className="w-5 h-5 text-white" />
+                        Cancel
                     </button>
 
-                    {/* Shutter Button */}
-                    <div className="flex-1 flex justify-center">
+                    {/* Shutter Button - Ring Style */}
+                    <div className="flex justify-center relative">
                         {mode === "photo" ? (
                             <button
                                 onClick={capturePhoto}
                                 disabled={!isReady || files.length >= maxPhotos}
-                                className="w-[72px] h-[72px] rounded-full border-[4px] border-white flex items-center justify-center disabled:opacity-30 active:scale-90 transition-all"
+                                className="w-[76px] h-[76px] rounded-full border-[4px] border-white flex items-center justify-center p-1 active:scale-90 transition-all disabled:opacity-30"
                             >
-                                <div className="w-[58px] h-[58px] rounded-full bg-white" />
+                                <div className="w-full h-full rounded-full bg-white border border-black/10 shadow-inner" />
                             </button>
                         ) : (
                             <button
                                 onClick={isRecording ? stopRecording : startRecording}
                                 disabled={!isReady || (files.length >= maxPhotos && !isRecording)}
-                                className={`w-[72px] h-[72px] rounded-full border-[4px] flex items-center justify-center transition-all ${isRecording ? 'border-red-500/50' : 'border-red-500'} ${(!isReady || (files.length >= maxPhotos && !isRecording)) ? 'opacity-30' : ''}`}
+                                className="w-[76px] h-[76px] rounded-full border-[4px] border-white flex items-center justify-center p-1 active:scale-90 transition-all disabled:opacity-30"
                             >
-                                <div className={`transition-all bg-red-500 ${isRecording ? 'w-8 h-8 rounded-md' : 'w-[58px] h-[58px] rounded-full'}`} />
+                                <div className={`transition-all bg-red-600 shadow-inner ${isRecording ? 'w-8 h-8 rounded-lg' : 'w-full h-full rounded-full'}`} />
                             </button>
+                        )}
+                        
+                        {/* Capture Count Badge for Photo Mode */}
+                        {files.length > 0 && !isRecording && (
+                            <div className="absolute -top-1 -right-1 w-6 h-6 bg-gradz-green text-gradz-charcoal text-[11px] font-bold rounded-full flex items-center justify-center shadow-lg border-2 border-black">
+                                {files.length}
+                            </div>
                         )}
                     </div>
 
-                    {/* Upload All */}
-                    <button
-                        onClick={handleUploadAll}
-                        disabled={files.length === 0 || isRecording}
-                        className={`w-12 h-12 flex items-center justify-center rounded-full bg-gradz-green relative ${(files.length === 0 || isRecording) ? 'opacity-30' : ''}`}
-                    >
-                        <Upload className="w-5 h-5 text-gradz-charcoal" />
-                        {files.length > 0 && (
-                            <span className="absolute -top-1 -right-1 w-5 h-5 bg-white text-black text-[10px] font-bold rounded-full flex items-center justify-center shadow">
-                                {files.length}
-                            </span>
-                        )}
-                    </button>
+                    {/* Camera Flip or Upload Toggle */}
+                    {files.length > 0 && !isRecording ? (
+                        <button
+                            onClick={handleUploadAll}
+                            className="w-[50px] h-[50px] flex items-center justify-center rounded-full bg-white/15 text-white active:scale-90 transition-all"
+                            title="Upload All"
+                        >
+                            <Upload className="w-6 h-6" />
+                        </button>
+                    ) : (
+                        <button
+                            onClick={switchCamera}
+                            disabled={isRecording}
+                            className="w-[50px] h-[50px] flex items-center justify-center rounded-full bg-white/15 text-white active:scale-90 transition-all disabled:hidden"
+                        >
+                            <RefreshCcw className="w-6 h-6" />
+                        </button>
+                    )}
                 </div>
             </div>
         </div>
