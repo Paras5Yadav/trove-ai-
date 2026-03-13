@@ -307,10 +307,12 @@ export function CameraCapture({ onCapture, onClose, maxPhotos = 13 }: CameraCapt
 
                 {/* Shutter Controls */}
                 <div className="flex items-center justify-between px-10 pt-4 pb-12">
-                    {/* Cancel button */}
+                    {/* Cancel button — works during recording too */}
                     <button
-                        onClick={handleClose}
-                        disabled={isRecording}
+                        onClick={() => {
+                            if (isRecording) stopRecording();
+                            handleClose();
+                        }}
                         className="text-white text-lg font-normal active:opacity-50 min-w-[60px] text-left"
                     >
                         Cancel
@@ -334,7 +336,7 @@ export function CameraCapture({ onCapture, onClose, maxPhotos = 13 }: CameraCapt
                         )}
                     </div>
 
-                    {/* Camera Flip or Upload Toggle */}
+                    {/* Camera Flip or Upload Toggle — always visible for layout balance */}
                     {files.length > 0 && !isRecording ? (
                         <button
                             onClick={handleUploadAll}
@@ -347,7 +349,7 @@ export function CameraCapture({ onCapture, onClose, maxPhotos = 13 }: CameraCapt
                         <button
                             onClick={switchCamera}
                             disabled={isRecording}
-                            className="w-[50px] h-[50px] flex items-center justify-center rounded-full bg-white/15 text-white active:scale-90 transition-all disabled:hidden"
+                            className="w-[50px] h-[50px] flex items-center justify-center rounded-full bg-white/15 text-white active:scale-90 transition-all disabled:opacity-0"
                         >
                             <RefreshCcw className="w-6 h-6" />
                         </button>
