@@ -315,9 +315,10 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
                                     <p className="text-[10px] text-gradz-charcoal/50 mt-0.5">Traffic, roads, vehicles</p>
                                 </div>
                                 <div className="bg-gradz-cream/60 rounded-xl px-3 py-2.5 border border-gradz-charcoal/5">
-                                    <span className="text-xs font-semibold text-gradz-charcoal">💊 Medical Shop Signs</span>
-                                    <p className="text-[10px] text-gradz-charcoal/50 mt-0.5">Pharmacy storefronts</p>
+                                    <span className="text-xs font-semibold text-gradz-charcoal">🎭 Cultural Festivals</span>
+                                    <p className="text-[10px] text-gradz-charcoal/50 mt-0.5">Holi, Diwali, local fairs</p>
                                 </div>
+
                             </div>
                         </div>
                         <div className="flex flex-col items-center justify-center gap-4">
