@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { CloudUpload, CheckCircle2, Loader2, AlertCircle, FileIcon, X, Info, Camera } from "lucide-react";
+import { CloudUpload, CheckCircle2, Loader2, AlertCircle, FileIcon, X, Info, Camera, Video } from "lucide-react";
 import { godModeConfig } from "@/config/god-mode";
 import { registerUploadedFileAction } from "@/app/actions/vault";
 import { VoiceRecorder } from "./VoiceRecorder";
@@ -40,6 +40,7 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
     const [uploadCategory, setUploadCategory] = useState<"photos" | "notes">("photos");
 
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const photoInputRef = useRef<HTMLInputElement>(null);
     const [showCamera, setShowCamera] = useState(false);
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -220,13 +221,8 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
         <div
             className="w-full relative group cursor-pointer"
             onClick={(e) => {
-                // Don't trigger file picker if click came from a button, select, or other interactive element
-                const target = e.target as HTMLElement;
-                if (target.tagName.toLowerCase() === "input") return;
-                if (target.closest("button") || target.closest("select")) return;
-                if (isIdle && fileInputRef.current) {
-                    fileInputRef.current.click();
-                }
+                // Don't trigger any file picker from parent click — all capture is button-driven
+                e.stopPropagation();
             }}
             onDrop={handleDrop}
             onDragOver={handleDragOver}
@@ -240,6 +236,16 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
                 className="hidden"
                 accept="image/*,video/*,audio/*,application/pdf"
                 multiple
+            />
+            {/* Native Photo Capture — forces camera, no gallery */}
+            <input
+                type="file"
+                ref={photoInputRef}
+                onChange={handleFileSelect}
+                onClick={(e) => e.stopPropagation()}
+                className="hidden"
+                accept="image/*"
+                capture="environment"
             />
 
             {/* Data Consent Reminder */}
@@ -297,17 +303,18 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
                         </p>
                         <div className="flex flex-wrap items-center justify-center gap-4">
                             <button
-                                onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
+                                onClick={(e) => { e.stopPropagation(); photoInputRef.current?.click(); }}
                                 className="bg-gradz-charcoal text-gradz-cream px-8 py-4 rounded-full font-medium hover:bg-black transition-colors transform duration-200 flex items-center gap-2 flex-shrink-0"
                             >
-                                Browse Files
+                                <Camera className="w-5 h-5" />
+                                Take Photo
                             </button>
                             <button
                                 onClick={(e) => { e.stopPropagation(); setShowCamera(true); }}
                                 className="bg-gradz-green text-gradz-charcoal px-8 py-4 rounded-full font-semibold hover:brightness-95 transition-all duration-200 flex items-center gap-2 flex-shrink-0"
                             >
-                                <Camera className="w-5 h-5" />
-                                4K Camera
+                                <Video className="w-5 h-5" />
+                                Record Video
                             </button>
                             <VoiceRecorder onRecordingComplete={handleVoiceNote} maxDurationMinutes={2} />
                         </div>

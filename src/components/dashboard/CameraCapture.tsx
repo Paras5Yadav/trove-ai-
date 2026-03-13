@@ -23,7 +23,7 @@ export function CameraCapture({ onCapture, onClose, maxPhotos = 13 }: CameraCapt
     
     // Camera settings
     const [facingMode, setFacingMode] = useState<"environment" | "user">("environment");
-    const [mode, setMode] = useState<"photo" | "video">("photo");
+    // Video-only mode — no mode switching
     
     // Video recording states
     const [isRecording, setIsRecording] = useState(false);
@@ -46,7 +46,7 @@ export function CameraCapture({ onCapture, onClose, maxPhotos = 13 }: CameraCapt
                     height: { ideal: 2160 },
                     frameRate: { ideal: 60 }
                 },
-                audio: mode === "video", // Only ask for audio if in video mode
+                audio: true, // Always require audio for video recording
             });
 
             streamRef.current = stream;
@@ -78,9 +78,9 @@ export function CameraCapture({ onCapture, onClose, maxPhotos = 13 }: CameraCapt
                  setError("Camera access denied. Please allow camera permissions and try again.");
             }
         }
-    }, [mode]);
+    }, []);
 
-    // Restart camera if mode changes (to grab microphone for video)
+    // Start camera on mount
     useEffect(() => {
         startCamera(facingMode);
         return () => {
@@ -89,7 +89,7 @@ export function CameraCapture({ onCapture, onClose, maxPhotos = 13 }: CameraCapt
             }
         };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [mode]);
+    }, []);
 
     const switchCamera = useCallback(() => {
         if (isRecording) return;
@@ -246,7 +246,7 @@ export function CameraCapture({ onCapture, onClose, maxPhotos = 13 }: CameraCapt
                 )}
                 {!isRecording && (
                     <div className="text-white/70 text-sm font-medium">
-                        {files.length} / {maxPhotos} captures
+                        {files.length} / {maxPhotos} recordings
                     </div>
                 )}
             </div>
@@ -276,21 +276,10 @@ export function CameraCapture({ onCapture, onClose, maxPhotos = 13 }: CameraCapt
             {/* Bottom controls */}
             <div className="bg-black/95 backdrop-blur-sm pb-8">
                 
-                {/* Mode Selector - iOS Yellow Style */}
+                {/* Video mode label */}
                 {!isRecording && (
-                    <div className="flex justify-center gap-8 py-3 relative">
-                        <button 
-                            onClick={() => setMode("video")}
-                            className={`text-xs font-bold tracking-wider transition-colors uppercase ${mode === "video" ? "text-yellow-400" : "text-white"}`}
-                        >
-                            VIDEO
-                        </button>
-                        <button 
-                            onClick={() => setMode("photo")}
-                            className={`text-xs font-bold tracking-wider transition-colors uppercase ${mode === "photo" ? "text-yellow-400" : "text-white"}`}
-                        >
-                            PHOTO
-                        </button>
+                    <div className="flex justify-center py-3">
+                        <span className="text-xs font-bold tracking-wider text-yellow-400 uppercase">VIDEO</span>
                     </div>
                 )}
 
@@ -300,16 +289,12 @@ export function CameraCapture({ onCapture, onClose, maxPhotos = 13 }: CameraCapt
                         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
                             {files.map((file, i) => (
                                 <div key={i} className="relative flex-shrink-0 group">
-                                    {file.type === "photo" ? (
-                                         <img src={file.url} alt={`Capture ${i + 1}`} className="w-14 h-14 rounded-lg object-cover border-2 border-white/20" />
-                                    ) : (
-                                         <div className="w-14 h-14 rounded-lg bg-gray-800 border-2 border-white/20 flex items-center justify-center relative overflow-hidden">
-                                             <video src={file.url} preload="metadata" playsInline muted className="absolute inset-0 w-full h-full object-cover" />
-                                             <div className="absolute bottom-0.5 right-0.5 bg-black/60 rounded px-1">
-                                                 <Video className="w-3 h-3 text-white" />
-                                             </div>
-                                         </div>
-                                    )}
+                                    <div className="w-14 h-14 rounded-lg bg-gray-800 border-2 border-white/20 flex items-center justify-center relative overflow-hidden">
+                                        <video src={file.url} preload="metadata" playsInline muted className="absolute inset-0 w-full h-full object-cover" />
+                                        <div className="absolute bottom-0.5 right-0.5 bg-black/60 rounded px-1">
+                                            <Video className="w-3 h-3 text-white" />
+                                        </div>
+                                    </div>
                                    
                                     <button onClick={() => removeFile(i)} className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center shadow-lg">
                                         <X className="w-3 h-3 text-white" />
@@ -331,27 +316,17 @@ export function CameraCapture({ onCapture, onClose, maxPhotos = 13 }: CameraCapt
                         Cancel
                     </button>
 
-                    {/* Shutter Button - Ring Style */}
+                    {/* Record Button - Video Only */}
                     <div className="flex justify-center relative">
-                        {mode === "photo" ? (
-                            <button
-                                onClick={capturePhoto}
-                                disabled={!isReady || files.length >= maxPhotos}
-                                className="w-[76px] h-[76px] rounded-full border-[4px] border-white flex items-center justify-center p-1 active:scale-90 transition-all disabled:opacity-30"
-                            >
-                                <div className="w-full h-full rounded-full bg-white border border-black/10 shadow-inner" />
-                            </button>
-                        ) : (
-                            <button
-                                onClick={isRecording ? stopRecording : startRecording}
-                                disabled={!isReady || (files.length >= maxPhotos && !isRecording)}
-                                className="w-[76px] h-[76px] rounded-full border-[4px] border-white flex items-center justify-center p-1 active:scale-90 transition-all disabled:opacity-30"
-                            >
-                                <div className={`transition-all bg-red-600 shadow-inner ${isRecording ? 'w-8 h-8 rounded-lg' : 'w-full h-full rounded-full'}`} />
-                            </button>
-                        )}
+                        <button
+                            onClick={isRecording ? stopRecording : startRecording}
+                            disabled={!isReady || (files.length >= maxPhotos && !isRecording)}
+                            className="w-[76px] h-[76px] rounded-full border-[4px] border-white flex items-center justify-center p-1 active:scale-90 transition-all disabled:opacity-30"
+                        >
+                            <div className={`transition-all bg-red-600 shadow-inner ${isRecording ? 'w-8 h-8 rounded-lg' : 'w-full h-full rounded-full'}`} />
+                        </button>
                         
-                        {/* Capture Count Badge for Photo Mode */}
+                        {/* Recording Count Badge */}
                         {files.length > 0 && !isRecording && (
                             <div className="absolute -top-1 -right-1 w-6 h-6 bg-gradz-green text-gradz-charcoal text-[11px] font-bold rounded-full flex items-center justify-center shadow-lg border-2 border-black">
                                 {files.length}
