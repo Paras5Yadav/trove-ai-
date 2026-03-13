@@ -492,7 +492,7 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
                 <CameraCapture
                     onCapture={handleCameraCapture}
                     onClose={() => setShowCamera(false)}
-                    maxPhotos={MAX_FILES}
+                    maxPhotos={5}
                 />
             )}
         </div>
