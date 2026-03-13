@@ -286,9 +286,40 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
                         <p className="text-gradz-charcoal/60 max-w-sm mb-2">
                             Capture and submit authentic high-value data to build your digital vault.
                         </p>
-                        <p className="text-gradz-charcoal/40 text-xs mb-8">
+                        <p className="text-gradz-charcoal/40 text-xs mb-6">
                             Max 2 GB per upload
                         </p>
+
+                        {/* High-Value Data Tips */}
+                        <div className="w-full max-w-md mb-8">
+                            <p className="text-[11px] font-bold text-gradz-charcoal/70 uppercase tracking-wider mb-3">💡 What earns more?</p>
+                            <div className="grid grid-cols-2 gap-2 text-left">
+                                <div className="bg-gradz-cream/60 rounded-xl px-3 py-2.5 border border-gradz-charcoal/5">
+                                    <span className="text-xs font-semibold text-gradz-charcoal">📝 Handwritten Notes</span>
+                                    <p className="text-[10px] text-gradz-charcoal/50 mt-0.5">Notebooks, letters, diaries</p>
+                                </div>
+                                <div className="bg-gradz-cream/60 rounded-xl px-3 py-2.5 border border-gradz-charcoal/5">
+                                    <span className="text-xs font-semibold text-gradz-charcoal">🍛 Street Food Vendors</span>
+                                    <p className="text-[10px] text-gradz-charcoal/50 mt-0.5">Carts, stalls, local food</p>
+                                </div>
+                                <div className="bg-gradz-cream/60 rounded-xl px-3 py-2.5 border border-gradz-charcoal/5">
+                                    <span className="text-xs font-semibold text-gradz-charcoal">👥 Social Gatherings</span>
+                                    <p className="text-[10px] text-gradz-charcoal/50 mt-0.5">Groups playing, events, crowds</p>
+                                </div>
+                                <div className="bg-gradz-cream/60 rounded-xl px-3 py-2.5 border border-gradz-charcoal/5">
+                                    <span className="text-xs font-semibold text-gradz-charcoal">🗣️ Regional Languages</span>
+                                    <p className="text-[10px] text-gradz-charcoal/50 mt-0.5">Speak in Hindi, Tamil, etc.</p>
+                                </div>
+                                <div className="bg-gradz-cream/60 rounded-xl px-3 py-2.5 border border-gradz-charcoal/5">
+                                    <span className="text-xs font-semibold text-gradz-charcoal">🚗 Busy Intersections</span>
+                                    <p className="text-[10px] text-gradz-charcoal/50 mt-0.5">Traffic, roads, vehicles</p>
+                                </div>
+                                <div className="bg-gradz-cream/60 rounded-xl px-3 py-2.5 border border-gradz-charcoal/5">
+                                    <span className="text-xs font-semibold text-gradz-charcoal">💊 Medical Shop Signs</span>
+                                    <p className="text-[10px] text-gradz-charcoal/50 mt-0.5">Pharmacy storefronts</p>
+                                </div>
+                            </div>
+                        </div>
                         <div className="flex flex-col items-center justify-center gap-4">
                             {/* Single Capture Button */}
                             <div className="relative">
