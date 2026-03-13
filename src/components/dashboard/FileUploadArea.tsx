@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { CloudUpload, CheckCircle2, Loader2, AlertCircle, FileIcon, X, Info, Camera, Video } from "lucide-react";
+import { CloudUpload, CheckCircle2, Loader2, AlertCircle, FileIcon, X, Info, Camera, Video, Mic, ChevronUp } from "lucide-react";
 import { godModeConfig } from "@/config/god-mode";
 import { registerUploadedFileAction } from "@/app/actions/vault";
 import { VoiceRecorder } from "./VoiceRecorder";
@@ -42,6 +42,8 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
     const fileInputRef = useRef<HTMLInputElement>(null);
     const photoInputRef = useRef<HTMLInputElement>(null);
     const [showCamera, setShowCamera] = useState(false);
+    const [showCaptureMenu, setShowCaptureMenu] = useState(false);
+    const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
@@ -301,22 +303,102 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
                         <p className="text-gradz-charcoal/40 text-xs mb-8">
                             Max 2 GB per upload
                         </p>
-                        <div className="flex flex-wrap items-center justify-center gap-4">
-                            <button
-                                onClick={(e) => { e.stopPropagation(); photoInputRef.current?.click(); }}
-                                className="bg-gradz-charcoal text-gradz-cream px-8 py-4 rounded-full font-medium hover:bg-black transition-colors transform duration-200 flex items-center gap-2 flex-shrink-0"
-                            >
-                                <Camera className="w-5 h-5" />
-                                Take Photo
-                            </button>
-                            <button
-                                onClick={(e) => { e.stopPropagation(); setShowCamera(true); }}
-                                className="bg-gradz-green text-gradz-charcoal px-8 py-4 rounded-full font-semibold hover:brightness-95 transition-all duration-200 flex items-center gap-2 flex-shrink-0"
-                            >
-                                <Video className="w-5 h-5" />
-                                Record Video
-                            </button>
-                            <VoiceRecorder onRecordingComplete={handleVoiceNote} maxDurationMinutes={2} />
+                        <div className="flex flex-col items-center justify-center gap-4">
+                            {/* Single Capture Button */}
+                            <div className="relative">
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); setShowCaptureMenu(!showCaptureMenu); }}
+                                    className="bg-gradz-charcoal text-gradz-cream px-10 py-4 rounded-full font-semibold hover:bg-black transition-colors duration-200 flex items-center gap-3 text-lg shadow-lg"
+                                >
+                                    <CloudUpload className="w-6 h-6" />
+                                    Capture Data
+                                    <ChevronUp className={`w-5 h-5 transition-transform duration-200 ${showCaptureMenu ? 'rotate-180' : ''}`} />
+                                </button>
+
+                                {/* Popup Menu */}
+                                {showCaptureMenu && (
+                                    <>
+                                        {/* Backdrop */}
+                                        <div
+                                            className="fixed inset-0 z-40"
+                                            onClick={(e) => { e.stopPropagation(); setShowCaptureMenu(false); }}
+                                        />
+                                        {/* Menu */}
+                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 z-50 w-64 bg-white rounded-2xl shadow-2xl border border-gradz-charcoal/10 overflow-hidden animate-in slide-in-from-bottom-2 duration-200">
+                                            {/* Take Photo */}
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setShowCaptureMenu(false);
+                                                    photoInputRef.current?.click();
+                                                }}
+                                                className="w-full flex items-center gap-4 px-5 py-4 hover:bg-gradz-cream/50 transition-colors text-left"
+                                            >
+                                                <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+                                                    <Camera className="w-5 h-5 text-blue-600" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-semibold text-gradz-charcoal">Take Photo</p>
+                                                    <p className="text-[11px] text-gradz-charcoal/50">Native camera quality</p>
+                                                </div>
+                                            </button>
+
+                                            <div className="h-px bg-gradz-charcoal/8 mx-4" />
+
+                                            {/* Record Video */}
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setShowCaptureMenu(false);
+                                                    setShowCamera(true);
+                                                }}
+                                                className="w-full flex items-center gap-4 px-5 py-4 hover:bg-gradz-cream/50 transition-colors text-left"
+                                            >
+                                                <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center flex-shrink-0">
+                                                    <Video className="w-5 h-5 text-red-600" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-semibold text-gradz-charcoal">Record Video</p>
+                                                    <p className="text-[11px] text-gradz-charcoal/50">WebRTC video capture</p>
+                                                </div>
+                                            </button>
+
+                                            <div className="h-px bg-gradz-charcoal/8 mx-4" />
+
+                                            {/* Voice Note */}
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setShowCaptureMenu(false);
+                                                    setShowVoiceRecorder(true);
+                                                }}
+                                                className="w-full flex items-center gap-4 px-5 py-4 hover:bg-gradz-cream/50 transition-colors text-left"
+                                            >
+                                                <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center flex-shrink-0">
+                                                    <Mic className="w-5 h-5 text-green-600" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-semibold text-gradz-charcoal">Voice Note</p>
+                                                    <p className="text-[11px] text-gradz-charcoal/50">Record audio message</p>
+                                                </div>
+                                            </button>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+
+                            {/* Inline Voice Recorder (shown when selected from menu) */}
+                            {showVoiceRecorder && (
+                                <div className="mt-2">
+                                    <VoiceRecorder
+                                        onRecordingComplete={(file) => {
+                                            handleVoiceNote(file);
+                                            setShowVoiceRecorder(false);
+                                        }}
+                                        maxDurationMinutes={2}
+                                    />
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}
