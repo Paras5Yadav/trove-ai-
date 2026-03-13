@@ -9,12 +9,12 @@ import { cn } from "@/lib/utils";
 // Exact copy from Trove AI
 // ==========================================
 const earningsRows = [
-    { label: "PHOTOS ×50", zero: "₹0", real: "+₹368" },
-    { label: "VIDEOS 1080p ×10", zero: "₹0", real: "+₹313" },
-    { label: "4K VIDEOS ×5", zero: "₹0", real: "+₹782" },
-    { label: "DRONE ×3", zero: "₹0", real: "+₹773" },
-    { label: "EGOCENTRIC ×8", zero: "₹0", real: "+₹883" },
-    { label: "AUDIO ×20", zero: "₹0", real: "+₹184" },
+    { label: "PHOTOS ×50", zero: "₹0", real: "+₹150" },
+    { label: "VIDEOS 1080p ×10", zero: "₹0", real: "+₹100" },
+    { label: "4K VIDEOS ×5", zero: "₹0", real: "+₹125" },
+    { label: "DRONE ×3", zero: "₹0", real: "+₹300" },
+    { label: "EGOCENTRIC ×8", zero: "₹0", real: "+₹200" },
+    { label: "AUDIO ×20", zero: "₹0", real: "+₹40" },
 ];
 
 export function RevenueWaterfall() {
@@ -132,7 +132,7 @@ export function RevenueWaterfall() {
                 {showTotal && (
                     <>
                         <div className="animate-fade-in font-serif font-extrabold text-gradz-cream text-[0.75rem] tracking-wider uppercase whitespace-nowrap">
-                            Estimated Monthly: ₹39,827
+                            Estimated for this batch: ₹915
                         </div>
                         <svg
                             className="w-5 h-5 text-clay animate-draw-check"
