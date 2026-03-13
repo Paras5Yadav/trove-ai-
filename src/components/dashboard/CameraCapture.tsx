@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import { Camera, Video, X, RotateCcw, SwitchCamera, Upload, Square, Zap, ZapOff, RefreshCcw } from "lucide-react";
+import { Camera, Video, X, Upload, RefreshCcw } from "lucide-react";
 
 interface CameraCaptureProps {
     onCapture: (files: File[]) => void;
@@ -19,9 +19,7 @@ export function CameraCapture({ onCapture, onClose, maxPhotos = 13 }: CameraCapt
     const [files, setFiles] = useState<{ blob: Blob; url: string; type: "photo" | "video" }[]>([]);
     const [isReady, setIsReady] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [flashMode, setFlashMode] = useState<"off" | "on" | "auto">("off");
     const [flashActive, setFlashActive] = useState(false);
-    const [zoom, setZoom] = useState(1);
     
     // Camera settings
     const [facingMode, setFacingMode] = useState<"environment" | "user">("environment");
@@ -236,28 +234,21 @@ export function CameraCapture({ onCapture, onClose, maxPhotos = 13 }: CameraCapt
                 <div className="absolute inset-0 z-40 bg-white pointer-events-none animate-pulse" />
             )}
 
-            {/* Top Bar - Flash and Timer */}
-            <div className="absolute top-0 left-0 right-0 z-30 flex items-center justify-between px-6 pt-12 pb-4">
-                <button
-                    onClick={() => setFlashMode(prev => prev === "off" ? "on" : prev === "on" ? "auto" : "off")}
-                    className="w-10 h-10 flex items-center justify-center rounded-full text-white"
-                >
-                    {flashMode === "off" ? <ZapOff className="w-6 h-6" /> : <Zap className={`w-6 h-6 ${flashMode === "on" ? "text-yellow-400 fill-yellow-400" : "text-white"}`} />}
-                    {flashMode === "auto" && <span className="absolute -bottom-1 text-[8px] font-bold">AUTO</span>}
-                </button>
-
+            {/* Top Bar - Timer only */}
+            <div className="absolute top-0 left-0 right-0 z-30 flex items-center justify-center px-6 pt-12 pb-4">
                 {isRecording && (
                     <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
                         <span className="text-white font-medium text-lg tracking-tighter tabular-nums drop-shadow-md">
                             {formatTime(recordingTime)}
                         </span>
                     </div>
                 )}
-
-                {/* Empty spacer for alignment if not recording */}
-                {!isRecording && <div className="w-10" />}
-                
-                <div className="w-10" /> {/* Symmetry spacer */}
+                {!isRecording && (
+                    <div className="text-white/70 text-sm font-medium">
+                        {files.length} / {maxPhotos} captures
+                    </div>
+                )}
             </div>
 
             {/* Viewfinder */}
@@ -272,34 +263,13 @@ export function CameraCapture({ onCapture, onClose, maxPhotos = 13 }: CameraCapt
                         </button>
                     </div>
                 ) : (
-                    <>
-                        {/* Camera Feed */}
-                        <video
-                            ref={videoRef}
-                            autoPlay
-                            playsInline
-                            muted
-                            className={`w-full h-full object-cover ${facingMode === "user" ? "scale-x-[-1]" : ""}`}
-                        />
-
-                        {/* Zoom Controls Overlay */}
-                        {!isRecording && isReady && (
-                            <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-4 z-30">
-                                <button 
-                                    onClick={() => setZoom(0.5)}
-                                    className={`w-9 h-9 rounded-full flex items-center justify-center text-[10px] font-bold transition-all ${zoom === 0.5 ? 'bg-white/20 text-yellow-400 border border-yellow-400' : 'bg-black/40 text-white'}`}
-                                >
-                                    0.5
-                                </button>
-                                <button 
-                                    onClick={() => setZoom(1)}
-                                    className={`w-9 h-9 rounded-full flex items-center justify-center text-[10px] font-bold transition-all ${zoom === 1 ? 'bg-white/20 text-yellow-400 border border-yellow-400' : 'bg-black/40 text-white'}`}
-                                >
-                                    1×
-                                </button>
-                            </div>
-                        )}
-                    </>
+                    <video
+                        ref={videoRef}
+                        autoPlay
+                        playsInline
+                        muted
+                        className={`absolute inset-0 w-full h-full object-cover ${facingMode === "user" ? "scale-x-[-1]" : ""}`}
+                    />
                 )}
             </div>
 
