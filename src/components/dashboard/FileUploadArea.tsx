@@ -324,7 +324,7 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
                                             onClick={(e) => { e.stopPropagation(); setShowCaptureMenu(false); }}
                                         />
                                         {/* Menu */}
-                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 z-50 w-64 bg-white rounded-2xl shadow-2xl border border-gradz-charcoal/10 overflow-hidden animate-in slide-in-from-bottom-2 duration-200">
+                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 z-50 w-56 bg-white rounded-2xl shadow-2xl border border-gradz-charcoal/10 overflow-hidden animate-in slide-in-from-bottom-2 duration-200">
                                             {/* Take Photo */}
                                             <button
                                                 onClick={(e) => {
@@ -334,13 +334,10 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
                                                 }}
                                                 className="w-full flex items-center gap-4 px-5 py-4 hover:bg-gradz-cream/50 transition-colors text-left"
                                             >
-                                                <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0">
-                                                    <Camera className="w-5 h-5 text-blue-600" />
+                                                <div className="w-10 h-10 rounded-full bg-gradz-charcoal/8 flex items-center justify-center flex-shrink-0">
+                                                    <Camera className="w-5 h-5 text-gradz-charcoal" />
                                                 </div>
-                                                <div>
-                                                    <p className="text-sm font-semibold text-gradz-charcoal">Take Photo</p>
-                                                    <p className="text-[11px] text-gradz-charcoal/50">Native camera quality</p>
-                                                </div>
+                                                <p className="text-sm font-semibold text-gradz-charcoal">Take Photo</p>
                                             </button>
 
                                             <div className="h-px bg-gradz-charcoal/8 mx-4" />
@@ -354,13 +351,10 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
                                                 }}
                                                 className="w-full flex items-center gap-4 px-5 py-4 hover:bg-gradz-cream/50 transition-colors text-left"
                                             >
-                                                <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center flex-shrink-0">
-                                                    <Video className="w-5 h-5 text-red-600" />
+                                                <div className="w-10 h-10 rounded-full bg-gradz-charcoal/8 flex items-center justify-center flex-shrink-0">
+                                                    <Video className="w-5 h-5 text-gradz-charcoal" />
                                                 </div>
-                                                <div>
-                                                    <p className="text-sm font-semibold text-gradz-charcoal">Record Video</p>
-                                                    <p className="text-[11px] text-gradz-charcoal/50">WebRTC video capture</p>
-                                                </div>
+                                                <p className="text-sm font-semibold text-gradz-charcoal">Record Video</p>
                                             </button>
 
                                             <div className="h-px bg-gradz-charcoal/8 mx-4" />
@@ -374,13 +368,10 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
                                                 }}
                                                 className="w-full flex items-center gap-4 px-5 py-4 hover:bg-gradz-cream/50 transition-colors text-left"
                                             >
-                                                <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center flex-shrink-0">
-                                                    <Mic className="w-5 h-5 text-green-600" />
+                                                <div className="w-10 h-10 rounded-full bg-gradz-charcoal/8 flex items-center justify-center flex-shrink-0">
+                                                    <Mic className="w-5 h-5 text-gradz-charcoal" />
                                                 </div>
-                                                <div>
-                                                    <p className="text-sm font-semibold text-gradz-charcoal">Voice Note</p>
-                                                    <p className="text-[11px] text-gradz-charcoal/50">Record audio message</p>
-                                                </div>
+                                                <p className="text-sm font-semibold text-gradz-charcoal">Voice Note</p>
                                             </button>
                                         </div>
                                     </>
