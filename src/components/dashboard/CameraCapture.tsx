@@ -42,8 +42,8 @@ export function CameraCapture({ onCapture, onClose, maxPhotos = 13 }: CameraCapt
             const stream = await navigator.mediaDevices.getUserMedia({
                 video: {
                     facingMode: facing,
-                    width: { ideal: 3840 },
-                    height: { ideal: 2160 },
+                    width: { ideal: 2560 },
+                    height: { ideal: 1440 },
                     frameRate: { ideal: 60 }
                 },
                 audio: true, // Always require audio for video recording
