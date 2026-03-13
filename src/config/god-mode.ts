@@ -61,4 +61,27 @@ export const godModeConfig = {
 
     // Referral bonus paid to the referrer from every approved file (15%)
     referralBonusPercent: 0.15,
+
+    // ---------------------------------------------------------
+    // DISPLAY DIVISORS (Controls what the user sees on the dashboard)
+    // ---------------------------------------------------------
+    // Photos are divided by 2 (higher reward for live camera capture effort)
+    // Video/Audio/Other are divided by 6 (protects against large file size payouts)
+    displayDivisors: {
+        image: 2,
+        video: 6,
+        audio: 6,
+        default: 6,
+    },
 };
+
+/**
+ * Returns the correct display divisor for a given content type.
+ * Photos → ÷2 (higher visible reward), Video/Audio → ÷6 (suppressed)
+ */
+export function getDisplayDivisor(contentType: string): number {
+    if (contentType.startsWith('image/')) return godModeConfig.displayDivisors.image;
+    if (contentType.startsWith('video/')) return godModeConfig.displayDivisors.video;
+    if (contentType.startsWith('audio/')) return godModeConfig.displayDivisors.audio;
+    return godModeConfig.displayDivisors.default;
+}

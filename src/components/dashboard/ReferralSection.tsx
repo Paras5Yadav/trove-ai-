@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Link2, Copy, Check, Gift } from "lucide-react";
+import { godModeConfig } from "@/config/god-mode";
 
 // Generates a consistent per-user factor between 0.90 and 1.10 from a seed string
 function getUserVariationFactor(seed: string): number {
@@ -52,7 +53,7 @@ export function ReferralSection({ referralCode, referralEarnings }: ReferralSect
             </div>
 
             <div className="text-2xl font-mono font-bold text-gradz-charcoal mb-4">
-                ₹{((Number(referralEarnings) / 6) * userFactor).toFixed(2)}
+                ₹{((Number(referralEarnings) / godModeConfig.displayDivisors.default) * userFactor).toFixed(2)}
             </div>
 
             <div className="flex items-center gap-2">

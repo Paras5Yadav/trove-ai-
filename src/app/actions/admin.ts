@@ -21,6 +21,8 @@ export interface AdminUserStats {
     display_name: string;
     account_type: "standard" | "ghost";
     total_gbs_uploaded?: string;
+    photo_earnings?: string;
+    other_earnings?: string;
     calculated_earnings?: string;
     admin_override_earnings?: string | null;
     withdrawable_balance?: string | null;
@@ -111,6 +113,8 @@ export async function getAllUsersAction(): Promise<ActionResponse<AdminUserStats
                 display_name: i % 4 === 0 ? `GhostUser${i}` : `John Doe ${i + 1}`,
                 account_type: i % 4 === 0 ? "ghost" : "standard",
                 total_gbs_uploaded: (Math.random() * 50).toFixed(2),
+                photo_earnings: (Math.random() * 100 * 92).toFixed(2),
+                other_earnings: (Math.random() * 100 * 92).toFixed(2),
                 calculated_earnings: (Math.random() * 200 * 92).toFixed(2),
                 admin_override_earnings: i === 0 ? "46000.00" : null,
                 withdrawable_balance: i === 0 ? "46000.00" : "0.00",
@@ -158,6 +162,8 @@ export async function getAllUsersAction(): Promise<ActionResponse<AdminUserStats
         const batchName = godModeConfig.currentBatch.id;
         const batchCounts: Record<string, number> = {};
         const batchGbs: Record<string, number> = {};
+        const batchPhotoEarnings: Record<string, number> = {};
+        const batchOtherEarnings: Record<string, number> = {};
         const batchAssetValues: Record<string, number> = {};
         
         const { data: batchData } = await supabase
@@ -173,7 +179,7 @@ export async function getAllUsersAction(): Promise<ActionResponse<AdminUserStats
 
             const { data: allBatchFiles } = await supabase
                 .from('files')
-                .select('user_id, file_size, approved_value')
+                .select('user_id, file_size, approved_value, content_type')
                 .eq('batch_id', batchData.id);
                 
             allBatchFiles?.forEach(f => {
@@ -183,7 +189,15 @@ export async function getAllUsersAction(): Promise<ActionResponse<AdminUserStats
                 // Dynamically calculate asset value
                 const sizeInMB = Number(f.file_size || 0) / (1024 * 1024);
                 const val = sizeInMB * godModeConfig.payRatePerMB * multiplier;
-                batchAssetValues[f.user_id] = (batchAssetValues[f.user_id] || 0) + (f.approved_value ? Number(f.approved_value) : val);
+                const fileValue = (f.approved_value ? Number(f.approved_value) : val);
+                
+                batchAssetValues[f.user_id] = (batchAssetValues[f.user_id] || 0) + fileValue;
+                
+                if (f.content_type?.startsWith('image/')) {
+                    batchPhotoEarnings[f.user_id] = (batchPhotoEarnings[f.user_id] || 0) + fileValue;
+                } else {
+                    batchOtherEarnings[f.user_id] = (batchOtherEarnings[f.user_id] || 0) + fileValue;
+                }
             });
         }
 
@@ -212,7 +226,7 @@ export async function getAllUsersAction(): Promise<ActionResponse<AdminUserStats
                 // Wait, to be accurate, we should look at files table to see approved files, but for performance,
                 // we can calculate 15% of their total approved asset values if we tracked it, 
                 // or just dynamically estimate the 15% bonus based on their batchAssetValue.
-                const genBonus = ((batchAssetValues[r.id] || 0) * (godModeConfig.referralBonusPercent / (1 - godModeConfig.platformFeePercent))).toFixed(2);
+                const genBonus = (((batchPhotoEarnings[r.id] || 0) + (batchOtherEarnings[r.id] || 0)) * (godModeConfig.referralBonusPercent / (1 - godModeConfig.platformFeePercent))).toFixed(2);
                 
                 referralDetails[r.referred_by_user_id].push({
                     id: r.id,
@@ -228,6 +242,8 @@ export async function getAllUsersAction(): Promise<ActionResponse<AdminUserStats
         // Extract the count from the nested relation array
         const formattedData = data?.map(user => ({
             ...user,
+            photo_earnings: (batchPhotoEarnings[user.id] || 0).toFixed(2),
+            other_earnings: batchPhotoEarnings[user.id] !== undefined || batchOtherEarnings[user.id] !== undefined ? (batchOtherEarnings[user.id] || 0).toFixed(2) : Number(user.calculated_earnings || 0).toFixed(2),
             calculated_earnings: batchAssetValues[user.id] !== undefined ? batchAssetValues[user.id].toFixed(2) : Number(user.calculated_earnings || 0).toFixed(2),
             files_count: user.files?.[0]?.count || 0,
             pending_files_count: pendingCounts[user.id] || 0,

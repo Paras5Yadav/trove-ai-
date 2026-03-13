@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
-import { godModeConfig } from "@/config/god-mode";
+import { godModeConfig, getDisplayDivisor } from "@/config/god-mode";
 import { ActionResponse, actionError, actionSuccess } from "@/types/actions";
 
 /**
@@ -150,6 +150,8 @@ export async function registerUploadedFileAction(
 interface DashboardStats {
     total_gbs: string;
     asset_value: string;
+    photo_earnings: string;
+    other_earnings: string;
     withdrawable_balance: string;
     referral_earnings: string;
     total_files_count: number;
@@ -169,6 +171,8 @@ export async function getUserDashboardStatsAction(): Promise<ActionResponse<Dash
     const defaultStats: DashboardStats = {
         total_gbs: "0.00",
         asset_value: "0.00",
+        photo_earnings: "0.00",
+        other_earnings: "0.00",
         withdrawable_balance: "0.00",
         referral_earnings: "0.00",
         total_files_count: 0,
@@ -206,6 +210,8 @@ export async function getUserDashboardStatsAction(): Promise<ActionResponse<Dash
             const batchName = godModeConfig.currentBatch.id;
             let totalFilesCount = 0;
             let currentBatchAssetValue = 0;
+            let currentBatchPhotoEarnings = 0;
+            let currentBatchOtherEarnings = 0;
             let currentBatchGBs = 0;
 
             try {
@@ -222,7 +228,7 @@ export async function getUserDashboardStatsAction(): Promise<ActionResponse<Dash
                 if (batchData) {
                     const { data: batchFiles } = await supabase
                         .from('files')
-                        .select('file_size, approved_value')
+                        .select('file_size, approved_value, content_type')
                         .eq('user_id', user.id)
                         .eq('batch_id', batchData.id);
 
@@ -238,7 +244,16 @@ export async function getUserDashboardStatsAction(): Promise<ActionResponse<Dash
                             // Calculate base value using the same formula as registerFileAction
                             const fileSizeInMB = Number(file.file_size || 0) / (1024 * 1024);
                             const val = fileSizeInMB * godModeConfig.payRatePerMB * multiplier;
-                            totalCalculatedEarnings += (file.approved_value ? Number(file.approved_value) : val);
+                            const fileEarnings = (file.approved_value ? Number(file.approved_value) : val);
+                            totalCalculatedEarnings += fileEarnings;
+                            
+                            // Split earnings by content type for category-based display divisors
+                            const ct = file.content_type || '';
+                            if (ct.startsWith('image/')) {
+                                currentBatchPhotoEarnings += fileEarnings;
+                            } else {
+                                currentBatchOtherEarnings += fileEarnings;
+                            }
                         });
                         
                         currentBatchGBs = totalBytes / (1024 * 1024 * 1024); // Convert bytes to GBs
@@ -275,6 +290,8 @@ export async function getUserDashboardStatsAction(): Promise<ActionResponse<Dash
             return actionSuccess({
                 total_gbs: currentBatchGBs.toFixed(2),
                 asset_value: currentBatchAssetValue.toFixed(2),
+                photo_earnings: currentBatchPhotoEarnings.toFixed(2),
+                other_earnings: currentBatchOtherEarnings.toFixed(2),
                 withdrawable_balance: clearedBalance.toFixed(2),
                 referral_earnings: Number(profile.referral_earnings || 0).toFixed(2),
                 total_files_count: totalFilesCount,

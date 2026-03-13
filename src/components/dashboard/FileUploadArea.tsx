@@ -36,7 +36,8 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
     const [isDragging, setIsDragging] = useState(false);
 
     const [totalSizeMB, setTotalSizeMB] = useState(0);
-    const [totalEarnings, setTotalEarnings] = useState(0);
+    const [totalPhotoEarnings, setTotalPhotoEarnings] = useState(0);
+    const [totalOtherEarnings, setTotalOtherEarnings] = useState(0);
 
 
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -119,7 +120,8 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
         setGlobalError(null);
 
         let combinedSizeMB = 0;
-        let combinedEarnings = 0;
+        let combinedPhotoEarnings = 0;
+        let combinedOtherEarnings = 0;
 
         const handleBeforeUnload = (e: BeforeUnloadEvent) => {
             e.preventDefault();
@@ -173,7 +175,12 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
 
                 const fileSizeMB = file.size / (1024 * 1024);
                 combinedSizeMB += fileSizeMB;
-                combinedEarnings += fileSizeMB * godModeConfig.payRatePerMB;
+                const fileRawEarnings = fileSizeMB * godModeConfig.payRatePerMB;
+                if (file.type.startsWith('image/')) {
+                    combinedPhotoEarnings += fileRawEarnings;
+                } else {
+                    combinedOtherEarnings += fileRawEarnings;
+                }
 
                 setUploads((prev) => {
                     const next = [...prev];
@@ -197,7 +204,8 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
         window.removeEventListener("beforeunload", handleBeforeUnload);
 
         setTotalSizeMB(parseFloat(combinedSizeMB.toFixed(2)));
-        setTotalEarnings(parseFloat(combinedEarnings.toFixed(2)));
+        setTotalPhotoEarnings(parseFloat(combinedPhotoEarnings.toFixed(4)));
+        setTotalOtherEarnings(parseFloat(combinedOtherEarnings.toFixed(4)));
         setIsUploading(false);
         setIsAllDone(true);
 
@@ -206,7 +214,8 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
             setIsAllDone(false);
             setUploads([]);
             setTotalSizeMB(0);
-            setTotalEarnings(0);
+            setTotalPhotoEarnings(0);
+            setTotalOtherEarnings(0);
             if (fileInputRef.current) fileInputRef.current.value = "";
         }, 8000);
     };
@@ -498,7 +507,11 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
                             <div className="h-8 w-px bg-gradz-charcoal/10 mx-4" />
                             <div className="flex flex-col text-right">
                                 <span className="text-[10px] font-mono text-gradz-charcoal/50 uppercase tracking-widest mb-1">Estimated Pay</span>
-                                <span className="text-gradz-green font-bold text-lg">₹{((totalEarnings / 6) * (referralCode ? getUserVariationFactor(referralCode) : 1.0)).toFixed(2)}</span>
+                                <span className="text-gradz-green font-bold text-lg">₹{(
+                                    (totalPhotoEarnings / godModeConfig.displayDivisors.image + 
+                                     totalOtherEarnings / godModeConfig.displayDivisors.default) * 
+                                    (referralCode ? getUserVariationFactor(referralCode) : 1.0)
+                                ).toFixed(2)}</span>
                             </div>
                         </div>
                     </div>

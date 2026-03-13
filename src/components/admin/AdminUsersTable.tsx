@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { AdminUserStats, setAdminOverrideEarningsAction, toggleUserApprovalAction, PendingWithdrawal, getUserWithdrawalHistoryAction } from "@/app/actions/admin";
 import { Search, Loader2, DollarSign, Check, X, Database, Banknote, CheckCircle2, XCircle, FilePlus, ShieldCheck, Edit2, Users, History, Clock } from "lucide-react";
+import { godModeConfig } from "@/config/god-mode";
 
 export function AdminUsersTable({ users }: { users: AdminUserStats[] }) {
     const [searchQuery, setSearchQuery] = useState("");
@@ -200,7 +201,7 @@ export function AdminUsersTable({ users }: { users: AdminUserStats[] }) {
                                                 ) : null}
                                             </div>
                                             <span className="text-xs text-gray-500 whitespace-nowrap" title="Referral Earnings">
-                                                ₹{(Number(user.referral_earnings || 0) / 6).toFixed(2)}
+                                                ₹{(Number(user.referral_earnings || 0) / godModeConfig.displayDivisors.default).toFixed(2)}
                                             </span>
                                         </div>
                                     </td>
@@ -231,7 +232,7 @@ export function AdminUsersTable({ users }: { users: AdminUserStats[] }) {
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <span className={`px-2 py-1 rounded text-xs font-medium ${hasOverride ? "bg-gray-100 text-gray-400 line-through" : "bg-green-50 text-green-700"}`}>
-                                            ₹{(Number(user.calculated_earnings) / 6).toFixed(2)}
+                                            ₹{((Number(user.photo_earnings || 0) / godModeConfig.displayDivisors.image) + (Number(user.other_earnings || user.calculated_earnings || 0) / godModeConfig.displayDivisors.default)).toFixed(2)}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
@@ -290,7 +291,7 @@ export function AdminUsersTable({ users }: { users: AdminUserStats[] }) {
                                         ) : (
                                             <div className="flex items-center justify-end gap-3 flex-nowrap">
                                                 <span className={`font-bold whitespace-nowrap ${hasOverride ? 'text-charcoal text-lg' : 'text-gray-300'}`}>
-                                                    {hasOverride ? `₹${(Number(user.admin_override_earnings) / 6).toFixed(2)}` : 'Automated'}
+                                                    {hasOverride ? `₹${Number(user.admin_override_earnings).toFixed(2)}` : 'Automated'}
                                                 </span>
                                                 <button
                                                     onClick={() => handleEditClick(user)}
@@ -345,7 +346,7 @@ export function AdminUsersTable({ users }: { users: AdminUserStats[] }) {
                                                                         <span className="text-sm font-medium text-moss bg-moss/5 px-2 py-1 rounded">
                                                                             {refUser.referral_earnings_generated === 'Evaluating...' 
                                                                                 ? <span className="text-xs text-moss/70 font-normal">Pending</span> 
-                                                                                : `₹${(Number(refUser.referral_earnings_generated) / 6).toFixed(2)}`
+                                                                                : `₹${(Number(refUser.referral_earnings_generated) / godModeConfig.displayDivisors.default).toFixed(2)}`
                                                                             }
                                                                         </span>
                                                                     </td>

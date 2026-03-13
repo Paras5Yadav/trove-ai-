@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { UploadCloud, Database, Wallet, Activity, CheckCircle2, Banknote, Clock, XCircle } from "lucide-react";
 import { FileUploadArea } from "@/components/dashboard/FileUploadArea";
 import { getUserDashboardStatsAction, getBatchVolumeAction } from "@/app/actions/vault";
+import { godModeConfig } from "@/config/god-mode";
 
 import { useEffect, useState } from "react";
 
@@ -31,6 +32,8 @@ function getUserVariationFactor(seed: string): number {
 export default function Dashboard() {
     const { t } = useTranslation();
     const [assetValue, setAssetValue] = useState("0.00");
+    const [photoEarnings, setPhotoEarnings] = useState("0.00");
+    const [otherEarnings, setOtherEarnings] = useState("0.00");
     const [referralEarnings, setReferralEarnings] = useState("0.00");
     const [totalGbs, setTotalGbs] = useState("0.00");
     const [totalFiles, setTotalFiles] = useState(0);
@@ -61,6 +64,8 @@ export default function Dashboard() {
 
                 if (statsResult.success && statsResult.data) {
                     setAssetValue(statsResult.data.asset_value);
+                    setPhotoEarnings(statsResult.data.photo_earnings);
+                    setOtherEarnings(statsResult.data.other_earnings);
                     setReferralEarnings(statsResult.data.referral_earnings);
                     setTotalGbs(statsResult.data.total_gbs);
                     setTotalFiles(statsResult.data.total_files_count);
@@ -177,7 +182,10 @@ export default function Dashboard() {
                                     <div className="h-10 w-32 bg-gradz-charcoal/5 animate-pulse rounded-lg" />
                                 ) : (
                                     <div className="text-4xl font-mono font-bold text-gradz-charcoal">
-                                        ₹{isNaN(parseFloat(assetValue)) ? "0.00" : ((parseFloat(assetValue) / 6) * userFactor).toFixed(2)}
+                                        ₹{isNaN(parseFloat(assetValue)) ? "0.00" : (
+                                            (parseFloat(photoEarnings) / godModeConfig.displayDivisors.image + 
+                                             parseFloat(otherEarnings) / godModeConfig.displayDivisors.default) * userFactor
+                                        ).toFixed(2)}
                                     </div>
                                 )}
                             </div>
