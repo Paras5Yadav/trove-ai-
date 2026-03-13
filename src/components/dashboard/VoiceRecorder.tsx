@@ -6,9 +6,10 @@ import { Mic, Square, Loader2, AlertCircle, Play, Pause, RotateCcw, Upload } fro
 interface VoiceRecorderProps {
     onRecordingComplete: (file: File) => void;
     maxDurationMinutes?: number;
+    autoStart?: boolean;
 }
 
-export function VoiceRecorder({ onRecordingComplete, maxDurationMinutes = 2 }: VoiceRecorderProps) {
+export function VoiceRecorder({ onRecordingComplete, maxDurationMinutes = 2, autoStart = false }: VoiceRecorderProps) {
     const [isRecording, setIsRecording] = useState(false);
     const [recordingTime, setRecordingTime] = useState(0);
     const [error, setError] = useState<string | null>(null);
@@ -38,6 +39,14 @@ export function VoiceRecorder({ onRecordingComplete, maxDurationMinutes = 2 }: V
             if (previewUrl) URL.revokeObjectURL(previewUrl);
         };
     }, [cleanup, previewUrl]);
+
+    // Auto-start recording when prop is true
+    useEffect(() => {
+        if (autoStart && !isRecording && !previewFile) {
+            startRecording();
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [autoStart]);
 
     const formatTime = (seconds: number) => {
         const m = Math.floor(seconds / 60);

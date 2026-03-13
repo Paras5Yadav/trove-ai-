@@ -387,6 +387,7 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
                                             setShowVoiceRecorder(false);
                                         }}
                                         maxDurationMinutes={2}
+                                        autoStart
                                     />
                                 </div>
                             )}
