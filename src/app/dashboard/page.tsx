@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { UploadCloud, Database, Wallet, Activity, CheckCircle2, Banknote, Clock, XCircle } from "lucide-react";
-import { FileUploadArea } from "@/components/dashboard/FileUploadArea";
+import { MissionsDashboard } from "@/components/dashboard/MissionsDashboard";
 import { getUserDashboardStatsAction, getBatchVolumeAction } from "@/app/actions/vault";
 
 import { useEffect, useState } from "react";
@@ -146,7 +146,7 @@ export default function Dashboard() {
                             {t("dashboard.uploadData")}
                         </h3>
 
-                        <FileUploadArea referralCode={referralCode} />
+                        <MissionsDashboard referralCode={referralCode} />
                     </div>
 
                     {/* User Analytics Sidebar */}
