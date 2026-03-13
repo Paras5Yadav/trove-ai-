@@ -37,7 +37,7 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
 
     const [totalSizeMB, setTotalSizeMB] = useState(0);
     const [totalEarnings, setTotalEarnings] = useState(0);
-    const [uploadCategory, setUploadCategory] = useState<"photos" | "notes">("photos");
+
 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const photoInputRef = useRef<HTMLInputElement>(null);
@@ -146,7 +146,7 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
                         fileName: file.name,
                         contentType: file.type || "application/octet-stream",
                         fileSize: file.size,
-                        category: uploadCategory,
+                        category: "photos",
                     }),
                 });
 
@@ -164,7 +164,7 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
                     file.size,
                     file.type || "application/octet-stream",
                     uniqueFileName,
-                    uploadCategory
+                    "photos"
                 );
 
                 if (!registerVaultRes.success) {
@@ -269,21 +269,7 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
-                        <label htmlFor="category" className="text-[11px] font-semibold text-gradz-charcoal uppercase tracking-widest">
-                            Dataset Category:
-                        </label>
-                        <select
-                            id="category"
-                            value={uploadCategory}
-                            onChange={(e) => setUploadCategory(e.target.value as any)}
-                            onClick={(e) => e.stopPropagation()}
-                            className="bg-white border border-gradz-charcoal/10 rounded-lg text-sm px-3 py-1.5 outline-none focus:ring-2 focus:ring-gradz-green/50 w-full max-w-[200px]"
-                        >
-                            <option value="photos">Photos, Videos & Audio</option>
-                            <option value="notes">Notes & Documents</option>
-                        </select>
-                    </div>
+
                 </div>
             )}
 
@@ -296,9 +282,9 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
                         <div className="w-20 h-20 bg-gradz-cream/50 group-hover:bg-gradz-cream rounded-full flex items-center justify-center mb-6 shadow-sm transition-colors duration-300">
                             <CloudUpload className="w-10 h-10 text-gradz-charcoal/40 group-hover:text-gradz-charcoal transition-colors duration-300" />
                         </div>
-                        <h4 className="text-2xl font-bold text-gradz-charcoal mb-2">Drag & drop files here</h4>
+                        <h4 className="text-2xl font-bold text-gradz-charcoal mb-2">Start a Contribution</h4>
                         <p className="text-gradz-charcoal/60 max-w-sm mb-2">
-                            Photos, Videos, Audio, and PDFs supported. Up to {MAX_FILES} files at once.
+                            Capture and submit authentic high-value data to build your digital vault.
                         </p>
                         <p className="text-gradz-charcoal/40 text-xs mb-8">
                             Max 2 GB per upload
@@ -311,7 +297,7 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
                                     className="bg-gradz-charcoal text-gradz-cream px-10 py-4 rounded-full font-semibold hover:bg-black transition-colors duration-200 flex items-center gap-3 text-lg shadow-lg"
                                 >
                                     <CloudUpload className="w-6 h-6" />
-                                    Capture Data
+                                    Capture Asset
                                     <ChevronUp className={`w-5 h-5 transition-transform duration-200 ${showCaptureMenu ? 'rotate-180' : ''}`} />
                                 </button>
 
