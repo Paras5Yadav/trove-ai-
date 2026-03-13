@@ -12,8 +12,8 @@ import { WithdrawModal } from "@/components/dashboard/WithdrawModal";
 import { HelpCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-const BASE_TB = 12.4; // Starting base volume
-const TOTAL_CAPACITY_TB = 50.0; // Total batch capacity
+const BASE_TB = 12.7; // Starting base volume
+const TOTAL_CAPACITY_TB = 20.0; // Total batch capacity
 
 // Generates a consistent per-user factor between 0.90 and 1.10 from a seed string
 function getUserVariationFactor(seed: string): number {
