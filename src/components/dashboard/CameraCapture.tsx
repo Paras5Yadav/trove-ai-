@@ -227,34 +227,17 @@ export function CameraCapture({ onCapture, onClose, maxPhotos = 13 }: CameraCapt
     };
 
     return (
-        <div className="fixed inset-0 z-50 bg-black flex flex-col">
+        <div className="fixed inset-0 z-50 bg-black overflow-hidden">
             <canvas ref={canvasRef} className="hidden" />
 
             {flashActive && (
                 <div className="absolute inset-0 z-40 bg-white pointer-events-none animate-pulse" />
             )}
 
-            {/* Top Bar - Timer only */}
-            <div className="absolute top-0 left-0 right-0 z-30 flex items-center justify-center px-6 pt-12 pb-4">
-                {isRecording && (
-                    <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                        <span className="text-white font-medium text-lg tracking-tighter tabular-nums drop-shadow-md">
-                            {formatTime(recordingTime)}
-                        </span>
-                    </div>
-                )}
-                {!isRecording && (
-                    <div className="text-white/70 text-sm font-medium">
-                        {files.length} / {maxPhotos} recordings
-                    </div>
-                )}
-            </div>
-
-            {/* Viewfinder */}
-            <div className="flex-1 relative overflow-hidden bg-black">
+            {/* Full-Screen Viewfinder */}
+            <div className="absolute inset-0 z-0">
                 {error ? (
-                    <div className="h-full flex flex-col items-center justify-center text-white px-8 text-center">
+                    <div className="h-full flex flex-col items-center justify-center text-white px-8 text-center bg-black">
                         <Camera className="w-16 h-16 mb-4 text-white/40" />
                         <p className="text-lg font-medium mb-2">Camera Unavailable</p>
                         <p className="text-white/60 text-sm mb-6">{error}</p>
@@ -268,92 +251,135 @@ export function CameraCapture({ onCapture, onClose, maxPhotos = 13 }: CameraCapt
                         autoPlay
                         playsInline
                         muted
-                        className={`absolute inset-0 w-full h-full object-cover ${facingMode === "user" ? "scale-x-[-1]" : ""}`}
+                        className={`w-full h-full object-cover ${facingMode === "user" ? "scale-x-[-1]" : ""}`}
                     />
                 )}
             </div>
 
-            {/* Bottom controls */}
-            <div className="bg-black/95 backdrop-blur-sm pb-4">
-                
-                {/* Video mode label */}
-                {!isRecording && (
-                    <div className="flex justify-center py-3">
-                        <span className="text-xs font-bold tracking-wider text-yellow-400 uppercase">VIDEO</span>
+            {/* Top Bar - Timer & Recording Count Layered on Video */}
+            <div className="absolute top-0 left-0 right-0 z-30 flex items-start justify-center pt-14 pb-8 bg-gradient-to-b from-black/50 to-transparent pointer-events-none">
+                {isRecording ? (
+                    <div className="bg-[#ff3b30] backdrop-blur-md rounded text-white font-medium tracking-widest text-[13px] px-3 py-1 flex items-center shadow-sm pointer-events-auto">
+                        <span>{formatTime(recordingTime)}</span>
+                    </div>
+                ) : (
+                    <div className="text-white/80 text-xs font-medium drop-shadow-md bg-black/20 px-3 py-1 rounded-full backdrop-blur-sm pointer-events-auto">
+                        {files.length} / {maxPhotos}
                     </div>
                 )}
+            </div>
 
-                {/* Thumbnail strip */}
-                {files.length > 0 && !isRecording && (
-                    <div className="px-4 pb-4">
-                        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-                            {files.map((file, i) => (
-                                <div key={i} className="relative flex-shrink-0 group">
-                                    <div className="w-14 h-14 rounded-lg bg-gray-800 border-2 border-white/20 flex items-center justify-center relative overflow-hidden">
-                                        <video src={file.url} preload="metadata" playsInline muted className="absolute inset-0 w-full h-full object-cover" />
-                                        <div className="absolute bottom-0.5 right-0.5 bg-black/60 rounded px-1">
-                                            <Video className="w-3 h-3 text-white" />
-                                        </div>
-                                    </div>
-                                   
-                                    <button onClick={() => removeFile(i)} className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center shadow-lg">
-                                        <X className="w-3 h-3 text-white" />
-                                    </button>
+            {/* Bottom Controls Overlay Layered on Video */}
+            <div className="absolute bottom-0 left-0 right-0 z-30 pt-20 pb-12 bg-gradient-to-t from-black via-black/70 to-transparent pointer-events-none">
+                <div className="pointer-events-auto">
+                    
+                    {/* Zoom / Lens selection */}
+                    {!isRecording && (
+                        <div className="flex justify-center mb-6">
+                            <div className="flex bg-black/50 backdrop-blur-md rounded-full p-1 gap-1 border border-white/10 shadow-lg">
+                                <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[11px] font-medium opacity-80">
+                                    0.5
                                 </div>
-                            ))}
+                                <div className="w-8 h-8 rounded-full bg-black/70 flex items-center justify-center text-yellow-400 text-[11px] font-bold border border-white/10 shadow-inner">
+                                    1×
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Mode Selector */}
+                    {!isRecording && (
+                        <div className="flex justify-center mb-8 px-4 w-full overflow-hidden">
+                            <div className="flex gap-5 text-[12px] font-semibold tracking-wider whitespace-nowrap drop-shadow-md">
+                                <span className="text-white/50">SLO-MO</span>
+                                <span className="text-white/50">CINEMATIC</span>
+                                <span className="text-yellow-400 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">VIDEO</span>
+                                <span className="text-white/50">PHOTO</span>
+                                <span className="text-white/50">PORTRAIT</span>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Thumbnail strip - absolute positioned above shutter */}
+                    {files.length > 0 && !isRecording && (
+                        <div className="absolute bottom-[140px] left-0 right-0 px-4">
+                            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide justify-center">
+                                {files.map((file, i) => (
+                                    <div key={i} className="relative flex-shrink-0 group shadow-lg">
+                                        <div className="w-12 h-12 rounded bg-black/50 border border-white/20 flex items-center justify-center relative overflow-hidden">
+                                            <video src={file.url} preload="metadata" playsInline muted className="absolute inset-0 w-full h-full object-cover" />
+                                            <div className="absolute bottom-0 right-0 bg-black/60 rounded-tl px-1">
+                                                <Video className="w-3 h-3 text-white" />
+                                            </div>
+                                        </div>
+                                       
+                                        <button onClick={() => removeFile(i)} className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-[#ff3b30] rounded-full flex items-center justify-center shadow-md border border-white/20">
+                                            <X className="w-3 h-3 text-white" />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Shutter Controls Row */}
+                    <div className="flex items-center justify-between px-10">
+                        {/* Left: Thumbnail/Cancel */}
+                        <div className="w-[50px] flex justify-center">
+                            <button
+                                onClick={() => {
+                                    if (isRecording) stopRecording();
+                                    handleClose();
+                                }}
+                                className="w-[44px] h-[44px] rounded-lg bg-black/30 backdrop-blur-md overflow-hidden flex items-center justify-center border border-white/20 active:opacity-50 transition-opacity"
+                            >
+                                {files.length > 0 ? (
+                                    <video src={files[files.length - 1].url} className="w-full h-full object-cover" />
+                                ) : (
+                                    <span className="text-[10px] text-white font-medium">Cancel</span>
+                                )}
+                            </button>
+                        </div>
+
+                        {/* Center: Record Button */}
+                        <div className="flex justify-center relative">
+                            <button
+                                onClick={isRecording ? stopRecording : startRecording}
+                                disabled={!isReady || (files.length >= maxPhotos && !isRecording)}
+                                className="w-[74px] h-[74px] rounded-full border-[4px] border-white flex items-center justify-center p-1 active:scale-95 transition-all disabled:opacity-30 bg-transparent"
+                            >
+                                <div className={`transition-all bg-[#ff3b30] ${isRecording ? 'w-[32px] h-[32px] rounded-md' : 'w-full h-full rounded-full shadow-inner'}`} />
+                            </button>
+                        </div>
+
+                        {/* Right: Upload Toggle or Flip */}
+                        <div className="w-[50px] flex justify-center relative">
+                            {files.length > 0 && !isRecording ? (
+                                <button
+                                    onClick={handleUploadAll}
+                                    className="w-[44px] h-[44px] flex items-center justify-center rounded-full bg-yellow-400 text-black active:scale-90 transition-all shadow-lg"
+                                    title="Upload All"
+                                >
+                                    <Upload className="w-5 h-5" />
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={switchCamera}
+                                    disabled={isRecording}
+                                    className="w-[44px] h-[44px] flex items-center justify-center rounded-full bg-black/40 backdrop-blur-md text-white active:scale-90 transition-all disabled:opacity-0 border border-white/20"
+                                >
+                                    <RefreshCcw className="w-5 h-5" />
+                                </button>
+                            )}
+                            
+                            {/* Upload Count Badge attached to Upload button */}
+                            {files.length > 0 && !isRecording && (
+                                <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-[#ff3b30] text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow border border-white/20">
+                                    {files.length}
+                                </div>
+                            )}
                         </div>
                     </div>
-                )}
-
-                {/* Shutter Controls */}
-                <div className="flex items-center justify-between px-10 pt-2 pb-6">
-                    {/* Cancel button — works during recording too */}
-                    <button
-                        onClick={() => {
-                            if (isRecording) stopRecording();
-                            handleClose();
-                        }}
-                        className="text-white text-lg font-normal active:opacity-50 min-w-[60px] text-left"
-                    >
-                        Cancel
-                    </button>
-
-                    {/* Record Button - Video Only */}
-                    <div className="flex justify-center relative">
-                        <button
-                            onClick={isRecording ? stopRecording : startRecording}
-                            disabled={!isReady || (files.length >= maxPhotos && !isRecording)}
-                            className="w-[76px] h-[76px] rounded-full border-[4px] border-white flex items-center justify-center p-1 active:scale-90 transition-all disabled:opacity-30"
-                        >
-                            <div className={`transition-all bg-red-600 shadow-inner ${isRecording ? 'w-8 h-8 rounded-lg' : 'w-full h-full rounded-full'}`} />
-                        </button>
-                        
-                        {/* Recording Count Badge */}
-                        {files.length > 0 && !isRecording && (
-                            <div className="absolute -top-1 -right-1 w-6 h-6 bg-gradz-green text-gradz-charcoal text-[11px] font-bold rounded-full flex items-center justify-center shadow-lg border-2 border-black">
-                                {files.length}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Camera Flip or Upload Toggle — always visible for layout balance */}
-                    {files.length > 0 && !isRecording ? (
-                        <button
-                            onClick={handleUploadAll}
-                            className="w-[50px] h-[50px] flex items-center justify-center rounded-full bg-white/15 text-white active:scale-90 transition-all"
-                            title="Upload All"
-                        >
-                            <Upload className="w-6 h-6" />
-                        </button>
-                    ) : (
-                        <button
-                            onClick={switchCamera}
-                            disabled={isRecording}
-                            className="w-[50px] h-[50px] flex items-center justify-center rounded-full bg-white/15 text-white active:scale-90 transition-all disabled:opacity-0"
-                        >
-                            <RefreshCcw className="w-6 h-6" />
-                        </button>
-                    )}
                 </div>
             </div>
         </div>
