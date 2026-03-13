@@ -28,6 +28,8 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
     const [accountType, setAccountType] = useState<"standard" | "ghost">("standard");
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [consentChecked, setConsentChecked] = useState(false);
+    // Internal mode toggle — allows Ghost users to switch between login/signup on the same page
+    const [viewMode, setViewMode] = useState<AuthMode>(mode);
 
     const searchParams = useSearchParams();
     const referralCode = searchParams.get("ref") || "";
@@ -40,7 +42,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
         const formData = new FormData(e.currentTarget);
 
         // Client-side validation
-        if (mode === "signup") {
+        if (viewMode === "signup") {
             const pwd = formData.get("password") as string;
             const confirmPwd = formData.get("confirmPassword") as string;
             if (pwd !== confirmPwd) {
@@ -56,7 +58,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
             setIsLoading(false);
             return;
         }
-        const action = mode === "login" ? loginAction : signupAction;
+        const action = viewMode === "login" ? loginAction : signupAction;
         const result = await action(formData);
 
         if (result && !result.success) {
@@ -231,7 +233,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
                                 </div>
                             </div>
 
-                            {mode === "signup" && (
+                            {viewMode === "signup" && (
                                 <div className="space-y-1 mt-4">
                                     <label className="text-xs font-semibold text-charcoal/80 uppercase tracking-widest pl-1">{t("auth.confirmPassword")}</label>
                                     <div className="relative group">
@@ -260,11 +262,37 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
                                         <Loader2 className="h-5 w-5 animate-spin" />
                                     ) : (
                                         <>
-                                            {actionLabel}
+                                            {viewMode === "signup" ? t("auth.createAccount", { defaultValue: "Create Account" }) : actionLabel}
                                             <ArrowRight className="h-4 w-4" />
                                         </>
                                     )}
                                 </button>
+
+                                <p className="text-center text-sm text-charcoal/60 mt-4">
+                                    {viewMode === "login" ? (
+                                        <>
+                                            New here?{" "}
+                                            <button
+                                                type="button"
+                                                onClick={() => { setError(null); setViewMode("signup"); }}
+                                                className="text-moss font-semibold hover:underline"
+                                            >
+                                                Create a Ghost account
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            Already have one?{" "}
+                                            <button
+                                                type="button"
+                                                onClick={() => { setError(null); setViewMode("login"); }}
+                                                className="text-moss font-semibold hover:underline"
+                                            >
+                                                Sign in
+                                            </button>
+                                        </>
+                                    )}
+                                </p>
                             </div>
                         </>
                     )}
