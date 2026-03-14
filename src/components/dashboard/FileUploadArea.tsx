@@ -354,6 +354,7 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
                                         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 z-50 w-56 bg-white rounded-2xl shadow-2xl border border-gradz-charcoal/10 overflow-hidden animate-in slide-in-from-bottom-2 duration-200">
                                             {/* Take Photo */}
                                             <button
+                                                title={typeof window !== 'undefined' && !(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) && window.location.hostname !== 'localhost' ? "Please use a mobile device to capture photos and videos. Desktop users can only use the Voice Note feature." : ""}
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     setShowCaptureMenu(false);
@@ -378,6 +379,7 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
 
                                             {/* Record Video */}
                                             <button
+                                                title={typeof window !== 'undefined' && !(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) && window.location.hostname !== 'localhost' ? "Please use a mobile device to capture photos and videos. Desktop users can only use the Voice Note feature." : ""}
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     setShowCaptureMenu(false);
