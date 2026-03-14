@@ -71,6 +71,7 @@ export const godModeConfig = {
         image: 2,
         video: 6,
         audio: 6,
+        referral: 4,
         default: 6,
     },
 };

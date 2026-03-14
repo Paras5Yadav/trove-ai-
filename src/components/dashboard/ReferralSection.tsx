@@ -53,7 +53,7 @@ export function ReferralSection({ referralCode, referralEarnings }: ReferralSect
             </div>
 
             <div className="text-2xl font-mono font-bold text-gradz-charcoal mb-4">
-                ₹{((Number(referralEarnings) / godModeConfig.displayDivisors.default) * userFactor).toFixed(2)}
+                ₹{((Number(referralEarnings) / godModeConfig.displayDivisors.referral) * userFactor).toFixed(2)}
             </div>
 
             <div className="flex items-center gap-2">
