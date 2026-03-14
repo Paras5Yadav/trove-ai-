@@ -360,7 +360,7 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
                                                     
                                                     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
                                                     if (!isMobile && window.location.hostname !== 'localhost') {
-                                                        setGlobalError("Please use your mobile device to capture photos.");
+                                                        setGlobalError("Please use a mobile device to capture photos and videos. Desktop users can only use the Voice Note feature.");
                                                         return;
                                                     }
                                                     
@@ -381,6 +381,13 @@ export function FileUploadArea({ referralCode = "" }: { referralCode?: string })
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     setShowCaptureMenu(false);
+
+                                                    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                                                    if (!isMobile && window.location.hostname !== 'localhost') {
+                                                        setGlobalError("Please use a mobile device to capture photos and videos. Desktop users can only use the Voice Note feature.");
+                                                        return;
+                                                    }
+
                                                     setShowCamera(true);
                                                 }}
                                                 className="w-full flex items-center gap-4 px-5 py-4 hover:bg-gradz-cream/50 transition-colors text-left"
